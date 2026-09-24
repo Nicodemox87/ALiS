@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="448" viewBox="0 0 1100 448" role="img" aria-labelledby="title desc">
+  <title id="title">ALiS workflow</title>
+  <desc id="desc">Inspect and prepare a cloud, optionally derive terrain and features, choose annotation, supervised classification or unsupervised clustering, review results and export. Validation feeds back into labels and settings.</desc>
+  <defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 8 4 0 8Z" fill="#527785"/></marker></defs>
+  <rect width="1100" height="448" rx="16" fill="#f4f8fa"/>
+  <g font-family="Segoe UI, Arial, sans-serif">
+    <text x="32" y="41" font-size="15" font-weight="700" letter-spacing="2" fill="#356575">ONE WORKSPACE · MULTIPLE ANALYSIS PATHS</text>
+    <g stroke="#527785" stroke-width="2" fill="none" marker-end="url(#arrow)">
+      <path d="M246 125h36"/><path d="M499 125h36"/>
+      <path d="M750 125h36"/><path d="M900 171v52"/>
+      <path d="M786 274H670"/>
+    </g>
+    <g fill="#ffffff" stroke="#cbdde4" stroke-width="1.5">
+      <rect x="32" y="77" width="214" height="94" rx="10"/>
+      <rect x="286" y="77" width="213" height="94" rx="10"/>
+      <rect x="539" y="77" width="211" height="94" rx="10"/>
+      <rect x="790" y="77" width="278" height="94" rx="10"/>
+      <rect x="790" y="227" width="278" height="94" rx="10"/>
+      <rect x="391" y="227" width="275" height="94" rx="10"/>
+    </g>
+    <g fill="#0b2634" font-size="20" font-weight="700">
+      <text x="50" y="111">01  Inspect</text><text x="304" y="111">02  Prepare</text>
+      <text x="557" y="111">03  Derive</text><text x="808" y="111">04  Choose a pathway</text>
+      <text x="808" y="261">05  Validate</text><text x="409" y="261">06  Export &amp; reuse</text>
+    </g>
+    <g fill="#466574" font-size="15">
+      <text x="50" y="141">Metadata · units · fields</text><text x="304" y="141">Noise · outliers · sampling</text>
+      <text x="557" y="141">Terrain · features*</text>
+      <text x="808" y="137">Annotate · train / predict</text><text x="808" y="158">or explore clusters</text>
+      <text x="808" y="288">Review labels · metrics · confidence</text>
+      <text x="409" y="288">Clouds · reports · saved models</text>
+    </g>
+    <path d="M929 323v40H287V184" fill="none" stroke="#168b80" stroke-width="2" stroke-dasharray="6 5"/>
+    <path d="m281 194 6-12 6 12" fill="none" stroke="#168b80" stroke-width="2"/>
+    <rect x="407" y="348" width="400" height="30" rx="15" fill="#e0f2ee"/>
+    <text x="607" y="368" fill="#116c63" font-size="15" text-anchor="middle">Review → refine labels, inputs and settings</text>
+    <text x="32" y="418" fill="#52717e" font-size="14">*Optional: reuse existing fields where appropriate. Not every workflow needs every processing step.</text>
+  </g>
+</svg>

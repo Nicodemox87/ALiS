@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="300" viewBox="0 0 1200 300" role="img" aria-labelledby="title desc">
+  <title id="title">ALiS — Archaeological LiDAR Studio</title>
+  <desc id="desc">From point clouds to reviewable evidence. Navy and teal project banner with the existing ALiS plugin icon.</desc>
+  <rect width="1200" height="300" rx="18" fill="#0b2634"/>
+  <g stroke="#265363" stroke-width="1.4" fill="none" opacity=".75">
+    <path d="M925 -30c-170 115 260 160 95 360"/><path d="M955 -30c-170 115 260 160 95 360"/>
+    <path d="M985 -30c-170 115 260 160 95 360"/><path d="M1015 -30c-170 115 260 160 95 360"/>
+    <path d="M1045 -30c-170 115 260 160 95 360"/><path d="M1075 -30c-170 115 260 160 95 360"/>
+  </g>
+  <g transform="translate(64 64) scale(2.5)" fill="none">
+    <path d="M8 45 22 37 34 41 55 29v15L35 55 22 51 8 57Z" fill="#0B2634" stroke="#E9FBFF" stroke-width="3" stroke-linejoin="round"/>
+    <path d="m9 43 13-8 12 4 21-12-20-8-13 5-13-3Z" fill="#20B9A9" stroke="#0B2634" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M22 35V24m0 0 8 3v9m-8-12 7-4 8 3v12" stroke="#FFC857" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+    <g fill="#55D6FF" stroke="#0B2634" stroke-width="3"><circle cx="12" cy="14" r="3"/><circle cx="23" cy="10" r="3"/><circle cx="36" cy="13" r="3"/><circle cx="49" cy="9" r="3"/><circle cx="53" cy="20" r="3"/></g>
+  </g>
+  <g font-family="Segoe UI, Arial, sans-serif">
+    <text x="262" y="121" fill="#f5fafc" font-size="80" font-weight="700" letter-spacing="2">ALiS</text>
+    <text x="266" y="169" fill="#f5fafc" font-size="32">Archaeological LiDAR Studio</text>
+    <rect x="266" y="191" width="64" height="4" rx="2" fill="#20b9a9"/>
+    <text x="266" y="229" fill="#b7d2dc" font-size="21">From point clouds to reviewable evidence.</text>
+    <text x="1108" y="269" fill="#91b5c4" text-anchor="end" font-size="14" letter-spacing="2">CLOUDCOMPARE PLUGIN</text>
+  </g>
+</svg>
