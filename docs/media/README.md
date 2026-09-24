@@ -1,5 +1,6 @@
 # README media
 
+- `alis-cnr-lockup.png`: main ALiS logo with the smaller, unchanged CNR-ISPC institutional mark below. The institutional mark identifies affiliation, is excluded from CC BY, and does not imply certification or endorsement of software results.
 - `alis-logo.png`: approved ALiS identity (vegetation, temple and LiDAR points), AI-assisted design selected by the author. White background, navy and red palette.
 - `alis-icons.png`: approved nine-icon family, also used in the native plugin. Includes small-size previews; this is a design sheet, not an application screenshot.
 - `alis-banner.svg`: previous README banner, retained as a historical asset and no longer displayed.

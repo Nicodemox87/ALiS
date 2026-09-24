@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/media/alis-logo.png" alt="ALiS — Archaeological LiDAR Studio: vegetation, temple and LiDAR points." width="600">
+  <img src="docs/media/alis-cnr-lockup.png" alt="ALiS — Archaeological LiDAR Studio, with the CNR–ISPC institutional mark below." width="600">
 </p>
 
 <p align="center">
@@ -32,7 +32,7 @@ Archaeological LiDAR interpretation is not just a classification problem. It req
 
 **ALiS brings these steps into a connected CloudCompare workflow**, combining geometric analysis, expert annotation and reusable classification models. Its purpose is to support interpretation and reproducible analysis—not to replace archaeological judgement.
 
-> **Publication status:** this repository currently presents the project. Source code and installation packages are being prepared for upload. The current local development distribution is **0.1.0-alpha.5.5**; no downloadable GitHub release is claimed here.
+> **Publication status:** this repository currently presents the project. Source code and installation packages are being prepared for upload. The current local development distribution is **0.1.0-alpha.5.6**; no downloadable GitHub release is claimed here.
 >
 > **Research alpha:** outputs require operator review. Performance on one survey does not establish accuracy on a different site, sensor or acquisition configuration.
 
