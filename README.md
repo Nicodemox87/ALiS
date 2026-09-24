@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/media/alis-banner.svg" alt="ALiS — Archaeological LiDAR Studio. From point clouds to reviewable evidence." width="100%">
+  <img src="docs/media/alis-logo.png" alt="ALiS — Archaeological LiDAR Studio: vegetation, temple and LiDAR points." width="600">
 </p>
 
 <p align="center">
@@ -32,7 +32,7 @@ Archaeological LiDAR interpretation is not just a classification problem. It req
 
 **ALiS brings these steps into a connected CloudCompare workflow**, combining geometric analysis, expert annotation and reusable classification models. Its purpose is to support interpretation and reproducible analysis—not to replace archaeological judgement.
 
-> **Publication status:** this repository currently presents the project. Source code and installation packages are being prepared for upload. The current local development distribution is **0.1.0-alpha.5.4**; no downloadable GitHub release is claimed here.
+> **Publication status:** this repository currently presents the project. Source code and installation packages are being prepared for upload. The current local development distribution is **0.1.0-alpha.5.5**; no downloadable GitHub release is claimed here.
 >
 > **Research alpha:** outputs require operator review. Performance on one survey does not establish accuracy on a different site, sensor or acquisition configuration.
 
@@ -43,6 +43,10 @@ Archaeological LiDAR interpretation is not just a classification problem. It req
 <p align="center"><sub><strong>Piazza Armerina, Sicily.</strong> Display-sampled view of the manually labelled reference cloud: ground (brown), vegetation (green), buildings (red). This is a dataset illustration, not an automatic-classification result or an application screenshot.</sub></p>
 
 ## Capabilities
+
+<p align="center">
+  <img src="docs/media/alis-icons.png" alt="Coordinated ALiS icons: main tool, Session, Preparation, Terrain, Features, Annotation Studio, Classification, History and Settings." width="800">
+</p>
 
 | Workspace | What you can do |
 | :--- | :--- |
