@@ -12,6 +12,7 @@
   <img alt="Target: CloudCompare 2.13.2" src="https://img.shields.io/badge/CloudCompare-2.13.2-193b56?style=flat-square">
   <img alt="Platform: Windows x64" src="https://img.shields.io/badge/platform-Windows_x64-193b56?style=flat-square">
   <a href="LICENSE"><img alt="Software licence: GPL 2.0 or later" src="https://img.shields.io/badge/code-GPL--2.0--or--later-168b80?style=flat-square"></a>
+  <a href="https://doi.org/10.5281/zenodo.22934837"><img alt="Author-provided Zenodo DOI: 10.5281/zenodo.22934837; public record pending verification" src="https://img.shields.io/badge/Zenodo-10.5281%2Fzenodo.22934837-193b56?style=flat-square"></a>
 </p>
 
 <p align="center">
@@ -19,6 +20,7 @@
   <a href="#capabilities">Capabilities</a> ·
   <a href="#workflow">Workflow</a> ·
   <a href="https://github.com/Nicodemox87/ALiS/releases">Releases</a> ·
+  <a href="https://doi.org/10.5281/zenodo.22934837">Zenodo DOI</a> ·
   <a href="https://github.com/Nicodemox87/ALiS/issues">Report an issue</a>
 </p>
 
@@ -140,7 +142,11 @@ The affiliation identifies the author's institution; it does not imply instituti
 
 ## Citation
 
-Zenodo deposition and associated scientific publications are in preparation. Verified DOI links and formal citation metadata will be added when available. For now, identify **ALiS — Archaeological LiDAR Studio**, Nicodemo Abate, the software version used and this repository URL in your methods.
+**Zenodo DOI supplied by the author:** [10.5281/zenodo.22934837](https://doi.org/10.5281/zenodo.22934837).
+
+The Zenodo record was not publicly retrievable at the last check (24 September 2026). Its bibliographic metadata and whether it identifies the software, the technical report or a combined deposit will be confirmed once available. The DOI is listed here as supplied, not as a verified software-version DOI.
+
+When describing your workflow, identify **ALiS — Archaeological LiDAR Studio**, Nicodemo Abate, the software version used and this repository URL. Basic software attribution is provided in [CITATION.cff](CITATION.cff); use the published Zenodo record for the final deposit citation once accessible. Associated scientific publications will be linked when available.
 
 ## Licence
 

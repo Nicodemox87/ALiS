@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "Please cite ALiS and identify the software version used. See the README for the author-provided Zenodo DOI, whose public record metadata remains to be verified."
+title: "ALiS — Archaeological LiDAR Studio"
+type: software
+authors:
+  - family-names: Abate
+    given-names: Nicodemo
+    affiliation: "Consiglio Nazionale delle Ricerche — Istituto di Scienze del Patrimonio Culturale (CNR-ISPC)"
+    email: nicodemo.abate@cnr.it
+repository-code: "https://github.com/Nicodemox87/ALiS"
+url: "https://github.com/Nicodemox87/ALiS"
+license: GPL-2.0-or-later
+keywords:
+  - archaeology
+  - LiDAR
+  - CloudCompare
+  - point-cloud analysis
+  - classification
