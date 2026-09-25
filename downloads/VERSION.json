@@ -1,0 +1,23 @@
+{
+  "version": "0.1.0-alpha.5.6",
+  "tag": "v0.1.0-alpha.5.6",
+  "prerelease": true,
+  "native_dll_sha256": "18722c041647e5dd382c9a3fe97dabbf88312d0afd88663ede3a9be718aa466e",
+  "assets": [
+    {
+      "name": "ALiS-0.1.0-alpha.5.6-CloudCompare-2.13.2-Windows-x64.zip",
+      "bytes": 1980295,
+      "sha256": "3d3f9f167f8b1c8f944589b399cbf6612fafbf4a68f559f6b530ea18fda0c6c1"
+    },
+    {
+      "name": "ALiS-0.1.0-alpha.5.6-Source.zip",
+      "bytes": 4815139,
+      "sha256": "421e713edbfbd8d2f9b04f869267a4a90e7d1b6ce94d436cbfe8f83907a9accf"
+    },
+    {
+      "name": "ALiS-0.1.0-alpha.5.6-CloudCompare-2.13.2-Windows-x64-Setup.exe",
+      "bytes": 3793308,
+      "sha256": "7a082221274b12e5a14f3e18a25e78cab319f93c4b64b5435ce929383a30dbb1"
+    }
+  ]
+}

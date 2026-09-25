@@ -2,6 +2,8 @@ cff-version: 1.2.0
 message: "Please cite ALiS and identify the software version used. See the README for the author-provided Zenodo DOI, whose public record metadata remains to be verified."
 title: "ALiS — Archaeological LiDAR Studio"
 type: software
+version: 0.1.0-alpha.5.6
+date-released: '2026-09-25'
 authors:
   - family-names: Abate
     given-names: Nicodemo

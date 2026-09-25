@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+.venv/
+build/
+output/
+packaging/stage/
+*.las
+*.laz
+*.joblib
+*.qalml/
+*.qalf
+*.pdb

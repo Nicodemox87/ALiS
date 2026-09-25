@@ -1,0 +1,14 @@
+{
+  "schema": "qArchaeoLiDAR.scale-profile/v1",
+  "name": "Default exploratory scales",
+  "unit": "metre",
+  "scientificStatus": "editable starting points; not universally validated",
+  "radii": [0.10, 0.25, 0.50, 1.00, 2.00, 5.00, 10.00],
+  "presets": {
+    "Fine masonry": [0.10, 0.25, 0.50],
+    "Walls and structures": [0.25, 0.50, 1.00, 2.00],
+    "Microtopography": [0.50, 1.00, 2.00, 5.00],
+    "Landscape archaeology": [2.00, 5.00, 10.00],
+    "Vegetation separation": [0.25, 1.00, 2.00, 5.00]
+  }
+}

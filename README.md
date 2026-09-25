@@ -32,7 +32,7 @@ Archaeological LiDAR interpretation is not just a classification problem. It req
 
 **ALiS brings these steps into a connected CloudCompare workflow**, combining geometric analysis, expert annotation and reusable classification models. Its purpose is to support interpretation and reproducible analysis—not to replace archaeological judgement.
 
-> **Publication status:** this repository currently presents the project. Source code and installation packages are being prepared for upload. The current local development distribution is **0.1.0-alpha.5.6**; no downloadable GitHub release is claimed here.
+> **Public testing version: 0.1.0-alpha.5.6.** Source, installer and manual-install package are available below. This is a research alpha, not a production-certified release.
 >
 > **Research alpha:** outputs require operator review. Performance on one survey does not establish accuracy on a different site, sensor or acquisition configuration.
 
@@ -99,7 +99,13 @@ Supervised CUDA paths are available for XGBoost, MLP and the local PointNet-styl
 
 ## Getting started
 
-**Packages are not yet uploaded.** Once a release is published, download its installer and follow the matching installation notes from [Releases](https://github.com/Nicodemox87/ALiS/releases).
+### Download 0.1.0-alpha.5.6
+
+**[Download Windows installer](https://github.com/Nicodemox87/ALiS/raw/refs/heads/main/downloads/ALiS-0.1.0-alpha.5.6-CloudCompare-2.13.2-Windows-x64-Setup.exe)** · [Manual-install ZIP](https://github.com/Nicodemox87/ALiS/raw/refs/heads/main/downloads/ALiS-0.1.0-alpha.5.6-CloudCompare-2.13.2-Windows-x64.zip) · [Source ZIP](https://github.com/Nicodemox87/ALiS/raw/refs/heads/main/downloads/ALiS-0.1.0-alpha.5.6-Source.zip)
+
+[SHA-256 checksums](downloads/CHECKSUMS_SHA256.txt) · [Release notes](RELEASE_NOTES.md) · [Installation & first test](docs/GETTING_STARTED.txt) · [Python / GPU setup](docs/RUNTIME.md) · [Build from source](BUILDING.md)
+
+The installer is **unsigned**. Verify its origin and checksum; do not disable security protections. Packages contain no training data, pretrained weights or unpublished paper. Windows installer and ZIP contain the same native DLL and worker; choose one installation route.
 
 | Component | Current development target |
 | :--- | :--- |
@@ -111,13 +117,17 @@ Supervised CUDA paths are available for XGBoost, MLP and the local PointNet-styl
 
 The plugin is **not a standalone CloudCompare application** and is not compatible with arbitrary CloudCompare or Qt 6 builds. CloudCompare, Python, CUDA, training clouds and trained models are not bundled with the plugin installer.
 
-The intended installation sequence is:
+Installation:
 
 1. Install the matching official CloudCompare build.
 2. Close CloudCompare and run the ALiS installer from a published release.
 3. Select the directory containing `CloudCompare.exe`.
 4. Reopen CloudCompare, load a cloud, select it and open ALiS.
 5. Inspect metadata and coordinate units before processing.
+
+For classifiers, install the separate runtime using the included CPU or CUDA setup script. **Python is not required for native terrain/features/annotation.** See [detailed steps and troubleshooting](docs/GETTING_STARTED.txt). To uninstall, select ALiS in Windows Installed Apps; user data and Python environments are retained.
+
+Source code lives in [plugin](plugin); presets in [profiles](profiles). See [third-party notices](THIRD_PARTY_NOTICES.md), [contributing](CONTRIBUTING.md) and [security guidance](SECURITY.md). Published release assets are immutable; later revisions will use new version tags.
 
 ## Roadmap
 

@@ -1,0 +1,5 @@
+# Optional tree GPU backend. The worker detects whether this wheel has CUDA support.
+xgboost>=2.1,<4
+
+# Install PyTorch separately using the official CPU/CUDA selector. A generic
+# requirement here could silently replace a CUDA build with a CPU-only wheel.

@@ -1,0 +1,74 @@
+ALiS 0.1.0-alpha.5.6 - GETTING STARTED
+
+1. REQUIREMENTS
+Windows x64 and the official CloudCompare 2.13.2 stable Qt 5.15.x build.
+https://github.com/CloudCompare/CloudCompare/releases/tag/v2.13.2
+Not compatible with arbitrary CloudCompare versions, Qt 6, Conda builds or macOS/Linux binaries.
+This installer does NOT include CloudCompare, Python, CUDA, models or point clouds.
+
+2. INSTALL
+Close CloudCompare, download the ALiS Setup.exe from the release and run it.
+Select the folder containing CloudCompare.exe (normally C:\Program Files\CloudCompare).
+Windows may show SmartScreen because this alpha installer is not code-signed.
+Check its origin and SHA-256 before choosing whether to run it; do not disable security software.
+Administrator confirmation may be needed for Program Files.
+The installer adds plugins\ALIS_PLUGIN.dll, worker\ALiS, doc\ALiS and shortcuts.
+It does not replace CloudCompare.exe or unrelated plugins.
+Open CloudCompare normally or use the ALiS shortcut. Find ALiS under Plugins or its toolbar icon.
+Load and select a point cloud to enable operations.
+
+For manual installation, extract the ZIP and copy its plugins, worker and doc folders,
+ALiS.ico and ALiS Launcher.cmd into the SAME CloudCompare root, merging folders.
+Do not put the entire ZIP inside the plugins folder.
+
+3. FIRST TEST (USE A COPY OF A SMALL CLOUD)
+Session: inspect metadata, available fields, classes and coordinate units.
+Confirm metric units only when they really are metres; missing CRS is not inferred automatically.
+Preparation: optional outlier/noise filtering and subsampling are controlled by you.
+Terrain: choose CSF or morphological filtering, inspect ground and adjust parameters.
+Features: choose descriptors and radii; computed results become scalar fields.
+Annotation Studio: inspect multiple views/sections, select points and assign working classes.
+Classification: choose the geometric separator, supervised models or clustering.
+  The geometric separator is a proposal, not proof of a building or archaeological structure.
+  Supervised: select trusted training labels, inputs, model(s), test split and output repository;
+  train, inspect per-class metrics, then apply a compatible saved model to a selected cloud.
+  Keep feature definitions/scales compatible. Do not use class labels as input predictors.
+  Clustering: use existing RGB/scalar fields if desired; clusters need semantic interpretation.
+Save to NEW output files and reopen a sample to check labels, fields, alignment and georeferencing.
+Training/testing the same points is not independent validation. Prefer spatial or independent-site tests.
+
+4. OPTIONAL CLASSIFIER RUNTIME
+Native terrain, features and annotation work without Python.
+ML/clustering require Python packages; MLP/PointNet require PyTorch; XGBoost is optional.
+Use a trusted Python 3.12 x64 executable. The scripts below download packages into an isolated venv.
+Open PowerShell, replacing paths with your actual locations:
+
+CPU models:
+  & 'C:\Program Files\CloudCompare\worker\ALiS\setup_cpu_runtime.ps1' -BasePython 'C:\path\to\python.exe'
+
+Optional NVIDIA CUDA models (several GB download, compatible NVIDIA driver required):
+  & 'C:\Program Files\CloudCompare\worker\ALiS\setup_cuda_runtime.ps1' -BasePython 'C:\path\to\python.exe'
+
+Scripts never relax PowerShell execution policy. If blocked, review them with your IT administrator.
+CPU setup sets the user-level ALIS_PYTHON path after successful capability verification.
+The CUDA setup creates .alis\runtime-cu128 and ALiS discovers its verified marker automatically.
+ALIS_PYTHON has priority: clear/change a previous CPU override if you switch to CUDA.
+Restart CloudCompare after changing runtime settings. If launched from an old terminal, restart it too.
+See docs/RUNTIME.md in the repository for details and manual alternatives.
+
+GPU acceleration is available only for supported backends; RF, Extra Trees, HGB and native
+geometry primarily use CPU. The experimental local PointNet-style network is not canonical
+PointNet with T-Nets, PointNet++, or a pretrained foundation model. No pretrained weights ship.
+
+5. TROUBLESHOOTING AND FEEDBACK
+Plugin absent: check exact host version/Qt/architecture, plugins\ALIS_PLUGIN.dll and CC's console.
+Remove obsolete ALiS copies only after backing them up; do not delete unrelated plugins.
+Worker unavailable: inspect Python path and run qal_ml_worker.py capabilities using that Python.
+Start with a small cloud and modest radii; dense large neighbourhoods can be memory-intensive.
+Missing/incorrect outputs: preserve logs, record steps and report version + parameters.
+Only load trusted joblib/model files: deserialisation can execute code.
+https://github.com/Nicodemox87/ALiS/issues
+nicodemo.abate@cnr.it
+
+Uninstall via Windows Installed Apps: select ALiS, NOT CloudCompare.
+The Python venv and user datasets/catalogues are retained; back them up before removing manually.

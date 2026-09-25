@@ -1,0 +1,33 @@
+name: Publish verified testing package
+on:
+  push:
+    branches: [main]
+    paths: ['downloads/VERSION.json']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: alis-testing-release
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Verify package integrity
+        working-directory: downloads
+        run: sha256sum --check CHECKSUMS_SHA256.txt
+      - name: Publish once as a prerelease
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG=$(python -c 'import json; print(json.load(open("downloads/VERSION.json"))["tag"])')
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release already exists. Refusing to overwrite published assets."
+            exit 0
+          fi
+          gh release create "$TAG" downloads/*.exe downloads/*.zip downloads/CHECKSUMS_SHA256.txt downloads/VERSION.json \
+            --target "$GITHUB_SHA" --title "ALiS ${TAG#v} — Testing Preview" \
+            --notes-file RELEASE_NOTES.md --prerelease

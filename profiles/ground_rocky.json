@@ -1,0 +1,57 @@
+{
+  "schema": "qal-processing-preset/1.0",
+  "name": "Rocky",
+  "algorithm": "csf.cloudcompare.v2.13.2",
+  "groundBase": {
+    "resolution": 0.5,
+    "threshold": 0.5,
+    "rigidity": 1,
+    "iterations": 500,
+    "timeStep": 0.65,
+    "slope": true
+  },
+  "controls": [
+    1,
+    1,
+    1
+  ],
+  "pmf": {
+    "windows": [
+      3,
+      6,
+      12,
+      20
+    ],
+    "thresholds": [
+      0.5,
+      0.8,
+      1.4,
+      2
+    ],
+    "cellSize": 0.5
+  },
+  "features": [
+    "planarity",
+    "roughness",
+    "linearity",
+    "verticality"
+  ],
+  "radiiMetres": [
+    0.25,
+    0.5,
+    1
+  ],
+  "dtmStep": 0.25,
+  "scalePolicy": {
+    "minimumRadius": 0.1,
+    "maximumRadius": 3,
+    "useValidReturns": true,
+    "targetNeighbours": [
+      16,
+      64,
+      256
+    ]
+  },
+  "sourceProfile": {},
+  "note": "Editable starting point, not a universally validated classifier. Adapt explicitly to measured cloud spacing/return reliability. One CSF cloth per run; multiscale features do not imply a union of ground masks."
+}

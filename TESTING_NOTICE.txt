@@ -1,0 +1,16 @@
+ALiS - Archaeological LiDAR Studio 0.1.0-alpha.5.6
+RESEARCH ALPHA / TESTING PREVIEW
+
+Created by Dr Nicodemo Abate
+Consiglio Nazionale delle Ricerche - Istituto di Scienze del Patrimonio Culturale
+CNR-ISPC, Sede Secondaria di Milano
+Contact: nicodemo.abate@cnr.it
+
+This release is intended for testing, evaluation and workflow validation.
+It is not certified production software. Preserve original data and independently
+review classifications, measurements, terrain products and reports.
+
+Software: GPL-2.0-or-later, without warranty; see LICENSE.
+Testing status does not restrict rights granted by that licence.
+Original documentation: CC BY 4.0, excluding institutional marks and third-party material.
+No unpublished paper, survey data, pretrained weights or trained models are bundled.
