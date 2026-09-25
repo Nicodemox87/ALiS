@@ -16,6 +16,7 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.6/ALiS-0.1.0-alpha.5.6-CloudCompare-2.13.2-Windows-x64-Setup.exe"><strong>Download Windows installer</strong></a> ·
   <a href="#getting-started">Getting started</a> ·
   <a href="#capabilities">Capabilities</a> ·
   <a href="#workflow">Workflow</a> ·
@@ -68,7 +69,7 @@ Archaeological LiDAR interpretation is not just a classification problem. It req
 
 ## Classification, with the differences made explicit
 
-| Approach | Available methods in the development build | Intended use |
+| Approach | Available methods in this alpha | Intended use |
 | :--- | :--- | :--- |
 | **Supervised machine learning** | Random Forest, Extra Trees, Histogram Gradient Boosting, XGBoost | Learn from labelled examples, assess held-out performance and reuse compatible saved models. |
 | **Neural classification** | Descriptor-based MLP; experimental PointNet-style local XYZ network | Compare learned nonlinear or local spatial representations with descriptor-based models. |
@@ -101,9 +102,11 @@ Supervised CUDA paths are available for XGBoost, MLP and the local PointNet-styl
 
 ### Download 0.1.0-alpha.5.6
 
-**[Download Windows installer](https://github.com/Nicodemox87/ALiS/raw/refs/heads/main/downloads/ALiS-0.1.0-alpha.5.6-CloudCompare-2.13.2-Windows-x64-Setup.exe)** · [Manual-install ZIP](https://github.com/Nicodemox87/ALiS/raw/refs/heads/main/downloads/ALiS-0.1.0-alpha.5.6-CloudCompare-2.13.2-Windows-x64.zip) · [Source ZIP](https://github.com/Nicodemox87/ALiS/raw/refs/heads/main/downloads/ALiS-0.1.0-alpha.5.6-Source.zip)
+**[Download Windows installer](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.6/ALiS-0.1.0-alpha.5.6-CloudCompare-2.13.2-Windows-x64-Setup.exe)** · [Manual-install ZIP](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.6/ALiS-0.1.0-alpha.5.6-CloudCompare-2.13.2-Windows-x64.zip) · [Source ZIP](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.6/ALiS-0.1.0-alpha.5.6-Source.zip)
 
 [SHA-256 checksums](downloads/CHECKSUMS_SHA256.txt) · [Release notes](RELEASE_NOTES.md) · [Installation & first test](docs/GETTING_STARTED.txt) · [Python / GPU setup](docs/RUNTIME.md) · [Build from source](BUILDING.md)
+
+[Versioned GitHub prerelease](https://github.com/Nicodemox87/ALiS/releases/tag/v0.1.0-alpha.5.6) · [Package validation](docs/RELEASE_VALIDATION.md). Repository-hosted backup downloads are available in [downloads](downloads).
 
 The installer is **unsigned**. Verify its origin and checksum; do not disable security protections. Packages contain no training data, pretrained weights or unpublished paper. Windows installer and ZIP contain the same native DLL and worker; choose one installation route.
 
@@ -158,7 +161,7 @@ The affiliation identifies the author's institution; it does not imply instituti
 
 **Zenodo DOI supplied by the author:** [10.5281/zenodo.22934837](https://doi.org/10.5281/zenodo.22934837).
 
-The Zenodo record was not publicly retrievable at the last check (24 September 2026). Its bibliographic metadata and whether it identifies the software, the technical report or a combined deposit will be confirmed once available. The DOI is listed here as supplied, not as a verified software-version DOI.
+The Zenodo record was not publicly retrievable at the last check (25 September 2026; the record API returned 404). Its bibliographic metadata and whether it identifies the software, the technical report or a combined deposit will be confirmed once available. The DOI is listed here as supplied, not as a verified software-version DOI. This does not affect the GitHub installer downloads.
 
 When describing your workflow, identify **ALiS — Archaeological LiDAR Studio**, Nicodemo Abate, the software version used and this repository URL. Basic software attribution is provided in [CITATION.cff](CITATION.cff); use the published Zenodo record for the final deposit citation once accessible. Associated scientific publications will be linked when available.
 
