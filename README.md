@@ -143,10 +143,13 @@ Source code lives in [plugin](plugin); presets in [profiles](profiles). See [thi
 
 Work in progress—not a list of shipped capabilities:
 
+- Create a macOS version.
 - Broader validation across archaeological sites and acquisition conditions.
 - Improved tutorials, worked examples and documented reproducibility checks.
 - Validated adapters for external pretrained models.
 - Community-contributed datasets and model sharing with provenance, compatible labels and quality review.
+- Create a stand-alone version for Windows and macOS.
+- Implement LLM models to manage the workflow.
 
 ## Feedback & collaboration
 
@@ -167,8 +170,6 @@ The affiliation identifies the author's institution; it does not imply instituti
 ## Citation
 
 **Zenodo DOI supplied by the author:** [10.5281/zenodo.22934837](https://doi.org/10.5281/zenodo.22934837).
-
-The Zenodo record was not publicly retrievable at the last check (25 September 2026; the record API returned 404). Its bibliographic metadata and whether it identifies the software, the technical report or a combined deposit will be confirmed once available. The DOI is listed here as supplied, not as a verified software-version DOI. This does not affect the GitHub installer downloads.
 
 When describing your workflow, identify **ALiS — Archaeological LiDAR Studio**, Nicodemo Abate, the software version used and this repository URL. Basic software attribution is provided in [CITATION.cff](CITATION.cff); use the published Zenodo record for the final deposit citation once accessible. Associated scientific publications will be linked when available.
 
