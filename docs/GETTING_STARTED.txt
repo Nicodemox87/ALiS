@@ -2,7 +2,9 @@ ALiS 0.1.0-alpha.5.6 - GETTING STARTED
 
 1. REQUIREMENTS
 Windows x64 and the official CloudCompare 2.13.2 stable Qt 5.15.x build.
-https://github.com/CloudCompare/CloudCompare/releases/tag/v2.13.2
+https://www.cloudcompare.org/release/
+Choose the 2.13.2 Windows 64-bit installer, not the beta, ccViewer or source archives.
+Illustrated guide: https://github.com/Nicodemox87/ALiS/blob/main/docs/INSTALLATION.md
 Not compatible with arbitrary CloudCompare versions, Qt 6, Conda builds or macOS/Linux binaries.
 This installer does NOT include CloudCompare, Python, CUDA, models or point clouds.
 

@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1120" viewBox="0 0 1200 1120" role="img" aria-labelledby="title desc">
+  <title id="title">Install ALiS — six steps from download to your first point cloud</title>
+  <desc id="desc">Install CloudCompare 2.13.2 Windows x64 Qt5, download the ALiS Setup executable, check its checksum and close CloudCompare, install into the CloudCompare root folder, open ALiS, and load and select a copy of a LAS or LAZ cloud. Python CPU or CUDA setup is a separate optional step for classifiers.</desc>
+  <defs>
+    <style>
+      text { font-family: 'Segoe UI', Arial, sans-serif; fill: #19365E; }
+      .card { fill: #FFFFFF; stroke: #DCE3EC; stroke-width: 1.5; }
+      .heading { font-size: 25px; font-weight: 700; }
+      .body { font-size: 20px; fill: #3D516D; }
+      .small { font-size: 17px; fill: #50617A; }
+      .num { font-size: 19px; fill: white; font-weight: 700; text-anchor: middle; }
+      .icon { fill: none; stroke: #19365E; stroke-width: 2.8; stroke-linecap: round; stroke-linejoin: round; }
+    </style>
+  </defs>
+  <rect width="1200" height="1120" fill="#FFFFFF"/>
+  <rect x="0" y="0" width="1200" height="8" fill="#19365E"/>
+  <g transform="translate(44 37)">
+    <g fill="#19365E">
+      <path d="M6 57h52v4H6zM15 56V32h5v24z"/>
+      <path d="M17 39C4 37 3 25 5 20c10 0 16 7 12 19ZM18 28C9 20 10 9 15 4c9 5 11 15 3 24ZM21 36c-2-10 4-18 14-20 2 9-3 18-14 20Z"/>
+      <path fill-rule="evenodd" d="M26 32 43 20l17 12v5H26Zm8 0h18l-9-6Z"/>
+      <path d="M29 40h8v4h-2v9h2v3h-8v-3h2v-9h-2zM40 40h8v4h-2v9h2v3h-8v-3h2v-9h-2z"/>
+    </g>
+    <g fill="#CE1417"><circle cx="55" cy="42" r="2.8"/><circle cx="55" cy="48" r="2.8"/><circle cx="55" cy="54" r="2.8"/><circle cx="29" cy="9" r="3"/></g>
+  </g>
+  <text x="130" y="69" font-size="36" font-weight="700">Install ALiS</text>
+  <text x="131" y="99" class="body">From download to your first point cloud</text>
+  <rect x="905" y="48" width="251" height="42" rx="21" fill="#F2F5F9"/>
+  <text x="1030" y="75" text-anchor="middle" class="small">0.1.0-alpha.5.6 · Testing Preview</text>
+  <rect x="44" y="131" width="1112" height="46" rx="10" fill="#19365E"/>
+  <text x="66" y="161" font-size="19" style="fill:white">Windows x64  /  CloudCompare 2.13.2 stable  /  Qt 5.15.x  —  not Qt 6 or 2.14 builds</text>
+
+  <rect class="card" x="44" y="203" width="542" height="190" rx="15"/>
+  <circle cx="78" cy="241" r="18" fill="#CE1417"/><text class="num" x="78" y="248">1</text>
+  <text class="heading" x="109" y="250">Install CloudCompare</text>
+  <g class="icon" transform="translate(517 226)"><rect x="0" y="0" width="37" height="25" rx="3"/><path d="M18 25v9M8 34h20"/></g>
+  <text class="body" x="70" y="293">Use the official downloads page.</text>
+  <text class="body" x="70" y="323">Choose 2.13.2 → Windows 64-bit installer.</text>
+  <text class="small" x="70" y="363">Already installed? Check the version first.</text>
+
+  <rect class="card" x="614" y="203" width="542" height="190" rx="15"/>
+  <circle cx="648" cy="241" r="18" fill="#CE1417"/><text class="num" x="648" y="248">2</text>
+  <text class="heading" x="679" y="250">Download ALiS</text>
+  <g class="icon" transform="translate(1087 226)"><path d="M18 0v23M9 15l9 9 9-9M2 26v9h32v-9"/></g>
+  <text class="body" x="640" y="293">Open the ALiS GitHub release → Assets.</text>
+  <text class="body" x="640" y="323">Choose the file ending in -Setup.exe.</text>
+  <text class="small" x="640" y="363">“Source code” is not the Windows installer.</text>
+
+  <rect class="card" x="44" y="419" width="542" height="190" rx="15"/>
+  <circle cx="78" cy="457" r="18" fill="#CE1417"/><text class="num" x="78" y="464">3</text>
+  <text class="heading" x="109" y="466">Check, then close</text>
+  <g class="icon" transform="translate(517 441)"><path d="M18 0 33 6v13c0 9-15 17-15 17S3 28 3 19V6Z"/><path d="m10 17 6 6 10-12"/></g>
+  <text class="body" x="70" y="509">Verify the published SHA-256 checksum.</text>
+  <text class="body" x="70" y="539">Close all CloudCompare windows.</text>
+  <text class="small" x="70" y="579">Unsigned alpha: keep security protections enabled.</text>
+
+  <rect class="card" x="614" y="419" width="542" height="190" rx="15"/>
+  <circle cx="648" cy="457" r="18" fill="#CE1417"/><text class="num" x="648" y="464">4</text>
+  <text class="heading" x="679" y="466">Run the installer</text>
+  <g class="icon" transform="translate(1086 442)"><path d="M0 7h14l5 5h20v24H0ZM0 7V2h14l5 5h15v5"/></g>
+  <text class="body" x="640" y="509">Select the folder with CloudCompare.exe.</text>
+  <text x="640" y="541" font-family="Consolas, monospace" font-size="19">C:\Program Files\CloudCompare</text>
+  <text class="small" x="640" y="579">Use the main folder, NOT its plugins subfolder.</text>
+
+  <rect class="card" x="44" y="635" width="542" height="190" rx="15"/>
+  <circle cx="78" cy="673" r="18" fill="#CE1417"/><text class="num" x="78" y="680">5</text>
+  <text class="heading" x="109" y="682">Open the plugin</text>
+  <g class="icon" transform="translate(517 658)"><rect width="37" height="32" rx="3"/><path d="M0 9h37M9 18h19M9 25h12"/></g>
+  <text class="body" x="70" y="725">Launch CloudCompare or the ALiS shortcut.</text>
+  <text class="body" x="70" y="755">Open ALiS from Plugins or its toolbar icon.</text>
+  <text class="small" x="70" y="795">ALiS runs inside CloudCompare, not on its own.</text>
+
+  <rect class="card" x="614" y="635" width="542" height="190" rx="15"/>
+  <circle cx="648" cy="673" r="18" fill="#CE1417"/><text class="num" x="648" y="680">6</text>
+  <text class="heading" x="679" y="682">Load &amp; select a cloud</text>
+  <g fill="#19365E" transform="translate(1087 658)"><circle cx="4" cy="27" r="3"/><circle cx="15" cy="12" r="3"/><circle cx="27" cy="3" r="3"/><circle cx="26" cy="23" r="3"/><circle cx="37" cy="14" r="3"/><circle cx="15" cy="34" r="3"/><circle cx="37" cy="34" r="3"/></g>
+  <text class="body" x="640" y="725">Load a LAS/LAZ copy; select it in the DB tree.</text>
+  <text class="body" x="640" y="755">Inspect metadata and coordinate units.</text>
+  <text class="small" x="640" y="795">Start small. Preserve your original survey data.</text>
+
+  <rect x="44" y="851" width="1112" height="158" rx="15" fill="#F2F5F9"/>
+  <rect x="44" y="867" width="5" height="126" rx="2" fill="#CE1417"/>
+  <text x="70" y="889" class="heading">Optional: enable ML / deep learning</text>
+  <text x="70" y="925" class="body">Install Python 3.12 x64, then run the included CPU or NVIDIA CUDA setup script.</text>
+  <text x="70" y="955" class="body">Follow the runtime guide and restart CloudCompare. GPU support depends on the model.</text>
+  <text x="70" y="987" class="small">No Python needed for native terrain, features and annotation. No pretrained models are bundled.</text>
+  <path d="M44 1040h1112" stroke="#DCE3EC"/>
+  <text x="44" y="1070" class="small">Full instructions and clickable downloads: github.com/Nicodemox87/ALiS</text>
+  <text x="44" y="1096" font-size="15" fill="#50617A">ALiS · Archaeological LiDAR Studio  |  Nicodemo Abate · CNR-ISPC  |  Installation guide · English</text>
+</svg>

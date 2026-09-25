@@ -1,5 +1,7 @@
 # README media
 
+- `install-guide.svg` and `install-guide.png`: editable vector installation diagram and high-resolution raster export, written in English for alpha.5.6. Six numbered setup steps plus an optional Python/runtime section. This is an instructional diagram, not an application screenshot. Colours and the compact mark follow the existing ALiS identity.
+
 - `alis-cnr-lockup.png`: main ALiS logo with the smaller, unchanged CNR-ISPC institutional mark below. The institutional mark identifies affiliation, is excluded from CC BY, and does not imply certification or endorsement of software results.
 - `alis-logo.png`: approved ALiS identity (vegetation, temple and LiDAR points), AI-assisted design selected by the author. White background, navy and red palette.
 - `alis-icons.png`: approved nine-icon family, also used in the native plugin. Includes small-size previews; this is a design sheet, not an application screenshot.

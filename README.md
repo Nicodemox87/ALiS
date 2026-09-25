@@ -29,6 +29,8 @@
 
 ## Why ALiS?
 
+**New to ALiS? [Follow the illustrated installation guide](docs/INSTALLATION.md)** — Windows requirements, downloads, setup and your first cloud.
+
 Archaeological LiDAR interpretation is not just a classification problem. It requires checking the data, separating terrain from vegetation and structures, choosing meaningful spatial scales, and reviewing uncertain results.
 
 **ALiS brings these steps into a connected CloudCompare workflow**, combining geometric analysis, expert annotation and reusable classification models. Its purpose is to support interpretation and reproducible analysis—not to replace archaeological judgement.
@@ -100,6 +102,10 @@ Supervised CUDA paths are available for XGBoost, MLP and the local PointNet-styl
 
 ## Getting started
 
+[![Install ALiS in six steps: install CloudCompare 2.13.2, download ALiS Setup.exe, verify and close, install into the host folder, open the plugin, then load and select a cloud. Python is optional for classifiers.](docs/media/install-guide.svg)](docs/INSTALLATION.md)
+
+**[Full step-by-step installation guide →](docs/INSTALLATION.md)** · [Download the infographic (PNG)](docs/media/install-guide.png)
+
 ### Download 0.1.0-alpha.5.6
 
 **[Download Windows installer](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.6/ALiS-0.1.0-alpha.5.6-CloudCompare-2.13.2-Windows-x64-Setup.exe)** · [Manual-install ZIP](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.6/ALiS-0.1.0-alpha.5.6-CloudCompare-2.13.2-Windows-x64.zip) · [Source ZIP](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.6/ALiS-0.1.0-alpha.5.6-Source.zip)
@@ -122,11 +128,12 @@ The plugin is **not a standalone CloudCompare application** and is not compatibl
 
 Installation:
 
-1. Install the matching official CloudCompare build.
-2. Close CloudCompare and run the ALiS installer from a published release.
-3. Select the directory containing `CloudCompare.exe`.
-4. Reopen CloudCompare, load a cloud, select it and open ALiS.
-5. Inspect metadata and coordinate units before processing.
+1. **Install CloudCompare 2.13.2 x64** from the [official downloads page](https://www.cloudcompare.org/release/) — choose the **2.13.2 Windows installer**, not the beta or ccViewer.
+2. **Download ALiS `...-Setup.exe`** from the release's **Assets** section. “Source code” is for developers, not installation.
+3. **Check its SHA-256**, then close all CloudCompare windows.
+4. **Run Setup.exe** and select the folder containing `CloudCompare.exe`, usually `C:\Program Files\CloudCompare` — **not** its `plugins` subfolder.
+5. **Open CloudCompare**, then ALiS from **Plugins** or its toolbar icon.
+6. **Load a LAS/LAZ copy and select it in the DB tree.** Inspect metadata and coordinate units before processing.
 
 For classifiers, install the separate runtime using the included CPU or CUDA setup script. **Python is not required for native terrain/features/annotation.** See [detailed steps and troubleshooting](docs/GETTING_STARTED.txt). To uninstall, select ALiS in Windows Installed Apps; user data and Python environments are retained.
 
