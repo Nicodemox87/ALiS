@@ -1,4 +1,4 @@
-ALiS 0.1.0-alpha.5.6 - GETTING STARTED
+ALiS 0.1.0-alpha.5.7 - GETTING STARTED
 
 1. REQUIREMENTS
 Windows x64 and the official CloudCompare 2.13.2 stable Qt 5.15.x build.
@@ -14,13 +14,14 @@ Select the folder containing CloudCompare.exe (normally C:\Program Files\CloudCo
 Windows may show SmartScreen because this alpha installer is not code-signed.
 Check its origin and SHA-256 before choosing whether to run it; do not disable security software.
 Administrator confirmation may be needed for Program Files.
-The installer adds plugins\ALIS_PLUGIN.dll, worker\ALiS, doc\ALiS and shortcuts.
+The installer adds plugins\ALIS_PLUGIN.dll, ALiS_prepare_block.exe,
+platforms\qminimal.dll, worker\ALiS, doc\ALiS and shortcuts.
 It does not replace CloudCompare.exe or unrelated plugins.
 Open CloudCompare normally or use the ALiS shortcut. Find ALiS under Plugins or its toolbar icon.
 Load and select a point cloud to enable operations.
 
-For manual installation, extract the ZIP and copy its plugins, worker and doc folders,
-ALiS.ico and ALiS Launcher.cmd into the SAME CloudCompare root, merging folders.
+For manual installation, extract the ZIP and copy its plugins, platforms, worker and doc folders,
+ALiS_prepare_block.exe, ALiS.ico and ALiS Launcher.cmd into the SAME CloudCompare root, merging folders.
 Do not put the entire ZIP inside the plugins folder.
 
 3. FIRST TEST (USE A COPY OF A SMALL CLOUD)
@@ -41,7 +42,8 @@ Training/testing the same points is not independent validation. Prefer spatial o
 
 4. OPTIONAL CLASSIFIER RUNTIME
 Native terrain, features and annotation work without Python.
-ML/clustering require Python packages; MLP/PointNet require PyTorch; XGBoost is optional.
+ML/clustering and model-driven block preparation require Python packages;
+MLP/PointNet require PyTorch; XGBoost is optional. LAS/LAZ preparation uses laspy/lazrs.
 Use a trusted Python 3.12 x64 executable. The scripts below download packages into an isolated venv.
 Open PowerShell, replacing paths with your actual locations:
 
@@ -62,7 +64,16 @@ GPU acceleration is available only for supported backends; RF, Extra Trees, HGB 
 geometry primarily use CPU. The experimental local PointNet-style network is not canonical
 PointNet with T-Nets, PointNet++, or a pretrained foundation model. No pretrained weights ship.
 
-5. TROUBLESHOOTING AND FEEDBACK
+5. PREPARE DATA FOR A SAVED MODEL
+Classification > Supervised workflow > 7. Classify a cloud > Prepare data for this model.
+Choose the selected CC cloud or LAS/LAZ on disk, a trusted model and a NEW job folder.
+Inspect requirements, prepare/resume, classify prepared blocks, then review REPORT.html.
+Loaded-cloud results can be shown in CC without overwriting Working or Trusted labels.
+Disk results preserve original point order. No automatic downsampling or radius changes.
+Memory estimates are not a hard quota. HAG/terrain settings require explicit compatibility.
+See MODEL_PREPARATION.md for all limits, outputs and restart instructions.
+
+6. TROUBLESHOOTING AND FEEDBACK
 Plugin absent: check exact host version/Qt/architecture, plugins\ALIS_PLUGIN.dll and CC's console.
 Remove obsolete ALiS copies only after backing them up; do not delete unrelated plugins.
 Worker unavailable: inspect Python path and run qal_ml_worker.py capabilities using that Python.

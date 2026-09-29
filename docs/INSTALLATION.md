@@ -1,8 +1,8 @@
 # Install ALiS on Windows
 
-**For ALiS 0.1.0-alpha.5.6 — research testing preview.**
+**For ALiS 0.1.0-alpha.5.7 — research testing preview.**
 
-[Download ALiS installer](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.6/ALiS-0.1.0-alpha.5.6-CloudCompare-2.13.2-Windows-x64-Setup.exe) · [All release assets](https://github.com/Nicodemox87/ALiS/releases/tag/v0.1.0-alpha.5.6) · [Back to home](../README.md)
+[Download ALiS installer](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.7/ALiS-0.1.0-alpha.5.7-CloudCompare-2.13.2-Windows-x64-Setup.exe) · [All release assets](https://github.com/Nicodemox87/ALiS/releases/tag/v0.1.0-alpha.5.7) · [Back to home](../README.md)
 
 ![Six installation steps, with a separate optional Python runtime step.](media/install-guide.svg)
 
@@ -16,9 +16,9 @@ Run that installer and note the installation directory. The default is normally 
 
 ## 2. Download ALiS — choose the installer, not the source
 
-Open the [ALiS alpha.5.6 release](https://github.com/Nicodemox87/ALiS/releases/tag/v0.1.0-alpha.5.6). Expand **Assets** if necessary and download:
+Open the [ALiS alpha.5.7 release](https://github.com/Nicodemox87/ALiS/releases/tag/v0.1.0-alpha.5.7). Expand **Assets** if necessary and download:
 
-`ALiS-0.1.0-alpha.5.6-CloudCompare-2.13.2-Windows-x64-Setup.exe`
+`ALiS-0.1.0-alpha.5.7-CloudCompare-2.13.2-Windows-x64-Setup.exe`
 
 | File | Intended use |
 | --- | --- |
@@ -31,10 +31,10 @@ You need **one** installation route: Setup.exe **or** the manual ZIP. Neither in
 
 ## 3. Verify the download and close CloudCompare
 
-Download [CHECKSUMS_SHA256.txt](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.6/CHECKSUMS_SHA256.txt). In PowerShell, calculate the installer checksum, replacing the example path with its actual location:
+Download [CHECKSUMS_SHA256.txt](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.7/CHECKSUMS_SHA256.txt). In PowerShell, calculate the installer checksum, replacing the example path with its actual location:
 
 ```powershell
-Get-FileHash -Algorithm SHA256 -LiteralPath 'C:\path\to\ALiS-0.1.0-alpha.5.6-CloudCompare-2.13.2-Windows-x64-Setup.exe'
+Get-FileHash -Algorithm SHA256 -LiteralPath 'C:\path\to\ALiS-0.1.0-alpha.5.7-CloudCompare-2.13.2-Windows-x64-Setup.exe'
 ```
 
 Compare the entire hash against the matching filename in the checksum file; uppercase/lowercase is irrelevant. If it differs, do not run the file.
@@ -56,6 +56,9 @@ The resulting layout includes:
 ```text
 CloudCompare/
 ├── CloudCompare.exe          existing host — not replaced
+├── ALiS_prepare_block.exe    isolated native block worker
+├── platforms/
+│   └── qminimal.dll          matching Qt minimal platform plugin
 ├── plugins/
 │   └── ALIS_PLUGIN.dll
 ├── worker/
@@ -71,7 +74,7 @@ ALiS installs beside other plugins; it does not replace the CloudCompare executa
 <details>
 <summary><strong>Alternative: manual ZIP installation</strong></summary>
 
-Close CloudCompare. Extract the Windows-x64 ZIP into a temporary folder. Copy its `plugins`, `worker` and `doc` folders into the CloudCompare root, merging those folders. Copy `ALiS.ico`, `ALiS Launcher.cmd` and the accompanying notices too. Preserve unrelated files. Administrator rights may be needed for Program Files.
+Close CloudCompare. Extract the Windows-x64 ZIP into a temporary folder. Copy its `plugins`, `platforms`, `worker` and `doc` folders into the CloudCompare root, merging those folders. Copy `ALiS_prepare_block.exe`, `ALiS.ico`, `ALiS Launcher.cmd` and the accompanying notices too. Preserve unrelated files. Administrator rights may be needed for Program Files.
 
 Do not copy the entire ZIP or its containing directory into `plugins`. Verify that the final DLL path is `CloudCompare\plugins\ALIS_PLUGIN.dll` and that `worker\ALiS` is beside `plugins`, not inside it.
 
@@ -93,7 +96,7 @@ Try one operation at a time. Inspect results, save to a **new** file and reopen 
 
 ## Optional: enable classifiers and deep learning
 
-**Native terrain, geometric features and annotation do not require Python.** ML/clustering need a separate Python runtime; MLP and PointNet also require PyTorch. No pretrained weights ship with this release.
+**Native terrain, geometric features and annotation do not require Python.** ML/clustering and the new model-driven block-preparation workflow need a separate Python runtime; MLP and PointNet also require PyTorch. LAS/LAZ preparation uses laspy/lazrs. No pretrained weights ship with this release.
 
 Install **Python 3.12 x64** from a trusted source, such as the [official Python website](https://www.python.org/downloads/windows/), and identify the actual `python.exe` path. For an installation registered with the Python launcher, `py -3.12 -c "import sys; print(sys.executable)"` can show it.
 
@@ -123,7 +126,7 @@ GPU support is model-specific. Native geometry, Random Forest, Extra Trees and H
 | Controls are disabled | Load a cloud and select its point-cloud entity in the DB tree. |
 | Python worker or classifier unavailable | Install the optional runtime; inspect `ALIS_PYTHON`; restart the launching application. See [runtime checks](RUNTIME.md). |
 | GPU unavailable | Check compatible NVIDIA hardware/driver, CUDA runtime and whether the selected method supports it. CPU/native tools can still be used. |
-| Large memory use or slow processing | Start with a small test copy and modest feature radii; neighbourhood size matters. |
+| Large memory use or slow processing | For saved models use [model-driven block preparation](MODEL_PREPARATION.md), from the selected CC cloud or directly from disk. Keep the model's original radii. |
 
 If a problem remains, [submit a bug report](https://github.com/Nicodemox87/ALiS/issues/new/choose). Include software versions, steps, parameters and sanitised logs. Do not post restricted survey data or personal paths.
 

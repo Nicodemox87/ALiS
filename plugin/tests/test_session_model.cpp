@@ -5,6 +5,8 @@
 
 #include <ccPointCloud.h>
 #include <ccScalarField.h>
+#include <QTemporaryDir>
+#include <QFile>
 
 #include <cmath>
 #include <cstdlib>
@@ -277,6 +279,18 @@ int main()
 	check(legacy.undo(undoMessage) && legacy.trustedTrainingCount() == 0
 		&& legacy.redo(undoMessage) && legacy.trustedTrainingCount() == 1,
 		"reference provenance is atomic with label undo/redo");
+
+	QTemporaryDir blocked;
+	const std::int16_t blockedCodes[]={2,6,-1,5};const float blockedScores[]={.8f,.9f,0,.7f};
+	QFile lp(blocked.filePath("predictions.i16")),cp(blocked.filePath("confidence.f32"));
+	check(lp.open(QIODevice::WriteOnly)&&cp.open(QIODevice::WriteOnly),"streaming prediction fixture opens");
+	lp.write(reinterpret_cast<const char*>(blockedCodes),sizeof(blockedCodes));cp.write(reinterpret_cast<const char*>(blockedScores),sizeof(blockedScores));lp.close();cp.close();
+	const auto beforeImportTrust=legacy.trustedTrainingCount();
+	check(legacy.importBlockedPredictions(blocked.path(),QJsonObject(),error),"blocked disk predictions import without full-cloud vectors");
+	check(valueIs(cloud,field::AsprsPrediction,1,6)&&valueIs(cloud,field::WorkingAsprs,0,5),"Derived streaming predictions preserve Working");
+	check(legacy.trustedTrainingCount()==beforeImportTrust,"blocked predictions never become Trusted");
+	check(lp.open(QIODevice::WriteOnly|QIODevice::Truncate),"invalid blocked fixture opens");lp.write("x");lp.close();
+	check(!legacy.importBlockedPredictions(blocked.path(),QJsonObject(),error)&&valueIs(cloud,field::AsprsPrediction,1,6),"truncated bundle leaves previous predictions intact");
 
 	if (g_failures)
 	{

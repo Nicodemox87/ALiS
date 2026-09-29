@@ -16,7 +16,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.6/ALiS-0.1.0-alpha.5.6-CloudCompare-2.13.2-Windows-x64-Setup.exe"><strong>Download Windows installer</strong></a> ·
+  <a href="https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.7/ALiS-0.1.0-alpha.5.7-CloudCompare-2.13.2-Windows-x64-Setup.exe"><strong>Download Windows installer</strong></a> ·
   <a href="#getting-started">Getting started</a> ·
   <a href="#capabilities">Capabilities</a> ·
   <a href="#workflow">Workflow</a> ·
@@ -35,7 +35,7 @@ Archaeological LiDAR interpretation is not just a classification problem. It req
 
 **ALiS brings these steps into a connected CloudCompare workflow**, combining geometric analysis, expert annotation and reusable classification models. Its purpose is to support interpretation and reproducible analysis—not to replace archaeological judgement.
 
-> **Public testing version: 0.1.0-alpha.5.6.** Source, installer and manual-install package are available below. This is a research alpha, not a production-certified release.
+> **Public testing version: 0.1.0-alpha.5.7.** Source, installer and manual-install package are available below. This is a research alpha, not a production-certified release.
 >
 > **Research alpha:** outputs require operator review. Performance on one survey does not establish accuracy on a different site, sensor or acquisition configuration.
 
@@ -102,17 +102,23 @@ Supervised CUDA paths are available for XGBoost, MLP and the local PointNet-styl
 
 ## Getting started
 
+### New: prepare a cloud for an existing model
+
+Open **Classification → Supervised workflow → 7. Classify a cloud → Prepare data for this model**. Choose a cloud already loaded in CloudCompare **or a LAS/LAZ file on disk**, select a trusted saved model and a job folder. ALiS reads the required fields and scales, prepares bounded spatial blocks with neighbourhood overlap, and classifies them without retraining. Completed blocks can be resumed. Review the output report before applying labels.
+
+This workflow requires the separate Python runtime. It preserves every source point; it does not silently downsample or change model radii. Memory limits are estimates, not an OS-enforced quota. Terrain/HAG needs explicit compatible settings. [Instructions, validation and limitations →](docs/MODEL_PREPARATION.md)
+
 [![Install ALiS in six steps: install CloudCompare 2.13.2, download ALiS Setup.exe, verify and close, install into the host folder, open the plugin, then load and select a cloud. Python is optional for classifiers.](docs/media/install-guide.svg)](docs/INSTALLATION.md)
 
-**[Full step-by-step installation guide →](docs/INSTALLATION.md)** · [Download the infographic (PNG)](docs/media/install-guide.png)
+**[Full step-by-step installation guide →](docs/INSTALLATION.md)** · [Installation infographic (SVG)](docs/media/install-guide.svg)
 
-### Download 0.1.0-alpha.5.6
+### Download 0.1.0-alpha.5.7
 
-**[Download Windows installer](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.6/ALiS-0.1.0-alpha.5.6-CloudCompare-2.13.2-Windows-x64-Setup.exe)** · [Manual-install ZIP](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.6/ALiS-0.1.0-alpha.5.6-CloudCompare-2.13.2-Windows-x64.zip) · [Source ZIP](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.6/ALiS-0.1.0-alpha.5.6-Source.zip)
+**[Download Windows installer](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.7/ALiS-0.1.0-alpha.5.7-CloudCompare-2.13.2-Windows-x64-Setup.exe)** · [Manual-install ZIP](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.7/ALiS-0.1.0-alpha.5.7-CloudCompare-2.13.2-Windows-x64.zip) · [Source ZIP](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.7/ALiS-0.1.0-alpha.5.7-Source.zip)
 
 [SHA-256 checksums](downloads/CHECKSUMS_SHA256.txt) · [Release notes](RELEASE_NOTES.md) · [Installation & first test](docs/GETTING_STARTED.txt) · [Python / GPU setup](docs/RUNTIME.md) · [Build from source](BUILDING.md)
 
-[Versioned GitHub prerelease](https://github.com/Nicodemox87/ALiS/releases/tag/v0.1.0-alpha.5.6) · [Package validation](docs/RELEASE_VALIDATION.md). Repository-hosted backup downloads are available in [downloads](downloads).
+[Versioned GitHub prerelease](https://github.com/Nicodemox87/ALiS/releases/tag/v0.1.0-alpha.5.7) · [Package validation](docs/RELEASE_VALIDATION.md). Repository-hosted backup downloads are available in [downloads](downloads).
 
 The installer is **unsigned**. Verify its origin and checksum; do not disable security protections. Packages contain no training data, pretrained weights or unpublished paper. Windows installer and ZIP contain the same native DLL and worker; choose one installation route.
 

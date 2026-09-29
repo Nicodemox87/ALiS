@@ -10,7 +10,7 @@ if (!(Test-Path -LiteralPath $runtimePython)) {
     & $BasePython -m venv $runtimeRoot
     if ($LASTEXITCODE -ne 0) { throw 'Could not create isolated ALiS runtime.' }
 }
-& $runtimePython -m pip install 'numpy==2.0.1' 'scipy==1.15.3' 'scikit-learn==1.6.0' 'joblib==1.4.2' 'threadpoolctl==3.6.0' 'xgboost==2.1.3' 'laspy==2.6.1'
+& $runtimePython -m pip install 'numpy==2.0.1' 'scipy==1.15.3' 'scikit-learn==1.6.0' 'joblib==1.4.2' 'threadpoolctl==3.6.0' 'xgboost==2.1.3' 'laspy[lazrs]==2.6.1'
 if ($LASTEXITCODE -ne 0) { throw 'Scientific dependency installation failed.' }
 if (!$WithoutDeepLearning) {
     & $runtimePython -m pip install 'torch==2.10.0+cpu' --index-url https://download.pytorch.org/whl/cpu

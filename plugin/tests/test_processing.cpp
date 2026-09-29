@@ -343,6 +343,9 @@ void tests(){
 		check(reopened.findChild<QGroupBox*>("ALiS.Workspace.Models.WorkflowStatus")!=nullptr,"guided Models workflow present");
 		check(reopened.findChild<QPushButton*>("ALiS.Workspace.Models.ViewResults")!=nullptr,"model report action present");
 		check(reopened.findChild<QPushButton*>("ALiS.Workspace.Models.SelectClassificationCloud")!=nullptr,"explicit classification target action present");
+		check(reopened.findChild<QPushButton*>("ALiS.Workspace.Models.PrepareBlocks")!=nullptr,"model preparation entry point present");
+        QTimer::singleShot(20,[&](){auto* modal=qobject_cast<QDialog*>(QApplication::activeModalWidget());check(modal&&modal->windowTitle().contains("Prepare data for this model"),"preparation dialog opens");if(modal){check(modal->findChildren<QComboBox*>().size()>=1,"CC / disk source selector present");const QString folder=qEnvironmentVariable("QAL_TEST_SCREENSHOTS");if(!folder.isEmpty()){QDir().mkpath(folder);check(modal->grab().save(QDir(folder).filePath("model_preparation.png")),"preparation dialog screenshot");}modal->reject();}});
+        reopened.prepareModelDataRequested("python","qal_ml_worker.py",QString());
         auto* list=reopened.findChild<QListWidget*>("ALiS.Workspace.Models.FeatureList");check(list&&list->count()==4,"new controller reuses persisted SF schema without cache");
 		auto* rfProfile=reopened.findChild<QComboBox*>("ALiS.Workspace.Models.Card.random_forest.Profile");
 		auto* rfDepth=reopened.findChild<QSpinBox*>("ALiS.Workspace.Models.Card.random_forest.MaxDepth");

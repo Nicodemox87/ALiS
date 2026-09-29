@@ -8,7 +8,7 @@ import shutil
 import subprocess
 import zipfile
 
-VERSION = '0.1.0-alpha.5.6'
+VERSION = '0.1.0-alpha.5.7'
 ROOT = Path(__file__).resolve().parents[1]
 
 def digest(path):
@@ -29,6 +29,9 @@ def archive(root, dest, selected=None):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--dll', type=Path, required=True)
+    parser.add_argument('--block-worker', type=Path, required=True)
+    parser.add_argument('--qt-minimal', type=Path, required=True)
+    parser.add_argument('--qt-source', type=Path, required=True)
     parser.add_argument('--assets', type=Path, default=ROOT/'packaging/assets')
     parser.add_argument('--iscc', type=Path, required=True)
     args = parser.parse_args()
@@ -38,18 +41,22 @@ def main():
     out = ROOT/'downloads'
     out.mkdir(exist_ok=True)
     copy(args.dll, stage/'plugins/ALIS_PLUGIN.dll')
+    copy(args.block_worker, stage/'ALiS_prepare_block.exe')
+    copy(args.qt_minimal, stage/'platforms/qminimal.dll')
     for p in files(ROOT/'plugin/worker'):
         if 'tests' not in p.relative_to(ROOT/'plugin/worker').parts:
             copy(p, stage/'worker/ALiS'/p.relative_to(ROOT/'plugin/worker'))
     for name in ['setup_cpu_runtime.ps1', 'setup_cuda_runtime.ps1', 'verify_cuda_runtime.py']:
         copy(ROOT/'tools'/name, stage/'worker/ALiS'/name)
-    for name in ['GETTING_STARTED.txt', 'RUNTIME.md']:
+    for name in ['GETTING_STARTED.txt', 'RUNTIME.md', 'MODEL_PREPARATION.md']:
         copy(ROOT/'docs'/name, stage/'doc/ALiS'/name)
     for name in ['LICENSE', 'THIRD_PARTY_NOTICES.md', 'TESTING_NOTICE.txt', 'RELEASE_NOTES.md']:
         copy(ROOT/name, stage/'doc/ALiS'/name)
     for p in files(ROOT/'third_party/qCSF'):
         if p.name in ['LICENSE', 'license.txt', 'ORIGIN.md']:
             copy(p, stage/'doc/ALiS/third_party/qCSF'/p.name)
+    for p in files(ROOT/'third_party/qt'):
+        copy(p, stage/'doc/ALiS/third_party/qt'/p.relative_to(ROOT/'third_party/qt'))
     copy(ROOT/'LICENSE', stage/'LICENSE.txt')
     copy(ROOT/'TESTING_NOTICE.txt', stage/'TESTING_NOTICE.txt')
     copy(ROOT/'docs/GETTING_STARTED.txt', stage/'INSTALL.txt')
@@ -67,9 +74,10 @@ def main():
     source_paths.extend([ROOT/'LICENSE', ROOT/'.gitignore', ROOT/'packaging/ALiS.iss', ROOT/'packaging/ALiS Launcher.cmd'])
     source_paths.extend(files(ROOT/'packaging/assets'))
     archive(ROOT, out/f'ALiS-{VERSION}-Source.zip', sorted(set(source_paths)))
-    products = sorted(out.glob('*.zip')) + sorted(out.glob('*.exe'))
+    products = sorted(out.glob(f'ALiS-{VERSION}-*.zip')) + sorted(out.glob(f'ALiS-{VERSION}-*.exe'))
     (out/'CHECKSUMS_SHA256.txt').write_text(''.join(f'{digest(p)}  {p.name}\n' for p in products), encoding='ascii')
-    (out/'VERSION.json').write_text(json.dumps({'version': VERSION, 'tag': 'v'+VERSION, 'prerelease': True, 'native_dll_sha256': digest(args.dll), 'assets': [{'name': p.name, 'bytes': p.stat().st_size, 'sha256': digest(p)} for p in products]}, indent=2)+'\n', encoding='utf8')
+    qt_source={'name':args.qt_source.name,'bytes':args.qt_source.stat().st_size,'sha256':digest(args.qt_source),'url':'https://download.qt.io/archive/qt/5.15/5.15.2/submodules/'+args.qt_source.name}
+    (out/'VERSION.json').write_text(json.dumps({'version': VERSION, 'tag': 'v'+VERSION, 'prerelease': True, 'native_dll_sha256': digest(args.dll), 'block_worker_sha256':digest(args.block_worker),'assets': [{'name': p.name, 'bytes': p.stat().st_size, 'sha256': digest(p)} for p in products], 'external_source_assets':[qt_source]}, indent=2)+'\n', encoding='utf8')
     for p in products:
         print(p.name, p.stat().st_size, digest(p))
 

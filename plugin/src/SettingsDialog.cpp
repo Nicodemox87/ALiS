@@ -27,7 +27,7 @@
 
 namespace
 {
-	const QString CurrentVersion = QStringLiteral("0.1.0-alpha.5.6");
+	const QString CurrentVersion = QStringLiteral("0.1.0-alpha.5.7");
 
 	QVector<int> versionParts(const QString& value)
 	{
@@ -179,7 +179,7 @@ namespace alis
 			"<a href='mailto:nicodemo.abate@cnr.it'>nicodemo.abate@cnr.it</a></p>"
 			"<p>Built as one CloudCompare plugin suite. Thanks to the CloudCompare, CCCoreLib, qCSF, q3DMASC, lidR, scikit-learn, XGBoost and scientific open-source communities.</p>"
 			"<hr><h3>Testing Preview</h3>"
-			"<p><b>Version 0.1.0-alpha.5.6 — test and evaluation build.</b> "
+			"<p><b>Version 0.1.0-alpha.5.7 — test and evaluation build.</b> "
 			"This preview may be used for testing, scientific evaluation and workflow validation. "
 			"It is not a certified production release: classifications and derived products must be reviewed by a qualified operator, and original data should be preserved.</p>"
 			"<p>Distributed under the GNU GPL v2 or later; see the included license and testing notice.</p>"
@@ -192,7 +192,8 @@ namespace alis
 			"<p>Roussel et al., <i>lidR: Airborne LiDAR Data Manipulation and Visualization for Forestry Applications</i>.</p>"
 			"<p>ASPRS LAS Specification 1.4 R16 / 1.5 R00; CloudCompare and q3DMASC technical documentation.</p>")), QStringLiteral("Bibliography"));
 		tabs->addTab(readOnlyPage(QStringLiteral(
-			"<h2>What's new — 0.1.0-alpha.5.6 Testing Preview</h2>"
+			"<h2>What's new — 0.1.0-alpha.5.7 Testing Preview</h2>"
+			"<p><b>Prepare data for this model:</b> exact model feature schema, loaded CC snapshots or LAS/LAZ on disk; adaptive bounded blocks, radius-preserving halo, checkpoints and isolated native processing. Derived predictions and confidence can be returned to CC without replacing source labels. Tiled terrain requires explicit review.</p>"
 			"<p>Main branding now pairs ALiS with the unchanged CNR-ISPC institutional mark below. Small toolbar and Windows icons remain ALiS-only for readability.</p>"
 			"<p>Updated visual identity: vegetation, temple and LiDAR logo, coordinated navy/red icons for the workspace, annotation, classification, terrain, features and settings. Installer and shortcuts use the same identity. Processing algorithms, data and model formats are unchanged.</p>"
 			"<p>Experimental PointNet local-patch classifier: raw XYZ neighbourhoods, shared point MLP and symmetric maximum pooling, train/reuse on CPU or CUDA. Radius, neighbour count, epochs, batch and learning rate are configurable. This is an ALiS adaptation of Qi et al. (CVPR 2017), not their canonical T-Net architecture or pretrained weights. Full provenance and epoch losses accompany the model. Existing five classifiers are retained.</p>"

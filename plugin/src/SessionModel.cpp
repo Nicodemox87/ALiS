@@ -1,11 +1,16 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 #include "SessionModel.h"
+#include "MemorySafety.h"
 
 #include <GenericIndexedCloudPersist.h>
 #include <ccPointCloud.h>
 #include <ccScalarField.h>
 
 #include <QJsonDocument>
+#include <QFile>
+#include <QDir>
+#include <cstring>
+#include <QCryptographicHash>
 
 #include <algorithm>
 #include <cmath>
@@ -762,6 +767,46 @@ namespace alis
 		record.elapsedMilliseconds = elapsedMilliseconds;
 		addProcessingRecord(record);
 		return displayScalarField(QString::fromUtf8(field::AsprsPrediction), errorMessage);
+	}
+
+	bool ALiSSession::importBlockedPredictions(const QString& directory, const QJsonObject& provenance, QString& errorMessage)
+	{
+		QFile labels(QDir(directory).filePath("predictions.i16")), confidence(QDir(directory).filePath("confidence.f32"));
+		const auto n = m_cloud->size();
+		if (!labels.open(QIODevice::ReadOnly) || !confidence.open(QIODevice::ReadOnly) || labels.size() != qint64(n)*2 || confidence.size() != qint64(n)*4) { errorMessage = "Incomplete or unaligned prediction files"; return false; }
+		if (double(n)*8 > double(availableRamBytes())*.4) { errorMessage = "Not enough RAM for two display fields. Results are safely stored on disk; close other clouds and retry."; return false; }
+		auto* classes = new ccScalarField("ALiS temporary predictions"); classes->link();
+		auto* scores = new ccScalarField("ALiS temporary confidence"); scores->link();
+		if (!classes->resizeSafe(n) || !scores->resizeSafe(n)) { classes->release(); scores->release(); errorMessage = "Prediction field allocation failed"; return false; }
+		bool valid = true; QCryptographicHash labelHash(QCryptographicHash::Sha256), confidenceHash(QCryptographicHash::Sha256);
+		for (unsigned start=0; start<n && valid; ) {
+			const unsigned count = std::min(65536u, n-start);
+			const auto p = labels.read(qint64(count)*2), c = confidence.read(qint64(count)*4);
+			if (p.size()!=qint64(count)*2 || c.size()!=qint64(count)*4) { valid=false; break; }
+			labelHash.addData(p); confidenceHash.addData(c);
+			for (unsigned j=0; j<count; ++j) {
+				std::int16_t code; float prob; std::memcpy(&code,p.constData()+j*2,2); std::memcpy(&prob,c.constData()+j*4,4);
+				if (code != -1 && (code<0 || code>255 || !std::isfinite(prob) || prob<0 || prob>1)) { valid=false; break; }
+				classes->setValue(start+j, code==-1 ? std::numeric_limits<float>::quiet_NaN() : float(code));
+				scores->setValue(start+j, code==-1 ? std::numeric_limits<float>::quiet_NaN() : prob);
+			}
+			start += count;
+		}
+		const auto hashes=provenance.value("output_checksums").toObject();
+		if(!hashes.isEmpty() && (labelHash.result().toHex()!=hashes.value("predictions.i16").toString().toLatin1() || confidenceHash.result().toHex()!=hashes.value("confidence.f32").toString().toLatin1()))valid=false;
+		if (!valid) { classes->release(); scores->release(); errorMessage = "Invalid prediction values / checksum; existing fields were preserved"; return false; }
+		classes->computeMinAndMax(); scores->computeMinAndMax();
+		const int ci=m_cloud->addScalarField(classes); const int si=m_cloud->addScalarField(scores);
+		if (ci<0 || si<0) {
+			if(si>=0)m_cloud->deleteScalarField(si); if(ci>=0)m_cloud->deleteScalarField(ci);
+			classes->release();scores->release();errorMessage="Could not attach prediction fields";return false;
+		}
+		for (const char* name : {field::AsprsPrediction, field::AsprsConfidence}) { const int index=m_cloud->getScalarFieldIndexByName(name); if(index>=0)m_cloud->deleteScalarField(index); }
+		classes->setName(field::AsprsPrediction); scores->setName(field::AsprsConfidence); classes->release(); scores->release();
+		markChanged(false,false);
+		ProcessingRecord record; record.operation="Models.PredictBlocked";record.timestampUtc=QDateTime::currentDateTimeUtc();record.parameters=provenance;record.sourceEntityUid=m_entityUid;record.affectedPoints=n;
+		record.outputFields=QStringList()<<field::AsprsPrediction<<field::AsprsConfidence;addProcessingRecord(record);
+		return displayScalarField(field::AsprsPrediction,errorMessage);
 	}
 
 	bool ALiSSession::setBootstrapClusters(const std::vector<std::int32_t>& clusters,

@@ -6,12 +6,13 @@ ALiS original software is GPL-2.0-or-later. Keep original notices in source file
 | --- | --- | --- |
 | CloudCompare 2.13.2 / CCCoreLib / plugin API | Separately installed native host and linked libraries | [Pinned upstream source and licences](https://github.com/CloudCompare/CloudCompare/tree/49dbbb662f296c7780aae717897c85b3cb3764ed) |
 | qCSF algorithm | Compiled unchanged into ALIS_PLUGIN.dll from pinned CloudCompare source | Source headers say GPL v2 or later; upstream also supplies a GPL v3 LICENSE. Both are retained with the algorithm source under third_party/qCSF. |
-| Qt 5.15.2 | Dynamically linked; supplied by the separately installed host | [Qt open-source licensing](https://www.qt.io/licensing/open-source-lgpl-obligations); module-specific LGPL/GPL notices remain applicable. No Qt binaries bundled here. |
+| Qt 5.15.2 | Dynamically linked host libraries; unmodified qminimal.dll platform plugin bundled for the isolated block worker | LGPL-3.0 with GPL alternatives; licence texts and provenance in third_party/qt. The matching Qt Base source archive is attached to the release. |
 | NumPy, SciPy, scikit-learn | Optional separate Python installations | BSD-family; retain each wheel's notices. |
 | joblib / threadpoolctl | Optional separate Python installations | BSD-family licences in their distributions. |
 | XGBoost | Optional separate Python installation | Apache-2.0. |
 | PyTorch | Optional separate Python installation | BSD-style with additional bundled third-party notices. |
 | laspy | Optional separate Python installation | BSD-2-Clause. |
+| lazrs | Optional separate Python installation for LAZ decoding | Apache-2.0; retain the wheel's notices. |
 | Inno Setup | Installer compiler | Inno Setup licence: https://jrsoftware.org/files/is/license.txt |
 
 The `third_party/qCSF/ORIGIN.md` file identifies the exact upstream source location. The full corresponding ALiS source is distributed alongside binaries; obtain host dependencies from their named upstream projects. Source archives do not include independent commercial or proprietary components, LiDAR survey data or pretrained weights.

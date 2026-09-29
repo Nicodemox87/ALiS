@@ -1,3 +1,3 @@
-3d3f9f167f8b1c8f944589b399cbf6612fafbf4a68f559f6b530ea18fda0c6c1  ALiS-0.1.0-alpha.5.6-CloudCompare-2.13.2-Windows-x64.zip
-421e713edbfbd8d2f9b04f869267a4a90e7d1b6ce94d436cbfe8f83907a9accf  ALiS-0.1.0-alpha.5.6-Source.zip
-7a082221274b12e5a14f3e18a25e78cab319f93c4b64b5435ce929383a30dbb1  ALiS-0.1.0-alpha.5.6-CloudCompare-2.13.2-Windows-x64-Setup.exe
+09a43b549aa65ec78425a245bc7bd1d6067dc6df63eeed1a8e9e61e677c1a537  ALiS-0.1.0-alpha.5.7-CloudCompare-2.13.2-Windows-x64.zip
+76440a7d478d7ebbde87ad7b815feb700264f991d1cedd5c91922d4f56a289dd  ALiS-0.1.0-alpha.5.7-Source.zip
+8508da96e36081b34ee6edfeefb7247976c81724416f2733d97a698547ef797e  ALiS-0.1.0-alpha.5.7-CloudCompare-2.13.2-Windows-x64-Setup.exe

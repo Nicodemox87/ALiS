@@ -9,7 +9,7 @@ if (!(Test-Path -LiteralPath $runtimePython)) {
     if ($LASTEXITCODE -ne 0) { throw 'Could not create isolated ALiS runtime.' }
 }
 # Preserve sklearn ABI used by existing trusted models; no global Python changes.
-& $runtimePython -m pip install 'numpy==2.0.1' 'scipy==1.15.3' 'scikit-learn==1.6.0' 'joblib==1.4.2' 'threadpoolctl==3.6.0' 'xgboost==2.1.3' 'laspy==2.6.1'
+& $runtimePython -m pip install 'numpy==2.0.1' 'scipy==1.15.3' 'scikit-learn==1.6.0' 'joblib==1.4.2' 'threadpoolctl==3.6.0' 'xgboost==2.1.3' 'laspy[lazrs]==2.6.1'
 if ($LASTEXITCODE -ne 0) { throw 'Could not install ALiS scientific dependencies.' }
 & $runtimePython -m pip install 'torch==2.10.0+cu128' --index-url https://download.pytorch.org/whl/cu128
 if ($LASTEXITCODE -ne 0) { throw 'Could not install official PyTorch CUDA wheel.' }

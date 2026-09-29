@@ -165,6 +165,7 @@ namespace alis
 		//! loadFromFile=false uses the cloud selected in CloudCompare; true opens LAS/LAZ.
 		void selectTrainingSetRequested(bool loadFromFile, bool externalTest);
 		void selectClassificationCloudRequested(bool loadFromFile);
+		void prepareModelDataRequested(const QString& python, const QString& worker, const QString& model);
 		void trainModelRequested(const QStringList& featureKeys,
 		                         const QString& pythonExecutable,
 		                         const QString& workerScript,

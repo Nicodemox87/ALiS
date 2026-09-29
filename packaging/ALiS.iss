@@ -1,5 +1,5 @@
 #define ProductName "ALiS - Archaeological LiDAR Studio"
-#define ProductVersion "0.1.0-alpha.5.6"
+#define ProductVersion "0.1.0-alpha.5.7"
 #define ProductPublisher "Dott. Nicodemo Abate — CNR-ISPC"
 
 [Setup]
@@ -38,6 +38,8 @@ Name: "desktopicon"; Description: "Create an ALiS desktop shortcut"; GroupDescri
 [Files]
 Source: "stage\ALiS.ico"; DestDir: "{app}"; Flags: ignoreversion
 Source: "stage\plugins\ALIS_PLUGIN.dll"; DestDir: "{app}\plugins"; Flags: ignoreversion
+Source: "stage\ALiS_prepare_block.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "stage\platforms\qminimal.dll"; DestDir: "{app}\platforms"; Flags: ignoreversion uninsneveruninstall
 Source: "stage\worker\ALiS\*"; DestDir: "{app}\worker\ALiS"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "stage\doc\ALiS\*"; DestDir: "{app}\doc\ALiS"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "stage\ALiS Launcher.cmd"; DestDir: "{app}"; Flags: ignoreversion

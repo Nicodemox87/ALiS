@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 #include "WorkspaceController.h"
+#include "MemorySafety.h"
 
 #include "WorkspaceDock.h"
 #include "CloudProfile.h"
@@ -483,6 +484,7 @@ namespace alis
 		connect(m_dock, &WorkspaceDock::computeFeaturesRequested, this, &WorkspaceController::computeFeatures);
 		connect(m_dock, &WorkspaceDock::selectTrainingSetRequested, this, &WorkspaceController::selectTrainingSet);
 		connect(m_dock, &WorkspaceDock::selectClassificationCloudRequested, this, &WorkspaceController::selectClassificationCloud);
+		connect(m_dock, &WorkspaceDock::prepareModelDataRequested, this, &WorkspaceController::prepareModelData);
 		connect(m_dock, &WorkspaceDock::exportModelDatasetRequested, this, &WorkspaceController::exportModelDataset);
 		connect(m_dock, &WorkspaceDock::trainModelRequested, this, &WorkspaceController::trainModels);
 		connect(m_dock, &WorkspaceDock::predictModelRequested, this, &WorkspaceController::predictModel);
@@ -1190,6 +1192,11 @@ namespace alis
 			for (double radius : cleanPositiveRadii(radiiMetres)) { FeatureRequest request; request.feature = feature; request.radius = radius; requests.push_back(request); }
 		}
 		if (requests.empty()) { showError(QStringLiteral("Only HAG was selected; compute it in Terrain.")); return; }
+		const double estimatedBytes = double(m_selectedCloud->size()) * (128.0 + 12.0 * requests.size());
+		if (estimatedBytes > double(availableRamBytes()) * .40) {
+			showError(QStringLiteral("Full-cloud features would require approximately %1 GiB of additional RAM, including cache, octree and Scalar Fields. Processing was not started. Use Classification > Supervised > 7 > Prepare data for this model for bounded blocks from this loaded cloud or directly from LAS/LAZ. Model radii are preserved.").arg(estimatedBytes / (1024.*1024.*1024.), 0, 'f', 1));
+			return;
+		}
 		QScopedValueRollback<bool> computing(m_featureComputationActive, true);
 		m_dock->setBusy(true); m_dock->setProgress(QStringLiteral("Multiscale features"), 0, 0, false);
 		ccProgressDialog progress(true, m_dock);

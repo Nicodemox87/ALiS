@@ -1,23 +1,32 @@
 {
-  "version": "0.1.0-alpha.5.6",
-  "tag": "v0.1.0-alpha.5.6",
+  "version": "0.1.0-alpha.5.7",
+  "tag": "v0.1.0-alpha.5.7",
   "prerelease": true,
-  "native_dll_sha256": "18722c041647e5dd382c9a3fe97dabbf88312d0afd88663ede3a9be718aa466e",
+  "native_dll_sha256": "ecb1f0cdbcbb2a95aa292afbb019a21978209ca214c14910e4db03a6fecf2423",
+  "block_worker_sha256": "ac2b6d2436ced6d4c99114bf0b97c3d903b02a68c280c303436cdfcd340cc8a5",
   "assets": [
     {
-      "name": "ALiS-0.1.0-alpha.5.6-CloudCompare-2.13.2-Windows-x64.zip",
-      "bytes": 1980295,
-      "sha256": "3d3f9f167f8b1c8f944589b399cbf6612fafbf4a68f559f6b530ea18fda0c6c1"
+      "name": "ALiS-0.1.0-alpha.5.7-CloudCompare-2.13.2-Windows-x64.zip",
+      "bytes": 2569972,
+      "sha256": "09a43b549aa65ec78425a245bc7bd1d6067dc6df63eeed1a8e9e61e677c1a537"
     },
     {
-      "name": "ALiS-0.1.0-alpha.5.6-Source.zip",
-      "bytes": 4815139,
-      "sha256": "421e713edbfbd8d2f9b04f869267a4a90e7d1b6ce94d436cbfe8f83907a9accf"
+      "name": "ALiS-0.1.0-alpha.5.7-Source.zip",
+      "bytes": 5144505,
+      "sha256": "76440a7d478d7ebbde87ad7b815feb700264f991d1cedd5c91922d4f56a289dd"
     },
     {
-      "name": "ALiS-0.1.0-alpha.5.6-CloudCompare-2.13.2-Windows-x64-Setup.exe",
-      "bytes": 3793308,
-      "sha256": "7a082221274b12e5a14f3e18a25e78cab319f93c4b64b5435ce929383a30dbb1"
+      "name": "ALiS-0.1.0-alpha.5.7-CloudCompare-2.13.2-Windows-x64-Setup.exe",
+      "bytes": 4209837,
+      "sha256": "8508da96e36081b34ee6edfeefb7247976c81724416f2733d97a698547ef797e"
+    }
+  ],
+  "external_source_assets": [
+    {
+      "name": "qtbase-everywhere-src-5.15.2.tar.xz",
+      "bytes": 50179672,
+      "sha256": "909fad2591ee367993a75d7e2ea50ad4db332f05e1c38dd7a5a274e156a4e0f8",
+      "url": "https://download.qt.io/archive/qt/5.15/5.15.2/submodules/qtbase-everywhere-src-5.15.2.tar.xz"
     }
   ]
 }

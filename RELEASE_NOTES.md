@@ -1,33 +1,34 @@
-# ALiS 0.1.0-alpha.5.6 — public testing package
+# ALiS 0.1.0-alpha.5.7 — model-driven block preparation
 
 For **CloudCompare 2.13.2 stable / Qt 5.15.x / Windows x64** only.
 
-- Native plugin, worker source, supervised ML and experimental local PointNet-style model.
-- Terrain filtering, multiscale features, multi-view annotation, geometric separation and clustering.
-- Approved ALiS tree/temple identity and CNR-ISPC affiliation mark.
-- Public installer, manual-install ZIP, corresponding source archive and SHA-256 checksums.
-- Installation, CPU/CUDA runtime, build, reporting and security instructions.
+## New workflow
 
-This public packaging revision preserves the existing alpha.5.6 native DLL and scientific code. It replaces unpublished study documentation in the distribution with public getting-started documentation and adds an optional CPU-runtime setup script. No survey data, trained models or unpublished paper are distributed.
+- **Prepare data for this model** reads required feature identities, order and radii from a trusted saved model.
+- Use the selected CloudCompare cloud, including current fields, or LAS/LAZ directly from disk.
+- Spatial cores with context overlap, adaptive subdivision and memory preflight; no automatic point decimation or radius changes.
+- Separate native worker, progress reporting, cancellation and checked resume.
+- Classify prepared blocks without retraining. Merge by original point ID; no duplicated halo points.
+- Reports show class distribution and confidence. Loaded-cloud imports add Derived Classification/Confidence without overwriting Working/Trusted labels.
+- Large in-process feature computations receive a memory preflight and a route to block preparation.
 
-## Install
+Existing supervised, annotation, terrain, clustering and local PointNet workflows are retained. No external pretrained weights, survey data or unpublished papers are distributed.
 
-Install the matching [official CloudCompare host](https://github.com/CloudCompare/CloudCompare/releases/tag/v2.13.2), close it, then run Setup.exe and select its root directory. See [Getting started](docs/GETTING_STARTED.txt). The ZIP is an alternative manual installation, not a standalone host.
+## Install or update
 
-Python dependencies are separate downloads for ML/DL. Native terrain, features and annotation do not require them. The installer is **not code-signed**; verify its SHA-256 and origin. Do not disable antivirus or Windows security protections.
+Save work and close CloudCompare, then run the new **Setup.exe** and select the folder containing CloudCompare.exe. The manual-install ZIP is an alternative, not a standalone host. Do not mix DLLs and workers from different releases. See [installation](https://github.com/Nicodemox87/ALiS/blob/main/docs/INSTALLATION.md).
 
-## Validation scope
+The separate Python runtime is required for block orchestration and classifiers. Direct native terrain/features/annotation remain usable without Python. The package now includes ALiS_prepare_block.exe and the matching Qt minimal platform DLL, with notices and corresponding Qt source attached to this release. The installer is **unsigned**; verify checksums and origin, without disabling security protections.
 
-The alpha.5.6 native build passed 1,074 existing checks and Qt 5 resource rendering checks in the development environment. Public packaging is additionally checked for native loading against the installed official host, archive contents, source/worker consistency and download hashes. These are software checks, not a claim of cross-site classification accuracy or a clean-PC acceptance test.
+## Validation and limits
 
-## Known limitations
+- Native session: 92 checks; processing/workspace with UI: 375 checks passed.
+- Five synthetic block-integration tests passed against the installed native executable, including compressed LAZ input.
+- Real 585,001-point tile: blocked RF labels match whole-tile labels 100%, with the same global HAG.
+- Real 28,283-point spatial crop: blocked local PointNet CUDA labels match whole-crop labels 100%.
 
-- Research alpha: review all outputs; keep original clouds unchanged.
-- No external pretrained weights. The local XYZ PointNet-style model is not canonical PointNet/T-Net.
-- Geometric OtherSurface/candidate structures are not automatically verified buildings or archaeology.
-- Models must match input field definitions, scales, label semantics and software dependencies.
-- No universal automatic CRS reconstruction when metadata are absent.
-- Performance depends on density, chosen scales, RAM and backend; CPU operations remain CPU-based.
-- Some worker help text refers to development-only benchmark reports not included here.
+These are software regression/equivalence checks, **not classification accuracy or independent-site validation**. No new full-survey run was performed for this release.
 
-Report reproducible problems through [Issues](https://github.com/Nicodemox87/ALiS/issues), excluding sensitive survey data or paths.
+Memory budgets are estimates, not hard OS quotas. Tiled CSF/HAG is not guaranteed equivalent to global terrain; prefer compatible global HAG or explicitly reviewed settings. LAS RGB models currently require a CC snapshot. Waveform LAS formats 4/5/9/10 and unsupported/incomplete model schemas are rejected. Only trusted model files should be opened because joblib can execute code. Job folders retain restart data and may require substantial disk space.
+
+See [full workflow and limitations](https://github.com/Nicodemox87/ALiS/blob/main/docs/MODEL_PREPARATION.md). Report reproducible problems through [Issues](https://github.com/Nicodemox87/ALiS/issues), excluding sensitive data and personal paths.

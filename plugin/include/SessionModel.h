@@ -99,6 +99,8 @@ namespace alis
 		                         const QJsonObject& provenance,
 		                         qint64 elapsedMilliseconds,
 		                         QString& errorMessage);
+		//! Streams disk-aligned predictions into two new SFs, then commits atomically.
+		bool importBlockedPredictions(const QString& directory, const QJsonObject& provenance, QString& errorMessage);
 		//! Stores exploratory cluster IDs as Derived fields only; they are never ASPRS or Trusted labels.
 		bool setBootstrapClusters(const std::vector<std::int32_t>& clusters,
 		                          const std::vector<float>& confidence,

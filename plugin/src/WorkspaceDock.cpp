@@ -1668,6 +1668,13 @@ namespace alis
 		classifySteps->setWordWrap(true);
 		classifySteps->setStyleSheet(QStringLiteral("QLabel { color:#475569; padding:4px; }"));
 		classifyLayout->addWidget(classifySteps, 5, 0, 1, 2);
+		auto* prepareBlocks = commandButton(QStringLiteral("Prepare data for this model... (CC cloud / LAS on disk)"), "ALiS.Workspace.Models.PrepareBlocks");
+		classifyLayout->addWidget(prepareBlocks, 6, 0, 1, 2);
+		registerCommandButton(prepareBlocks);
+		prepareBlocks->setToolTip(QStringLiteral("Reads the saved model schema and exact radii. Computes bounded spatial blocks in an isolated process, with halo and resumable disk outputs. No full-cloud feature matrix in CloudCompare."));
+		connect(prepareBlocks, &QPushButton::clicked, this, [this]() {
+			Q_EMIT prepareModelDataRequested(m_pythonExecutableEdit->text().trimmed(), m_workerScriptEdit->text().trimmed(), m_modelPathEdit->text().trimmed());
+		});
 		layout->addWidget(classify);
 		for (QAbstractButton* button : {m_exportDatasetButton, m_trainModelButton, m_predictModelButton, m_applyPredictionsButton, m_viewModelResultsButton, m_viewPredictionStatisticsButton, m_comparePredictionsButton})
 		{
@@ -2606,6 +2613,7 @@ namespace alis
 		if (m_loadTestButton) m_loadTestButton->setEnabled(!m_busy && externalValidation);
 		if (m_selectLoadedClassificationButton) m_selectLoadedClassificationButton->setEnabled(ready);
 		if (m_loadClassificationButton) m_loadClassificationButton->setEnabled(!m_busy);
+		if (auto* blocked = findChild<QPushButton*>(QStringLiteral("ALiS.Workspace.Models.PrepareBlocks"))) blocked->setEnabled(!m_busy);
 		if (m_modelTrainFractionSpin) m_modelTrainFractionSpin->setEnabled(ready && !externalValidation);
 		if (m_modelTestFractionSpin) m_modelTestFractionSpin->setEnabled(ready && !externalValidation);
 

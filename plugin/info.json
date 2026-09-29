@@ -1,7 +1,7 @@
 {
   "type": "Standard",
   "name": "ALiS",
-  "version": "0.1.0-alpha.5.6",
+  "version": "0.1.0-alpha.5.7",
   "icon": ":/CC/plugin/ALiS/images/icon.svg",
   "description": "ALiS - Archaeological LiDAR Studio. Native CloudCompare suite for point-cloud preparation, terrain modelling, multiscale features, annotation and ML/DL classification.",
   "authors": [

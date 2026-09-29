@@ -28,6 +28,19 @@ jobs:
             echo "Release already exists. Refusing to overwrite published assets."
             exit 0
           fi
-          gh release create "$TAG" downloads/*.exe downloads/*.zip downloads/CHECKSUMS_SHA256.txt downloads/VERSION.json \
+          python - <<'PY'
+          import hashlib, json, pathlib, urllib.request
+          manifest=json.load(open('downloads/VERSION.json'))
+          for asset in manifest.get('external_source_assets', []):
+              name=asset['name']
+              assert pathlib.PurePosixPath(name).name == name
+              assert asset['url'].startswith('https://download.qt.io/archive/qt/5.15/5.15.2/submodules/')
+              target=pathlib.Path('downloads')/name
+              urllib.request.urlretrieve(asset['url'], target)
+              assert target.stat().st_size == asset['bytes']
+              assert hashlib.sha256(target.read_bytes()).hexdigest() == asset['sha256']
+          PY
+          mapfile -t ASSETS < <(python -c 'import json; m=json.load(open("downloads/VERSION.json")); print("\n".join("downloads/"+a["name"] for a in m["assets"]+m.get("external_source_assets", [])))')
+          gh release create "$TAG" "${ASSETS[@]}" downloads/CHECKSUMS_SHA256.txt downloads/VERSION.json \
             --target "$GITHUB_SHA" --title "ALiS ${TAG#v} — Testing Preview" \
             --notes-file RELEASE_NOTES.md --prerelease

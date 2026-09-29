@@ -45,6 +45,7 @@ namespace alis
 		bool refineVegetationWithRanges(const QString& directory, QString& error);
 
 	private:
+		void prepareModelData(const QString& python, const QString& worker, const QString& model);
 		ALiSSession* ensureSession(QString& error);
 		void connectDock();
 		void updateDockState(const QString& status = QString());
