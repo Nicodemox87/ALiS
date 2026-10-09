@@ -147,6 +147,8 @@ Source code lives in [plugin](plugin); presets in [profiles](profiles). See [thi
 
 ## Roadmap
 
+**macOS:** porting is planned; there is no downloadable or validated Mac binary yet. Developers continuing on Apple Silicon should start with the [macOS handoff and acceptance checklist](docs/MACOS_HANDOFF.md). The Windows alpha.5.7 release remains the current tested distribution.
+
 Work in progress—not a list of shipped capabilities:
 
 - Create a macOS version.
