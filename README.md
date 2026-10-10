@@ -37,6 +37,8 @@ Archaeological LiDAR interpretation is not just a classification problem. It req
 
 > **Public testing version: 0.1.0-alpha.5.7.** Source, installer and manual-install package are available below. This is a research alpha, not a production-certified release.
 >
+> **macOS — work in progress.** Native Apple Silicon support is under development. No macOS installer or validated Mac build is available yet. Windows downloads remain unchanged; Mac downloads will follow successful build and interactive testing.
+>
 > **Research alpha:** outputs require operator review. Performance on one survey does not establish accuracy on a different site, sensor or acquisition configuration.
 
 <p align="center">
