@@ -4,6 +4,7 @@
 #include "WorkspaceController.h"
 #include "WorkspaceDock.h"
 #include "SettingsDialog.h"
+#include "MacUpdates.h"
 
 #include <ccMainAppInterface.h>
 #include <ccPointCloud.h>
@@ -46,6 +47,9 @@ void ALiSPlugin::setMainAppInterface(ccMainAppInterface* app)
 				|| QApplication::activeModalWidget()) return;
 			startup->stop();
 			startup->deleteLater();
+#ifdef Q_OS_MACOS
+            QTimer::singleShot(5000, this, [this](){ alis::checkMacUpdates(m_app->getMainWindow(), true); });
+#endif
 			QSettings settings;
 			const bool openOnStartup = qEnvironmentVariableIsSet("ALIS_AUTOSTART")
 				? qEnvironmentVariableIntValue("ALIS_AUTOSTART") == 1

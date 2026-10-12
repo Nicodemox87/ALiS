@@ -1,0 +1,11 @@
+diff --git a/postInstall/CMakeLists.txt b/postInstall/CMakeLists.txt
+index 6a214fa..83ee736 100644
+--- a/postInstall/CMakeLists.txt
++++ b/postInstall/CMakeLists.txt
+@@ -1,4 +1,5 @@
+-if( APPLE )
++option(OPTION_MAC_CUSTOM_DEPLOYMENT "Use externally verified macOS deployment and signing" OFF)
++if( APPLE AND NOT OPTION_MAC_CUSTOM_DEPLOYMENT )
+     configure_file(libBundleCloudCompare.py.in libBundleCloudCompare.py)
+     configure_file(signatureCloudCompare.sh.in signatureCloudCompare.sh @ONLY )
+     install( SCRIPT postInstall.cmake )

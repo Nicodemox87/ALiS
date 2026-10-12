@@ -1,0 +1,39 @@
+diff --git a/plugins/core/IO/qLASIO/src/LasExtraScalarField.cpp b/plugins/core/IO/qLASIO/src/LasExtraScalarField.cpp
+index 8a47ad2..dac8fce 100644
+--- a/plugins/core/IO/qLASIO/src/LasExtraScalarField.cpp
++++ b/plugins/core/IO/qLASIO/src/LasExtraScalarField.cpp
+@@ -13,6 +13,7 @@
+ // System
+ #include <cstring>
+ #include <stdexcept>
++#include <vector>
+ 
+ QDataStream& operator>>(QDataStream& dataStream, LasExtraScalarField& extraScalarField)
+ {
+@@ -293,7 +294,7 @@ LasExtraScalarField::Kind LasExtraScalarField::kind() const
+ }
+ 
+ void LasExtraScalarField::InitExtraBytesVlr(laszip_vlr_struct&                 vlr,
+-                                            const vector<LasExtraScalarField>& extraFields)
++                                            const std::vector<LasExtraScalarField>& extraFields)
+ {
+ 	strcpy(vlr.user_id, "LASF_Spec");
+ 	vlr.record_id                  = 4;
+@@ -369,7 +370,7 @@ void LasExtraScalarField::resetScalarFieldsPointers()
+ 	}
+ }
+ 
+-void LasExtraScalarField::UpdateByteOffsets(vector<LasExtraScalarField>& extraFields)
++void LasExtraScalarField::UpdateByteOffsets(std::vector<LasExtraScalarField>& extraFields)
+ {
+ 	unsigned byteOffset{0};
+ 	for (LasExtraScalarField& extraScalarField : extraFields)
+@@ -379,7 +380,7 @@ void LasExtraScalarField::UpdateByteOffsets(vector<LasExtraScalarField>& extraFi
+ 	}
+ }
+ 
+-void LasExtraScalarField::MatchExtraBytesToScalarFields(vector<LasExtraScalarField>& extraScalarFields,
++void LasExtraScalarField::MatchExtraBytesToScalarFields(std::vector<LasExtraScalarField>& extraScalarFields,
+                                                         const ccPointCloud&          pointCloud)
+ {
+ 	for (LasExtraScalarField& extraScalarField : extraScalarFields)

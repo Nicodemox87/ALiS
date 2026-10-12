@@ -2,6 +2,10 @@
 import argparse
 import sys
 from pathlib import Path
+# Keep the signed macOS application immutable at runtime.
+import sys
+sys.dont_write_bytecode = True
+
 from qal_ml.events import EventWriter
 from qal_ml.vegetation import predict_verified
 

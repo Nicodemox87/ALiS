@@ -20,3 +20,7 @@ The `third_party/qCSF/ORIGIN.md` file identifies the exact upstream source locat
 qCSF method: Zhang et al. (2016), *An Easy-to-Use Airborne LiDAR Data Filtering Method Based on Cloth Simulation*, Remote Sensing 8(6), 501. https://doi.org/10.3390/rs8060501
 
 CNR-ISPC marks identify author affiliation; they do not imply institutional certification or grant trademark rights.
+
+## macOS distribution
+
+The complete Apple Silicon installer bundles its host and runtime. See [macOS corresponding sources and provenance](third_party/macos/README.md) and the licence files included in the app. Existing Windows packages and their notices are unchanged.

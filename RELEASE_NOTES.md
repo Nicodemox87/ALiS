@@ -1,3 +1,11 @@
+# macOS addition — 12 October 2026
+
+ALiS now has separate Windows and macOS downloads. The existing Windows alpha.5.7 packages are unchanged. The added Mac build 1 is a complete Apple Silicon / macOS 27+ PKG with CloudCompare 2.13.2, portable Python and all six CPU classifiers, plus automatic/manual GitHub update checks. It is a research preview without Developer ID signing or notarization; normal macOS authorization is required. See [Mac installation](docs/MAC_INSTALLER.md) and [validation](docs/MAC_INSTALLER_TESTS.md). No private survey data, trained models or backups are included.
+
+The original release tag is retained; use the separately named Mac source archive for this port. Mac packages and sources are additional assets, not replacements for Windows files.
+
+---
+
 # ALiS 0.1.0-alpha.5.7 — model-driven block preparation
 
 For **CloudCompare 2.13.2 stable / Qt 5.15.x / Windows x64** only.

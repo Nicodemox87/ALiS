@@ -1,0 +1,23 @@
+From fb6b861834e29a93ba71a2e2501a42ecfd3c5655 Mon Sep 17 00:00:00 2001
+From: Ed Catmur <ed@catmur.uk>
+Date: Mon, 27 Nov 2023 09:55:00 -0600
+Subject: [PATCH] Update integral_wrapper.hpp
+
+Apply change since C++11
+---
+ include/boost/mpl/aux_/integral_wrapper.hpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/include/boost/mpl/aux_/integral_wrapper.hpp b/include/boost/mpl/aux_/integral_wrapper.hpp
+index 661aa307362eeb0f1ae126e7e62eb996dbba8cfa..5f24b79495304e6f794563e2d42b66b4307c4101 100644
+--- a/include/boost/mpl/aux_/integral_wrapper.hpp
++++ b/include/boost/mpl/aux_/integral_wrapper.hpp
+@@ -57,7 +57,7 @@ struct AUX_WRAPPER_NAME
+ // while some other don't like 'value + 1' (Borland), and some don't like
+ // either
+ #if BOOST_WORKAROUND(__EDG_VERSION__, <= 243) \
+-    || __cplusplus >= 201703L
++    || __cplusplus >= 201103L
+  private:
+     BOOST_STATIC_CONSTANT(AUX_WRAPPER_VALUE_TYPE, next_value = BOOST_MPL_AUX_STATIC_CAST(AUX_WRAPPER_VALUE_TYPE, (N + 1)));
+     BOOST_STATIC_CONSTANT(AUX_WRAPPER_VALUE_TYPE, prior_value = BOOST_MPL_AUX_STATIC_CAST(AUX_WRAPPER_VALUE_TYPE, (N - 1)));
