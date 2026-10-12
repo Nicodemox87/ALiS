@@ -17,7 +17,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.7/ALiS-0.1.0-alpha.5.7-CloudCompare-2.13.2-Windows-x64-Setup.exe"><strong>Download Windows installer</strong></a> ·
+  <a href="https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.7/ALiS-0.1.0-alpha.5.7-Windows-x64-Complete-Setup-r1.exe"><strong>Download Windows installer</strong></a> ·
   <a href="https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.7/ALiS-0.1.0-alpha.5.7-macOS-arm64-Setup.pkg"><strong>Download macOS installer</strong></a> ·
   <a href="#getting-started">Getting started</a> ·
   <a href="#capabilities">Capabilities</a> ·
@@ -31,7 +31,7 @@
 
 ## Why ALiS?
 
-**New to ALiS? Choose your platform:** [Windows installation guide](docs/INSTALLATION.md) · [macOS installation guide](docs/MAC_INSTALLER.md). Each platform has its own installer and requirements.
+**New to ALiS? Choose your platform:** [Windows complete installation guide](docs/WINDOWS_COMPLETE_INSTALLER.md) · [macOS installation guide](docs/MAC_INSTALLER.md). Each platform has its own installer and requirements.
 
 Archaeological LiDAR interpretation is not just a classification problem. It requires checking the data, separating terrain from vegetation and structures, choosing meaningful spatial scales, and reviewing uncertain results.
 
@@ -39,7 +39,7 @@ Archaeological LiDAR interpretation is not just a classification problem. It req
 
 > **Public testing version: 0.1.0-alpha.5.7.** Source, installer and manual-install package are available below. This is a research alpha, not a production-certified release.
 >
-> **Windows and macOS downloads are available separately.** Windows x64 uses the existing CloudCompare 2.13.2 plugin installer. The Mac package includes CloudCompare, Python and all six classifiers; it requires **Apple Silicon and macOS 27 or later**. This Mac preview is unsigned by Apple and is not notarized.
+> **Windows and macOS downloads are available separately.** The Windows complete online wizard detects or installs CloudCompare 2.13.2, installs ALiS and prepares Python with ML/deep learning. The Mac package includes CloudCompare, Python and all six classifiers; it requires **Apple Silicon and macOS 27 or later**. This Mac preview is unsigned by Apple and is not notarized.
 >
 > **Research alpha:** outputs require operator review. Performance on one survey does not establish accuracy on a different site, sensor or acquisition configuration.
 
@@ -110,12 +110,12 @@ The PointNet-style classifier operates on local XYZ neighbourhoods. It is **not 
 
 | | Windows | macOS |
 | :--- | :--- | :--- |
-| **Installer** | **[Download Windows (.exe)](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.7/ALiS-0.1.0-alpha.5.7-CloudCompare-2.13.2-Windows-x64-Setup.exe)** | **[Download macOS (.pkg)](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.7/ALiS-0.1.0-alpha.5.7-macOS-arm64-Setup.pkg)** |
+| **Installer** | **[Download Windows complete setup (.exe)](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.7/ALiS-0.1.0-alpha.5.7-Windows-x64-Complete-Setup-r1.exe)** | **[Download macOS (.pkg)](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.7/ALiS-0.1.0-alpha.5.7-macOS-arm64-Setup.pkg)** |
 | **Computer** | Windows x64 | Apple Silicon (M1 or later), **macOS 27+**; no Intel build |
-| **CloudCompare** | Install **2.13.2 stable, Qt 5** first | **2.13.2 included** in ALiS.app |
-| **Python and classifiers** | Separate CPU/CUDA runtime for ML/DL | **Python and all six CPU classifiers included** |
+| **CloudCompare** | Compatible **2.13.2/Qt5** detected or installed automatically | **2.13.2 included** in ALiS.app |
+| **Python and classifiers** | Python + ML/DL installed by the wizard; CPU or optional NVIDIA CUDA | **Python and all six CPU classifiers included** |
 | **Updates** | Existing Windows downloaded-package workflow | Automatic daily GitHub check; optional manual check and verified download |
-| **Instructions** | [Windows guide](docs/INSTALLATION.md) | [Mac guide and security authorization](docs/MAC_INSTALLER.md) |
+| **Instructions** | [Windows complete setup](docs/WINDOWS_COMPLETE_INSTALLER.md) | [Mac guide and security authorization](docs/MAC_INSTALLER.md) |
 
 Both packages are research previews. Choose only the installer for your operating system. The Mac download is approximately **173 MB** and installs without Homebrew, a compiler or additional runtime downloads. Windows packages and installation steps remain available below.
 
@@ -123,44 +123,44 @@ Both packages are research previews. Choose only the installer for your operatin
 
 Open **Classification → Supervised workflow → 7. Classify a cloud → Prepare data for this model**. Choose a cloud already loaded in CloudCompare **or a LAS/LAZ file on disk**, select a trusted saved model and a job folder. ALiS reads the required fields and scales, prepares bounded spatial blocks with neighbourhood overlap, and classifies them without retraining. Completed blocks can be resumed. Review the output report before applying labels.
 
-This workflow requires Python: it is included in the Mac installer; Windows uses the separate runtime described below. It preserves every source point; it does not silently downsample or change model radii. Memory limits are estimates, not an OS-enforced quota. Terrain/HAG needs explicit compatible settings. [Instructions, validation and limitations →](docs/MODEL_PREPARATION.md)
+This workflow requires Python: it is included in the Mac installer; the Windows complete wizard installs an isolated runtime automatically. It preserves every source point; it does not silently downsample or change model radii. Memory limits are estimates, not an OS-enforced quota. Terrain/HAG needs explicit compatible settings. [Instructions, validation and limitations →](docs/MODEL_PREPARATION.md)
 
 ### Windows installation overview
 
-[![Install ALiS in six steps: install CloudCompare 2.13.2, download ALiS Setup.exe, verify and close, install into the host folder, open the plugin, then load and select a cloud. Python is optional for classifiers.](docs/media/install-guide.svg)](docs/INSTALLATION.md)
+[![ALiS complete setup: download, verify and close CloudCompare, choose CPU or CUDA, automatically install missing prerequisites and ALiS, open the plugin, then load and select a cloud.](docs/media/install-guide.svg)](docs/WINDOWS_COMPLETE_INSTALLER.md)
 
-**[Full step-by-step installation guide →](docs/INSTALLATION.md)** · [Installation infographic (SVG)](docs/media/install-guide.svg)
+**[Complete installation guide →](docs/WINDOWS_COMPLETE_INSTALLER.md)** · [Manual/plugin-only guide](docs/INSTALLATION.md) · [Installation infographic (SVG)](docs/media/install-guide.svg)
 
 ### Windows: download 0.1.0-alpha.5.7
 
-**[Download Windows installer](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.7/ALiS-0.1.0-alpha.5.7-CloudCompare-2.13.2-Windows-x64-Setup.exe)** · [Manual-install ZIP](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.7/ALiS-0.1.0-alpha.5.7-CloudCompare-2.13.2-Windows-x64.zip) · [Source ZIP](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.7/ALiS-0.1.0-alpha.5.7-Source.zip)
+**[Download Windows installer — complete setup](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.7/ALiS-0.1.0-alpha.5.7-Windows-x64-Complete-Setup-r1.exe)** · [Plugin-only installer](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.7/ALiS-0.1.0-alpha.5.7-CloudCompare-2.13.2-Windows-x64-Setup.exe) · [Manual-install ZIP](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.7/ALiS-0.1.0-alpha.5.7-CloudCompare-2.13.2-Windows-x64.zip) · [Plugin source ZIP](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.7/ALiS-0.1.0-alpha.5.7-Source.zip)
 
-[SHA-256 checksums](downloads/CHECKSUMS_SHA256.txt) · [Release notes](RELEASE_NOTES.md) · [Installation & first test](docs/GETTING_STARTED.txt) · [Python / GPU setup](docs/RUNTIME.md) · [Build from source](BUILDING.md)
+[Complete setup SHA-256](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.7/ALiS-Windows-Complete-r1-SHA256SUMS.txt) · [Complete setup source](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.7/ALiS-0.1.0-alpha.5.7-Windows-x64-Complete-Source-r1.zip) · [Plugin-only checksums](downloads/CHECKSUMS_SHA256.txt) · [Release notes](RELEASE_NOTES.md) · [Build from source](BUILDING.md)
 
-[Versioned GitHub prerelease](https://github.com/Nicodemox87/ALiS/releases/tag/v0.1.0-alpha.5.7) · [Package validation](docs/RELEASE_VALIDATION.md). Repository-hosted backup downloads are available in [downloads](downloads).
+[Versioned GitHub prerelease](https://github.com/Nicodemox87/ALiS/releases/tag/v0.1.0-alpha.5.7) · [Complete installer validation](docs/WINDOWS_COMPLETE_VALIDATION.md) · [Native package validation](docs/RELEASE_VALIDATION.md). Repository-hosted plugin-only backup downloads are available in [downloads](downloads).
 
-The installer is **unsigned**. Verify its origin and checksum; do not disable security protections. Packages contain no training data, pretrained weights or unpublished paper. Windows installer and ZIP contain the same native DLL and worker; choose one installation route.
+The installer is **unsigned**. Verify its origin and checksum; do not disable security protections. Packages contain no training data, pretrained weights or unpublished paper. The complete online wizard installs prerequisites and the unchanged alpha.5.7 plugin; the plugin-only installer/ZIP remain alternatives for managed environments.
 
 | Component | Windows package requirements |
 | :--- | :--- |
 | Operating system | Windows x64 |
 | Host application | CloudCompare **2.13.2 stable**, **Qt 5.15.x** |
 | Native operations | Terrain, features and annotation do not require Python |
-| ML / DL operations | Separate Python runtime; optional XGBoost and PyTorch dependencies |
+| ML / DL operations | Isolated Python runtime, XGBoost and PyTorch installed by complete setup |
 | GPU | Optional; supported methods and compatible CUDA hardware/runtime only |
 
-The **Windows plugin installer** is **not a standalone CloudCompare application** and is not compatible with arbitrary CloudCompare or Qt 6 builds. CloudCompare, Python, CUDA, training clouds and trained models are not bundled with the plugin installer.
+ALiS remains a **CloudCompare plugin**, not a standalone application. The new **complete online installer** detects a compatible host or installs one, then installs ALiS and its Python ML/DL runtime. Internet is required; Windows may request administrator confirmations. It does not install GPU drivers or make incompatible Qt6 hosts compatible.
 
 Installation:
 
-1. **Install CloudCompare 2.13.2 x64** from the [official downloads page](https://www.cloudcompare.org/release/) — choose the **2.13.2 Windows installer**, not the beta or ccViewer.
-2. **Download ALiS `...-Setup.exe`** from the release's **Assets** section. “Source code” is for developers, not installation.
-3. **Check its SHA-256**, then close all CloudCompare windows.
-4. **Run Setup.exe** and select the folder containing `CloudCompare.exe`, usually `C:\Program Files\CloudCompare` — **not** its `plugins` subfolder.
+1. **Download `...Complete-Setup-r1.exe`** from the Windows button above.
+2. **Check its SHA-256**, save your work and close all CloudCompare windows.
+3. **Run normally** and select **CPU** (includes deep learning) or supported **NVIDIA CUDA**.
+4. **Let the wizard detect/install CloudCompare, ALiS, Python and ML/DL dependencies.** Confirm any administrator prompts and wait for verified success.
 5. **Open CloudCompare**, then ALiS from **Plugins** or its toolbar icon.
 6. **Load a LAS/LAZ copy and select it in the DB tree.** Inspect metadata and coordinate units before processing.
 
-For classifiers, install the separate runtime using the included CPU or CUDA setup script. **Python is not required for native terrain/features/annotation.** See [detailed steps and troubleshooting](docs/GETTING_STARTED.txt). To uninstall, select ALiS in Windows Installed Apps; user data and Python environments are retained.
+No separate runtime command is needed with complete setup. **Native terrain/features/annotation still do not require Python** when using plugin-only installation. See [details, logs and troubleshooting](docs/WINDOWS_COMPLETE_INSTALLER.md). To uninstall, select ALiS in Windows Installed Apps; user data and Python environments are retained.
 
 ### macOS: download and install
 

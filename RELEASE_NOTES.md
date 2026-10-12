@@ -1,3 +1,13 @@
+# Windows complete online installer — 12 October 2026
+
+The main **Download Windows installer** link now supplies the new **Complete Setup r1**. It detects compatible CloudCompare 2.13.2 x64/Qt5 or installs the official host, installs the unchanged ALiS alpha.5.7 plugin, and prepares isolated Python, ML and PyTorch dependencies. Choose CPU or optional NVIDIA CUDA 12.8. Internet and confirmation of Windows administrator prompts are required; NVIDIA drivers are not installed.
+
+SHA-256-verified native downloads, actual DLL/package/computation checks and runtime activation after successful checks are included. Previous datasets, models and incompatible host folders are not deleted. Failed prerequisites are not automatically rolled back. The wrapper is unsigned; retain Windows security protections.
+
+The historical Windows plugin-only EXE/ZIP, native source and Mac assets remain unchanged. Installer sources and checksums have separate revisioned filenames. This is a packaging update, not new scientific validation or a new native plugin version. See [complete setup instructions](docs/WINDOWS_COMPLETE_INSTALLER.md) and [installation test evidence](docs/WINDOWS_COMPLETE_VALIDATION.md).
+
+---
+
 # macOS addition — 12 October 2026
 
 ALiS now has separate Windows and macOS downloads. The existing Windows alpha.5.7 packages are unchanged. The added Mac build 1 is a complete Apple Silicon / macOS 27+ PKG with CloudCompare 2.13.2, portable Python and all six CPU classifiers, plus automatic/manual GitHub update checks. It is a research preview without Developer ID signing or notarization; normal macOS authorization is required. See [Mac installation](docs/MAC_INSTALLER.md) and [validation](docs/MAC_INSTALLER_TESTS.md). No private survey data, trained models or backups are included.

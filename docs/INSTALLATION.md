@@ -1,10 +1,12 @@
 # Install ALiS on Windows
 
+**Recommended: [use the new complete online setup](WINDOWS_COMPLETE_INSTALLER.md)** to detect/install CloudCompare, ALiS, Python and ML/DL automatically. The instructions below remain valid for **plugin-only/manual installation** into an existing host.
+
 **For ALiS 0.1.0-alpha.5.7 — research testing preview.**
 
-[Download ALiS installer](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.7/ALiS-0.1.0-alpha.5.7-CloudCompare-2.13.2-Windows-x64-Setup.exe) · [All release assets](https://github.com/Nicodemox87/ALiS/releases/tag/v0.1.0-alpha.5.7) · [Back to home](../README.md)
+[Download plugin-only installer (existing host required)](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.7/ALiS-0.1.0-alpha.5.7-CloudCompare-2.13.2-Windows-x64-Setup.exe) · [All release assets](https://github.com/Nicodemox87/ALiS/releases/tag/v0.1.0-alpha.5.7) · [Back to home](../README.md)
 
-![Six installation steps, with a separate optional Python runtime step.](media/install-guide.svg)
+For the complete setup overview, see the [updated installation infographic](media/install-guide.svg).
 
 ## 1. Install the matching CloudCompare version
 

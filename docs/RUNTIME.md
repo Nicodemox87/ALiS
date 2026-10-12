@@ -1,6 +1,8 @@
 # Optional Python runtime
 
-The installer contains the Python **worker source**, not a Python interpreter or downloaded packages. Native operations remain available without it. Model-driven block preparation also requires this runtime, including laspy and its lazrs LAZ backend. Python 3.12 x64 is the tested runtime; other versions are not certified by this release.
+The [complete Windows installer](WINDOWS_COMPLETE_INSTALLER.md) now creates and verifies this runtime automatically. The commands below are for the **plugin-only installer/manual setup**, or administrator-managed runtime changes.
+
+The **plugin-only installer** contains the Python **worker source**, not a Python interpreter or downloaded packages. Native operations remain available without it. Model-driven block preparation also requires this runtime, including laspy and its lazrs LAZ backend. Python 3.12 x64 is the tested runtime; other versions are not certified by this release.
 
 Use `tools/setup_cpu_runtime.ps1 -BasePython 'C:\path\to\python.exe'` for an isolated CPU environment, or `tools/setup_cuda_runtime.ps1` with the same argument for the tested CUDA 12.8 environment. Both scripts are also installed under `worker/ALiS`. Review scripts before running them. They use the official package indexes and do not change the system Python installation.
 

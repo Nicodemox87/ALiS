@@ -1,0 +1,33 @@
+name: Announce Windows complete setup
+on:
+  push:
+    branches: [main]
+    paths: ['docs/WINDOWS_COMPLETE_RELEASE_NOTICE.md', '.github/workflows/windows-complete-notice.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: windows-complete-release-notice
+  cancel-in-progress: false
+jobs:
+  announce:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Update notice only after all download assets exist
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view v0.1.0-alpha.5.7 --repo Nicodemox87/ALiS --json body,assets > release.json
+          python3 - <<'PY'
+          import json, pathlib, re
+          release = json.loads(pathlib.Path('release.json').read_text())
+          required = {'ALiS-0.1.0-alpha.5.7-Windows-x64-Complete-Setup-r1.exe',
+                      'ALiS-0.1.0-alpha.5.7-Windows-x64-Complete-Source-r1.zip',
+                      'ALiS-Windows-Complete-r1-SHA256SUMS.txt', 'ALiS-Windows-Complete-r1.json'}
+          assert required <= {a['name'] for a in release['assets']}, 'Release files are missing'
+          body = re.sub(r'<!-- alis-windows-complete-r1:start -->.*?<!-- alis-windows-complete-r1:end -->\s*(?:---\s*)?', '', release['body'], flags=re.S).lstrip()
+          notice = pathlib.Path('docs/WINDOWS_COMPLETE_RELEASE_NOTICE.md').read_text().rstrip()
+          pathlib.Path('updated-release-notes.md').write_text(notice + '\n\n---\n\n' + body)
+          PY
+          gh release edit v0.1.0-alpha.5.7 --repo Nicodemox87/ALiS --notes-file updated-release-notes.md

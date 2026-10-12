@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1120" viewBox="0 0 1200 1120" role="img" aria-labelledby="title desc">
   <title id="title">Install ALiS — six steps from download to your first point cloud</title>
-  <desc id="desc">Install CloudCompare 2.13.2 Windows x64 Qt5, download the ALiS Setup executable, check its checksum and close CloudCompare, install into the CloudCompare root folder, open ALiS, and load and select a copy of a LAS or LAZ cloud. Python CPU or CUDA setup is a separate optional step for classifiers.</desc>
+  <desc id="desc">Download ALiS complete setup, verify and close CloudCompare, choose CPU or CUDA, automatically install missing CloudCompare and Python plus ALiS and ML/DL, open the plugin and select a point cloud.</desc>
   <defs>
     <style>
       text { font-family: 'Segoe UI', Arial, sans-serif; fill: #19365E; }
@@ -24,7 +24,7 @@
     <g fill="#CE1417"><circle cx="55" cy="42" r="2.8"/><circle cx="55" cy="48" r="2.8"/><circle cx="55" cy="54" r="2.8"/><circle cx="29" cy="9" r="3"/></g>
   </g>
   <text x="130" y="69" font-size="36" font-weight="700">Install ALiS</text>
-  <text x="131" y="99" class="body">From download to your first point cloud</text>
+  <text x="131" y="99" class="body">Complete online setup — prerequisites included</text>
   <rect x="905" y="48" width="251" height="42" rx="21" fill="#F2F5F9"/>
   <text x="1030" y="75" text-anchor="middle" class="small">0.1.0-alpha.5.7 · Testing Preview</text>
   <rect x="44" y="131" width="1112" height="46" rx="10" fill="#19365E"/>
@@ -32,35 +32,35 @@
 
   <rect class="card" x="44" y="203" width="542" height="190" rx="15"/>
   <circle cx="78" cy="241" r="18" fill="#CE1417"/><text class="num" x="78" y="248">1</text>
-  <text class="heading" x="109" y="250">Install CloudCompare</text>
+  <text class="heading" x="109" y="250">Download complete setup</text>
   <g class="icon" transform="translate(517 226)"><rect x="0" y="0" width="37" height="25" rx="3"/><path d="M18 25v9M8 34h20"/></g>
-  <text class="body" x="70" y="293">Use the official downloads page.</text>
-  <text class="body" x="70" y="323">Choose 2.13.2 → Windows 64-bit installer.</text>
-  <text class="small" x="70" y="363">Already installed? Check the version first.</text>
+  <text class="body" x="70" y="293">Use the Windows button on ALiS GitHub.</text>
+  <text class="body" x="70" y="323">Choose ...Complete-Setup-r1.exe.</text>
+  <text class="small" x="70" y="363">Internet required; no manual Python commands.</text>
 
   <rect class="card" x="614" y="203" width="542" height="190" rx="15"/>
   <circle cx="648" cy="241" r="18" fill="#CE1417"/><text class="num" x="648" y="248">2</text>
-  <text class="heading" x="679" y="250">Download ALiS</text>
+  <text class="heading" x="679" y="250">Verify, save and close</text>
   <g class="icon" transform="translate(1087 226)"><path d="M18 0v23M9 15l9 9 9-9M2 26v9h32v-9"/></g>
-  <text class="body" x="640" y="293">Open the ALiS GitHub release → Assets.</text>
-  <text class="body" x="640" y="323">Choose the file ending in -Setup.exe.</text>
-  <text class="small" x="640" y="363">“Source code” is not the Windows installer.</text>
+  <text class="body" x="640" y="293">Compare the published SHA-256 checksum.</text>
+  <text class="body" x="640" y="323">Save your work and close CloudCompare.</text>
+  <text class="small" x="640" y="363">Unsigned alpha: keep security protections enabled.</text>
 
   <rect class="card" x="44" y="419" width="542" height="190" rx="15"/>
   <circle cx="78" cy="457" r="18" fill="#CE1417"/><text class="num" x="78" y="464">3</text>
-  <text class="heading" x="109" y="466">Check, then close</text>
+  <text class="heading" x="109" y="466">Choose CPU or CUDA</text>
   <g class="icon" transform="translate(517 441)"><path d="M18 0 33 6v13c0 9-15 17-15 17S3 28 3 19V6Z"/><path d="m10 17 6 6 10-12"/></g>
-  <text class="body" x="70" y="509">Verify the published SHA-256 checksum.</text>
-  <text class="body" x="70" y="539">Close all CloudCompare windows.</text>
-  <text class="small" x="70" y="579">Unsigned alpha: keep security protections enabled.</text>
+  <text class="body" x="70" y="509">Run normally — not as administrator.</text>
+  <text class="body" x="70" y="539">CPU includes ML and deep learning.</text>
+  <text class="small" x="70" y="579">CUDA needs a compatible NVIDIA GPU/driver.</text>
 
   <rect class="card" x="614" y="419" width="542" height="190" rx="15"/>
   <circle cx="648" cy="457" r="18" fill="#CE1417"/><text class="num" x="648" y="464">4</text>
-  <text class="heading" x="679" y="466">Run the installer</text>
+  <text class="heading" x="679" y="466">Automatic installation</text>
   <g class="icon" transform="translate(1086 442)"><path d="M0 7h14l5 5h20v24H0ZM0 7V2h14l5 5h15v5"/></g>
-  <text class="body" x="640" y="509">Select the folder with CloudCompare.exe.</text>
-  <text x="640" y="541" font-family="Consolas, monospace" font-size="19">C:\Program Files\CloudCompare</text>
-  <text class="small" x="640" y="579">Use the main folder, NOT its plugins subfolder.</text>
+  <text class="body" x="640" y="509">Detect/install CloudCompare + ALiS.</text>
+  <text x="640" y="541" font-family="Consolas, monospace" font-size="19">Set up Python, ML and PyTorch.</text>
+  <text class="small" x="640" y="579">Confirm Windows prompts; wait for checks to pass.</text>
 
   <rect class="card" x="44" y="635" width="542" height="190" rx="15"/>
   <circle cx="78" cy="673" r="18" fill="#CE1417"/><text class="num" x="78" y="680">5</text>
@@ -80,10 +80,10 @@
 
   <rect x="44" y="851" width="1112" height="158" rx="15" fill="#F2F5F9"/>
   <rect x="44" y="867" width="5" height="126" rx="2" fill="#CE1417"/>
-  <text x="70" y="889" class="heading">Optional: enable ML / deep learning</text>
-  <text x="70" y="925" class="body">Install Python 3.12 x64, then run the included CPU or NVIDIA CUDA setup script.</text>
-  <text x="70" y="955" class="body">Follow the runtime guide and restart CloudCompare. GPU support depends on the model.</text>
-  <text x="70" y="987" class="small">No Python needed for native terrain, features and annotation. No pretrained models are bundled.</text>
+  <text x="70" y="889" class="heading">ML and deep learning — installed and verified</text>
+  <text x="70" y="925" class="body">The wizard creates an isolated runtime. Existing datasets and models are preserved.</text>
+  <text x="70" y="955" class="body">CPU: allow 5 GiB free. CUDA: allow 12 GiB. Downloads may take several minutes.</text>
+  <text x="70" y="987" class="small">GPU acceleration remains model-specific. No pretrained weights or survey data are bundled.</text>
   <path d="M44 1040h1112" stroke="#DCE3EC"/>
   <text x="44" y="1070" class="small">Full instructions and clickable downloads: github.com/Nicodemox87/ALiS</text>
   <text x="44" y="1096" font-size="15" fill="#50617A">ALiS · Archaeological LiDAR Studio  |  Nicodemo Abate · CNR-ISPC  |  Installation guide · English</text>
