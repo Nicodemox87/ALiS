@@ -1,0 +1,35 @@
+#!/bin/sh
+# SPDX-License-Identifier: GPL-2.0-or-later
+# The payload only owns /Applications/ALiS.app. Never modify other applications/data.
+set -eu
+if [ "$(/usr/bin/uname -m)" != arm64 ]; then
+  echo 'ALiS requires an Apple Silicon Mac.' >&2; exit 1
+fi
+if [ "$(/usr/bin/sw_vers -productVersion | /usr/bin/cut -d. -f1)" -lt 27 ]; then
+  echo 'ALiS requires macOS 27 or later.' >&2; exit 1
+fi
+if [ "${3:-/}" != / ]; then
+  echo 'Install ALiS on the startup volume.' >&2; exit 1
+fi
+if /bin/ps -axo comm= | /usr/bin/grep -F '/Applications/ALiS.app/Contents/' >/dev/null; then
+  echo 'Save your work and quit ALiS and its processing workers before installing.' >&2; exit 1
+fi
+if [ -L /Applications/ALiS.app ]; then
+  echo 'Refusing to replace an application symlink.' >&2; exit 1
+fi
+if [ -e /Applications/ALiS.app ]; then
+  identifier=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' /Applications/ALiS.app/Contents/Info.plist 2>/dev/null || true)
+  if [ "$identifier" != org.alis.CloudCompare ]; then
+    echo 'Another application already occupies /Applications/ALiS.app. Move it before installing.' >&2; exit 1
+  fi
+  backup_root='/Library/Application Support/ALiS/Backups'
+  if [ -L "$backup_root" ] || [ -L '/Library/Application Support/ALiS' ]; then
+    echo 'Refusing to use a backup symlink.' >&2; exit 1
+  fi
+  /bin/mkdir -p "$backup_root"
+  /bin/chmod 700 "$backup_root"
+  backup="$backup_root/ALiS-$(/bin/date +%Y%m%d-%H%M%S)-$$.app"
+  /usr/bin/ditto /Applications/ALiS.app "$backup"
+  echo "Previous ALiS application preserved at: $backup"
+fi
+exit 0

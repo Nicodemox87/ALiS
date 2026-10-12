@@ -4,7 +4,7 @@ One immutable input scan; indexed tiles on disk; context halo never exported twi
 No training or automatic label promotion. Existing feature reuse is explicit.
 """
 from __future__ import annotations
-import argparse, ctypes, hashlib, html, json, math, os, shutil, subprocess, sys, time
+import argparse, ctypes, hashlib, html, json, math, os, re, shutil, subprocess, sys, time
 from pathlib import Path
 from urllib.parse import unquote
 import numpy as np
@@ -27,7 +27,19 @@ def available_memory():
     if os.name=='nt':
         class Mem(ctypes.Structure): _fields_=[('length',ctypes.c_ulong),('load',ctypes.c_ulong)]+[(x,ctypes.c_ulonglong) for x in ('total','avail','tp','ap','tv','av','ex')]
         m=Mem();m.length=ctypes.sizeof(m);ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(m));return m.avail
-    return os.sysconf('SC_AVPHYS_PAGES')*os.sysconf('SC_PAGE_SIZE')
+    if sys.platform=='darwin':
+        # Free + inactive pages is conservative: do not count compressed RAM.
+        try:
+            result=subprocess.run(['/usr/bin/vm_stat'],capture_output=True,text=True,check=True,timeout=5)
+            page=int(re.search(r'page size of (\d+) bytes',result.stdout).group(1))
+            counts=[int(re.search(r'Pages '+name+r':\s*(\d+)',result.stdout).group(1)) for name in ('free','inactive')]
+            value=sum(counts)*page
+            if value>0:return value
+        except (OSError,subprocess.SubprocessError,ValueError,AttributeError):
+            pass
+        return 2*1024**3
+    try:return os.sysconf('SC_AVPHYS_PAGES')*os.sysconf('SC_PAGE_SIZE')
+    except (OSError,ValueError,AttributeError):return 2*1024**3
 def canceled(job):
     if (job/'CANCEL').exists(): raise InterruptedError('Stopped safely; completed blocks remain reusable. Remove CANCEL to resume.')
 

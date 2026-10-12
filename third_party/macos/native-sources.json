@@ -1,0 +1,73 @@
+[
+  {
+    "name": "glib",
+    "license": "LGPL-2.1-or-later",
+    "versions": {
+      "stable": "2.90.1",
+      "head": null,
+      "bottle": true
+    },
+    "urls": {
+      "stable": {
+        "url": "https://download.gnome.org/sources/glib/2.90/glib-2.90.1.tar.xz",
+        "tag": null,
+        "revision": null,
+        "using": null,
+        "checksum": "93c941aa17d5eb1d53fe838365f29a8b4e539c222a256d974ec8f30fc413e396"
+      }
+    },
+    "patches": [
+      {
+        "strip": "p1",
+        "file": "Patches/glib/hardcoded-paths.diff"
+      }
+    ],
+    "revision": 0,
+    "bottle": {
+      "stable": {
+        "rebuild": 0,
+        "root_url": "https://ghcr.io/v2/homebrew/core",
+        "files": {
+          "arm64_golden_gate": {
+            "cellar": "/opt/homebrew/Cellar",
+            "url": "https://ghcr.io/v2/homebrew/core/glib/blobs/sha256:ac3a58f1d2c1db194a3a5dc8484187d258b1a14e191772323937d17f5fae59fd",
+            "sha256": "ac3a58f1d2c1db194a3a5dc8484187d258b1a14e191772323937d17f5fae59fd"
+          }
+        }
+      }
+    }
+  },
+  {
+    "name": "gettext",
+    "license": "GPL-3.0-or-later AND LGPL-2.1-or-later",
+    "versions": {
+      "stable": "1.0",
+      "head": null,
+      "bottle": true
+    },
+    "urls": {
+      "stable": {
+        "url": "https://ftpmirror.gnu.org/gettext/gettext-1.0.tar.gz",
+        "tag": null,
+        "revision": null,
+        "using": null,
+        "checksum": "85d99b79c981a404874c02e0342176cf75c7698e2b51fe41031cf6526d974f1a"
+      }
+    },
+    "patches": [],
+    "revision": 0,
+    "bottle": {
+      "stable": {
+        "rebuild": 2,
+        "root_url": "https://ghcr.io/v2/homebrew/core",
+        "files": {
+          "arm64_golden_gate": {
+            "cellar": "/opt/homebrew/Cellar",
+            "url": "https://ghcr.io/v2/homebrew/core/gettext/blobs/sha256:4db034aa2ae4b1f18d86906707ece14c895198090ad028d2fb1ae4fbeb3ca6fd",
+            "sha256": "4db034aa2ae4b1f18d86906707ece14c895198090ad028d2fb1ae4fbeb3ca6fd"
+          }
+        }
+      }
+    }
+  }
+]

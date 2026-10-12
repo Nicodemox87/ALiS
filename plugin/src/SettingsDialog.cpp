@@ -1,9 +1,12 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 #include "SettingsDialog.h"
+#include "MacUpdates.h"
 #include "ModelCatalog.h"
 
 #include <QCheckBox>
 #include <QDialogButtonBox>
+#include <QDesktopServices>
+#include <QUrl>
 #include <QCoreApplication>
 #include <QDir>
 #include <QFileDialog>
@@ -224,6 +227,13 @@ namespace alis
 		QPushButton* installUpdate = new QPushButton(QStringLiteral("Choose ALiS update package…"));
 		installUpdate->setToolTip(QStringLiteral("Choose an official ALiS Windows Setup executable. The external installer performs the update; ALiS never replaces its loaded DLL directly."));
 		updatesLayout->addWidget(installUpdate);
+#ifndef Q_OS_WIN
+		updateInfo->setText(QStringLiteral("macOS/Linux updates use a matching platform package. Save your session and close CloudCompare before updating. Windows Setup executables are not supported on this platform."));
+		findUpdate->hide();installUpdate->hide();
+		auto* releases=new QPushButton(QStringLiteral("Open ALiS releases and platform instructions"));
+		updatesLayout->addWidget(releases);
+		connect(releases,&QPushButton::clicked,this,[](){QDesktopServices::openUrl(QUrl(QStringLiteral("https://github.com/Nicodemox87/ALiS/releases")));});
+#endif
 		connect(findUpdate, &QPushButton::clicked, this, [this]()
 		{
 			const QString path = newestLocalInstaller();
@@ -244,6 +254,17 @@ namespace alis
 			if (path.isEmpty()) return;
 			launchInstaller(this, path);
 		});
+#ifdef Q_OS_MACOS
+        updateInfo->setText(QStringLiteral("Complete Apple Silicon installation with bundled Python and classifiers. Updates are checked on the official GitHub release channel, including testing previews. Downloaded packages are verified before installation. Save your work and quit ALiS before opening an update installer."));
+        updatesLayout->addWidget(new QLabel(QStringLiteral("Mac package: %1").arg(macInstalledVersion())));
+        auto* autoUpdate = new QCheckBox(QStringLiteral("Automatically check GitHub for updates once a day"));
+        autoUpdate->setChecked(QSettings().value("ALiS/updates/automatic", true).toBool());
+        updatesLayout->addWidget(autoUpdate);
+        connect(autoUpdate, &QCheckBox::toggled, this, [](bool checked){QSettings().setValue("ALiS/updates/automatic", checked);});
+        auto* checkUpdate = new QPushButton(QStringLiteral("Check GitHub for Mac updates now"));
+        updatesLayout->addWidget(checkUpdate);
+        connect(checkUpdate, &QPushButton::clicked, this, [this](){checkMacUpdates(this);});
+#endif
 		updatesLayout->addStretch(1);
 		tabs->addTab(updates, QStringLiteral("Updates"));
 

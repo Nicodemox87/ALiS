@@ -1,0 +1,94 @@
+{
+  "name": "qt@5",
+  "license": "GFDL-1.3-only AND GPL-2.0-only AND GPL-3.0-only AND LGPL-2.1-only AND LGPL-3.0-only",
+  "versions": {
+    "stable": "5.15.19",
+    "head": null,
+    "bottle": true
+  },
+  "urls": {
+    "stable": {
+      "url": "https://download.qt.io/archive/qt/5.15/5.15.19/single/qt-everywhere-opensource-src-5.15.19.tar.xz",
+      "tag": null,
+      "revision": null,
+      "using": null,
+      "checksum": "173c2326dae138bbb0d98921e9d911e55c00163d93a6db29f294b5e19ff306ae"
+    }
+  },
+  "patches": [
+    {
+      "strip": "p1",
+      "url": "https://invent.kde.org/qt/qt/qtlocation-mapboxgl/-/commit/5a07e1967dcc925d9def47accadae991436b9686.diff",
+      "sha256": "4f433bb009087d3fe51e3eec3eee6e33a51fde5c37712935b9ab96a7d7571e7d",
+      "directory": "qtlocation/src/3rdparty/mapbox-gl-native",
+      "resolves": [
+        {
+          "type": "defect",
+          "id": "https://bugreports.qt.io/browse/QTBUG-112906"
+        }
+      ]
+    },
+    {
+      "strip": "p1",
+      "url": "https://bugs.gentoo.org/attachment.cgi?id=916782",
+      "sha256": "6b655ba61128c04811e0426a1e25456914fc79c845469da6df10f2d3e29aa510",
+      "directory": "qtlocation",
+      "resolves": [
+        {
+          "type": "defect",
+          "id": "https://bugs.gentoo.org/936486"
+        }
+      ]
+    },
+    {
+      "strip": "p1",
+      "url": "https://github.com/boostorg/mpl/commit/8499ae7e4ff0cf798367ebe6ea9fb991aa43db6c.patch?full_index=1",
+      "sha256": "2bac4e4eaabce759c09b86b716149aad8e2bfcc921d7d946a31d24a3b9e25ac3",
+      "directory": "qtlocation/src/3rdparty/mapbox-gl-native/deps/boost/1.65.1",
+      "resolves": [
+        {
+          "type": "defect",
+          "id": "https://github.com/boostorg/mpl/pull/77"
+        }
+      ]
+    },
+    {
+      "strip": "p1",
+      "url": "https://github.com/boostorg/mpl/commit/fb6b861834e29a93ba71a2e2501a42ecfd3c5655.patch?full_index=1",
+      "sha256": "1213dc3e1b8d9cfc9ed42fc1639f10fa350f2a921d378b184c2c0a1d4936f7f3",
+      "directory": "qtlocation/src/3rdparty/mapbox-gl-native/deps/boost/1.65.1",
+      "resolves": [
+        {
+          "type": "defect",
+          "id": "https://github.com/boostorg/mpl/pull/77"
+        }
+      ]
+    },
+    {
+      "strip": "p1",
+      "url": "https://salsa.debian.org/qt-kde-team/qt/qtlocation/-/raw/4ec161bda76cd4c80d2e50fff223a94594cc6b4c/debian/patches/gcc_13.diff",
+      "sha256": "85ef9bb775540d639cea03894101ab2b7476f633cbb7ff49a1ea0a6bbca82168",
+      "directory": "qtlocation",
+      "resolves": [
+        {
+          "type": "defect",
+          "id": "https://github.com/mapbox/mapbox-gl-native/pull/16669"
+        }
+      ]
+    }
+  ],
+  "revision": 0,
+  "bottle": {
+    "stable": {
+      "rebuild": 0,
+      "root_url": "https://ghcr.io/v2/homebrew/core",
+      "files": {
+        "arm64_golden_gate": {
+          "cellar": ":any",
+          "url": "https://ghcr.io/v2/homebrew/core/qt/5/blobs/sha256:56ed6fe1d7e2911537eb1b2c1cdacb7e102c1f2c020d9b77242f49672fd056b6",
+          "sha256": "56ed6fe1d7e2911537eb1b2c1cdacb7e102c1f2c020d9b77242f49672fd056b6"
+        }
+      }
+    }
+  }
+}

@@ -202,9 +202,9 @@ namespace
 			error = QStringLiteral("Unsupported or corrupt ALiS fixture header.");
 			return false;
 		}
-		if (metadata.unitCode != UnitMetre || metadata.epsg <= 0)
+		if (metadata.unitCode != UnitMetre || metadata.epsg < 0)
 		{
-			error = QStringLiteral("Fixture does not provide an EPSG CRS with explicitly confirmed metre units.");
+			error = QStringLiteral("Fixture needs explicitly confirmed metre units and a nonnegative EPSG (0 means unknown).");
 			return false;
 		}
 		if (metadata.pointCount == 0 || metadata.pointCount > std::numeric_limits<unsigned>::max())
@@ -235,7 +235,7 @@ namespace
 			return false;
 		}
 
-		cloud.reset(new ccPointCloud(QStringLiteral("cloud2 real-tile E2E fixture")));
+		cloud.reset(new ccPointCloud(QStringLiteral("ALiS real-tile E2E fixture")));
 		if (!cloud->reserveThePointsTable(static_cast<unsigned>(metadata.pointCount)))
 		{
 			error = QStringLiteral("Not enough memory to reserve fixture points.");
@@ -457,7 +457,7 @@ int main(int argc, char** argv)
 	fixtureJson.insert(QStringLiteral("fixtureSha256"), fixture.fixtureSha256);
 	fixtureJson.insert(QStringLiteral("sourceLasSha256"), fixture.sourceSha256);
 	fixtureJson.insert(QStringLiteral("pointCount"), static_cast<double>(fixture.pointCount));
-	fixtureJson.insert(QStringLiteral("epsg"), fixture.epsg);
+	fixtureJson.insert(QStringLiteral("epsg"), fixture.epsg > 0 ? QJsonValue(fixture.epsg) : QJsonValue(QJsonValue::Null));
 	fixtureJson.insert(QStringLiteral("linearUnit"), QStringLiteral("metre"));
 	fixtureJson.insert(QStringLiteral("globalScale"), fixture.globalScale);
 	QJsonArray shift;
@@ -619,7 +619,7 @@ int main(int argc, char** argv)
 	for (unsigned count : scaleOptions.targetNeighborCounts) targetCounts.append(static_cast<int>(count));
 	scaleDerivation.insert(QStringLiteral("targetNeighborCounts"), targetCounts);
 	scaleDerivation.insert(QStringLiteral("formula"), QStringLiteral("sqrt(targetCount / (pi x estimatedDensity2D))"));
-	scaleDerivation.insert(QStringLiteral("metricUnitsConfirmedFromFixtureCrs"), true);
+	scaleDerivation.insert(QStringLiteral("metricUnitsExplicitlyConfirmedInFixture"), true);
 	report.insert(QStringLiteral("scaleSelection"), scaleDerivation);
 
 	const std::array<alis::FeatureId, 3> featureIds = {{

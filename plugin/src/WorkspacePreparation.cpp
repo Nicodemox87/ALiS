@@ -3,6 +3,7 @@
 #include "WorkspaceDock.h"
 #include "MlInputFields.h"
 #include "MemorySafety.h"
+#include "PlatformPaths.h"
 #include <ccPointCloud.h>
 #include <QApplication>
 #include <QCheckBox>
@@ -90,13 +91,13 @@ void WorkspaceController::prepareModelData(const QString& python,const QString& 
     QString job;bool cancelRequested=false;quint64 snapshotRevision=0;bool snapshotMade=false;
     connect(stop,&QPushButton::clicked,&dialog,[&](){cancelRequested=true;if(!job.isEmpty()){QFile f(QDir(job).filePath("CANCEL"));f.open(QIODevice::WriteOnly);}info->appendPlainText("Stopping safely; waiting for the current operation. Completed blocks are retained.");});
     const QString script=QDir(QFileInfo(worker).absolutePath()).filePath("alis_prepare.py");
-    const QString native=QDir(QCoreApplication::applicationDirPath()).filePath("ALiS_prepare_block.exe");
+    const QString native=blockWorkerPath();
     auto run=[&](const QStringList& args) {
         QProcess process;process.setProcessChannelMode(QProcess::MergedChannels);QByteArray pending;
         QEventLoop loop;
         connect(&process,&QProcess::readyReadStandardOutput,&dialog,[&](){pending+=process.readAllStandardOutput();int nl;while((nl=pending.indexOf('\n'))>=0){auto line=pending.left(nl);pending.remove(0,nl+1);auto o=QJsonDocument::fromJson(line).object();if(!o.isEmpty()){const double total=o.value("total").toDouble();bar->setRange(0,total>0?100:0);if(total>0)bar->setValue(int(100*o.value("done").toDouble()/total));info->appendPlainText(o.value("phase").toString()+": "+o.value("message").toString());}else info->appendPlainText(QString::fromUtf8(line));}});
         connect(&process,QOverload<int,QProcess::ExitStatus>::of(&QProcess::finished),&loop,&QEventLoop::quit);
-        process.start(python,QStringList()<<script<<args);
+        process.start(python,pythonIsolationArguments(python)<<script<<args);
         if(!process.waitForStarted(5000))throw std::runtime_error(process.errorString().toStdString());
         bar->setRange(0,0);loop.exec();
         if(!pending.isEmpty())info->appendPlainText(QString::fromUtf8(pending));

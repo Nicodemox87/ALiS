@@ -106,7 +106,18 @@ if(PLUGIN_STANDARD_ALIS)
 	target_include_directories(ALiS_prepare_block PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 	target_link_libraries(ALiS_prepare_block PRIVATE ALiSAuditLogic ALiSCSFCore QCC_DB_LIB ${ALIS_QT_WIDGETS})
 	target_compile_features(ALiS_prepare_block PRIVATE cxx_std_14)
-	install(TARGETS ALiS_prepare_block RUNTIME DESTINATION "${CLOUDCOMPARE_DEST_FOLDER}")
+	set(ALIS_WORKER_DEST "${CLOUDCOMPARE_DEST_FOLDER}/worker/ALiS")
+	if(APPLE)
+		set(ALIS_MAC_BUNDLE "${CLOUDCOMPARE_DEST_FOLDER}/CloudCompare.app/Contents")
+		set(ALIS_WORKER_DEST "${ALIS_MAC_BUNDLE}/Resources/ALiS/worker")
+		set_target_properties(ALiS_prepare_block PROPERTIES INSTALL_RPATH "@executable_path/../Frameworks")
+		install(TARGETS ALiS_prepare_block RUNTIME DESTINATION "${ALIS_MAC_BUNDLE}/MacOS")
+		get_target_property(ALIS_QMAKE Qt5::qmake IMPORTED_LOCATION)
+		execute_process(COMMAND "${ALIS_QMAKE}" -query QT_INSTALL_PLUGINS OUTPUT_VARIABLE ALIS_QT_PLUGIN_DIR OUTPUT_STRIP_TRAILING_WHITESPACE)
+		install(FILES "${ALIS_QT_PLUGIN_DIR}/platforms/libqminimal.dylib" DESTINATION "${ALIS_MAC_BUNDLE}/PlugIns/platforms")
+	else()
+		install(TARGETS ALiS_prepare_block RUNTIME DESTINATION "${CLOUDCOMPARE_DEST_FOLDER}")
+	endif()
 	if(WIN32)
 		get_target_property(ALIS_QT_CORE_DLL ${ALIS_QT_CORE} IMPORTED_LOCATION_RELEASE)
 		get_filename_component(ALIS_QT_BIN "${ALIS_QT_CORE_DLL}" DIRECTORY)
@@ -114,7 +125,7 @@ if(PLUGIN_STANDARD_ALIS)
 	endif()
 	target_compile_options(${PROJECT_NAME} PRIVATE "$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
 	install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/worker/"
-		DESTINATION "${CLOUDCOMPARE_DEST_FOLDER}/worker/ALiS"
+		DESTINATION "${ALIS_WORKER_DEST}"
 		PATTERN "__pycache__" EXCLUDE
 		PATTERN "*.pyc" EXCLUDE
 		PATTERN "tests" EXCLUDE)

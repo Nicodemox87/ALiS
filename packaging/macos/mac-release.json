@@ -1,0 +1,10 @@
+{
+  "schema": 1,
+  "version": "0.1.0-alpha.5.7",
+  "build": 1,
+  "platform": "macOS",
+  "arch": "arm64",
+  "minimum_macos": "27.0",
+  "include_prereleases": true,
+  "repository": "Nicodemox87/ALiS"
+}

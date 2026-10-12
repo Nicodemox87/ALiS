@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <strong>A CloudCompare plugin for archaeological point-cloud analysis.</strong><br>
+  <strong>Archaeological point-cloud analysis for Windows and macOS, powered by CloudCompare.</strong><br>
   Prepare data. Explore geometry. Annotate, classify and validate.
 </p>
 
@@ -11,12 +11,14 @@
   <img alt="Development status: research alpha" src="https://img.shields.io/badge/status-research_alpha-d9a441?style=flat-square">
   <img alt="Target: CloudCompare 2.13.2" src="https://img.shields.io/badge/CloudCompare-2.13.2-193b56?style=flat-square">
   <img alt="Platform: Windows x64" src="https://img.shields.io/badge/platform-Windows_x64-193b56?style=flat-square">
+  <img alt="Platform: macOS 27+ Apple Silicon" src="https://img.shields.io/badge/platform-macOS_27%2B_Apple_Silicon-168b80?style=flat-square">
   <a href="LICENSE"><img alt="Software licence: GPL 2.0 or later" src="https://img.shields.io/badge/code-GPL--2.0--or--later-168b80?style=flat-square"></a>
   <a href="https://doi.org/10.5281/zenodo.22934837"><img alt="Author-provided Zenodo DOI: 10.5281/zenodo.22934837; public record pending verification" src="https://img.shields.io/badge/Zenodo-10.5281%2Fzenodo.22934837-193b56?style=flat-square"></a>
 </p>
 
 <p align="center">
   <a href="https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.7/ALiS-0.1.0-alpha.5.7-CloudCompare-2.13.2-Windows-x64-Setup.exe"><strong>Download Windows installer</strong></a> ·
+  <a href="https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.7/ALiS-0.1.0-alpha.5.7-macOS-arm64-Setup.pkg"><strong>Download macOS installer</strong></a> ·
   <a href="#getting-started">Getting started</a> ·
   <a href="#capabilities">Capabilities</a> ·
   <a href="#workflow">Workflow</a> ·
@@ -29,7 +31,7 @@
 
 ## Why ALiS?
 
-**New to ALiS? [Follow the illustrated installation guide](docs/INSTALLATION.md)** — Windows requirements, downloads, setup and your first cloud.
+**New to ALiS? Choose your platform:** [Windows installation guide](docs/INSTALLATION.md) · [macOS installation guide](docs/MAC_INSTALLER.md). Each platform has its own installer and requirements.
 
 Archaeological LiDAR interpretation is not just a classification problem. It requires checking the data, separating terrain from vegetation and structures, choosing meaningful spatial scales, and reviewing uncertain results.
 
@@ -37,7 +39,7 @@ Archaeological LiDAR interpretation is not just a classification problem. It req
 
 > **Public testing version: 0.1.0-alpha.5.7.** Source, installer and manual-install package are available below. This is a research alpha, not a production-certified release.
 >
-> **macOS — work in progress.** Native Apple Silicon support is under development. No macOS installer or validated Mac build is available yet. Windows downloads remain unchanged; Mac downloads will follow successful build and interactive testing.
+> **Windows and macOS downloads are available separately.** Windows x64 uses the existing CloudCompare 2.13.2 plugin installer. The Mac package includes CloudCompare, Python and all six classifiers; it requires **Apple Silicon and macOS 27 or later**. This Mac preview is unsigned by Apple and is not notarized.
 >
 > **Research alpha:** outputs require operator review. Performance on one survey does not establish accuracy on a different site, sensor or acquisition configuration.
 
@@ -85,7 +87,7 @@ Archaeological LiDAR interpretation is not just a classification problem. It req
 
 The PointNet-style classifier operates on local XYZ neighbourhoods. It is **not canonical PointNet with T-Nets, PointNet++, or a bundled pretrained foundation model**. No external pretrained weights are supplied.
 
-Supervised CUDA paths are available for XGBoost, MLP and the local PointNet-style model when their dependencies, driver and GPU are compatible. Other operations remain CPU-based; PointNet neighbourhood lookup also uses the CPU. GPU acceleration is not a blanket guarantee of faster processing.
+**On macOS, this preview runs the classifiers on CPU; CUDA is unavailable and Metal/MPS acceleration is not enabled.** On Windows, supervised CUDA paths are available for XGBoost, MLP and the local PointNet-style model when their dependencies, driver and GPU are compatible. Other operations remain CPU-based; PointNet neighbourhood lookup also uses the CPU. GPU acceleration is not a blanket guarantee of faster processing.
 
 </details>
 
@@ -104,17 +106,32 @@ Supervised CUDA paths are available for XGBoost, MLP and the local PointNet-styl
 
 ## Getting started
 
+### Choose your download
+
+| | Windows | macOS |
+| :--- | :--- | :--- |
+| **Installer** | **[Download Windows (.exe)](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.7/ALiS-0.1.0-alpha.5.7-CloudCompare-2.13.2-Windows-x64-Setup.exe)** | **[Download macOS (.pkg)](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.7/ALiS-0.1.0-alpha.5.7-macOS-arm64-Setup.pkg)** |
+| **Computer** | Windows x64 | Apple Silicon (M1 or later), **macOS 27+**; no Intel build |
+| **CloudCompare** | Install **2.13.2 stable, Qt 5** first | **2.13.2 included** in ALiS.app |
+| **Python and classifiers** | Separate CPU/CUDA runtime for ML/DL | **Python and all six CPU classifiers included** |
+| **Updates** | Existing Windows downloaded-package workflow | Automatic daily GitHub check; optional manual check and verified download |
+| **Instructions** | [Windows guide](docs/INSTALLATION.md) | [Mac guide and security authorization](docs/MAC_INSTALLER.md) |
+
+Both packages are research previews. Choose only the installer for your operating system. The Mac download is approximately **173 MB** and installs without Homebrew, a compiler or additional runtime downloads. Windows packages and installation steps remain available below.
+
 ### New: prepare a cloud for an existing model
 
 Open **Classification → Supervised workflow → 7. Classify a cloud → Prepare data for this model**. Choose a cloud already loaded in CloudCompare **or a LAS/LAZ file on disk**, select a trusted saved model and a job folder. ALiS reads the required fields and scales, prepares bounded spatial blocks with neighbourhood overlap, and classifies them without retraining. Completed blocks can be resumed. Review the output report before applying labels.
 
-This workflow requires the separate Python runtime. It preserves every source point; it does not silently downsample or change model radii. Memory limits are estimates, not an OS-enforced quota. Terrain/HAG needs explicit compatible settings. [Instructions, validation and limitations →](docs/MODEL_PREPARATION.md)
+This workflow requires Python: it is included in the Mac installer; Windows uses the separate runtime described below. It preserves every source point; it does not silently downsample or change model radii. Memory limits are estimates, not an OS-enforced quota. Terrain/HAG needs explicit compatible settings. [Instructions, validation and limitations →](docs/MODEL_PREPARATION.md)
+
+### Windows installation overview
 
 [![Install ALiS in six steps: install CloudCompare 2.13.2, download ALiS Setup.exe, verify and close, install into the host folder, open the plugin, then load and select a cloud. Python is optional for classifiers.](docs/media/install-guide.svg)](docs/INSTALLATION.md)
 
 **[Full step-by-step installation guide →](docs/INSTALLATION.md)** · [Installation infographic (SVG)](docs/media/install-guide.svg)
 
-### Download 0.1.0-alpha.5.7
+### Windows: download 0.1.0-alpha.5.7
 
 **[Download Windows installer](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.7/ALiS-0.1.0-alpha.5.7-CloudCompare-2.13.2-Windows-x64-Setup.exe)** · [Manual-install ZIP](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.7/ALiS-0.1.0-alpha.5.7-CloudCompare-2.13.2-Windows-x64.zip) · [Source ZIP](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.7/ALiS-0.1.0-alpha.5.7-Source.zip)
 
@@ -124,7 +141,7 @@ This workflow requires the separate Python runtime. It preserves every source po
 
 The installer is **unsigned**. Verify its origin and checksum; do not disable security protections. Packages contain no training data, pretrained weights or unpublished paper. Windows installer and ZIP contain the same native DLL and worker; choose one installation route.
 
-| Component | Current development target |
+| Component | Windows package requirements |
 | :--- | :--- |
 | Operating system | Windows x64 |
 | Host application | CloudCompare **2.13.2 stable**, **Qt 5.15.x** |
@@ -132,7 +149,7 @@ The installer is **unsigned**. Verify its origin and checksum; do not disable se
 | ML / DL operations | Separate Python runtime; optional XGBoost and PyTorch dependencies |
 | GPU | Optional; supported methods and compatible CUDA hardware/runtime only |
 
-The plugin is **not a standalone CloudCompare application** and is not compatible with arbitrary CloudCompare or Qt 6 builds. CloudCompare, Python, CUDA, training clouds and trained models are not bundled with the plugin installer.
+The **Windows plugin installer** is **not a standalone CloudCompare application** and is not compatible with arbitrary CloudCompare or Qt 6 builds. CloudCompare, Python, CUDA, training clouds and trained models are not bundled with the plugin installer.
 
 Installation:
 
@@ -145,20 +162,36 @@ Installation:
 
 For classifiers, install the separate runtime using the included CPU or CUDA setup script. **Python is not required for native terrain/features/annotation.** See [detailed steps and troubleshooting](docs/GETTING_STARTED.txt). To uninstall, select ALiS in Windows Installed Apps; user data and Python environments are retained.
 
-Source code lives in [plugin](plugin); presets in [profiles](profiles). See [third-party notices](THIRD_PARTY_NOTICES.md), [contributing](CONTRIBUTING.md) and [security guidance](SECURITY.md). Published release assets are immutable; later revisions will use new version tags.
+### macOS: download and install
+
+**[Download macOS installer (.pkg)](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.7/ALiS-0.1.0-alpha.5.7-macOS-arm64-Setup.pkg)** · [Mac source ZIP](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.7/ALiS-0.1.0-alpha.5.7-macOS-Source.zip) · [Mac SHA-256 checksums](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.7/ALiS-macOS-SHA256SUMS.txt) · [Mac validation](docs/MAC_INSTALLER_TESTS.md)
+
+1. Check **Apple Silicon** and **macOS 27 or later** in About This Mac. Intel Macs and macOS 15/26 are not supported by this package.
+2. Download the `.pkg`, save your work and quit ALiS, then open the installer. Authorize installation when macOS asks.
+3. This preview has **no Apple Developer ID signature or notarization**. If macOS blocks it, attempt to open it, then go to **System Settings → Privacy & Security → Open Anyway** and confirm. The app may need the same authorization on first launch. Managed Macs may require IT approval; do not disable Gatekeeper.
+4. Open **Applications → ALiS**. CloudCompare, the plugin, Python, LAS/LAZ support, scikit-learn, XGBoost and PyTorch are included. No separate installation or first-run dependency download is required.
+5. Load a small **copy** of a cloud, select it, inspect coordinate units and available fields, and start with a bounded test. No trained models or private survey data are bundled. Do not infer an EPSG when the source lacks a CRS.
+
+**Updates:** ALiS checks the official GitHub releases in the background at most once per day. Use **Plugins → ALiS → ALiS Settings → Updates** to check manually or disable automatic checking. Only compatible Mac packages are offered. Confirm the download, save your work, quit ALiS, then open the verified package shown in Finder. Future Mac versions need a matching installer and update manifest; publishing a Windows-only release does not update the Mac app.
+
+**Data preservation:** the installer manages `/Applications/ALiS.app` and backs up the previous bundle under `/Library/Application Support/ALiS/Backups`. It preserves external data, models, reports, preferences, other CloudCompare installations and shared dependencies. Keep personal files outside the app bundle; plugins added inside an old bundle are retained in its backup and need a compatibility check before reuse. To uninstall, quit ALiS and move ALiS.app to the Trash; your external data and backups remain.
+
+**Validation scope:** native and Python regressions, all six CPU classifiers, installer extraction, installation and the GUI update check were tested on an M4 Max with macOS 27.0.1. A second clean Mac has not yet been tested. These are software checks, not certification of scientific accuracy. [Full Mac guide →](docs/MAC_INSTALLER.md)
+
+Source code lives in [plugin](plugin); presets in [profiles](profiles). See [third-party notices](THIRD_PARTY_NOTICES.md), [contributing](CONTRIBUTING.md) and [security guidance](SECURITY.md). Existing Windows release assets are retained unchanged. Mac installers and their corresponding source/checksum assets are additional downloads; future binary revisions receive a new version or Mac build number.
 
 ## Roadmap
 
-**macOS:** [Apple Silicon support is work in progress](docs/MACOS_HANDOFF.md). No Mac download is available yet. The Windows alpha.5.7 release remains the current tested distribution.
+**macOS:** the first complete Apple Silicon package is available above. Further work covers older macOS releases, Intel builds if feasible, wider hardware validation, and future Developer ID signing/notarization.
 
 Work in progress—not a list of shipped capabilities:
 
-- Create a macOS version.
+- Extend Mac compatibility beyond the current Apple Silicon / macOS 27+ preview.
 - Broader validation across archaeological sites and acquisition conditions.
 - Improved tutorials, worked examples and documented reproducibility checks.
 - Validated adapters for external pretrained models.
 - Community-contributed datasets and model sharing with provenance, compatible labels and quality review.
-- Create a stand-alone version for Windows and macOS.
+- Simplify Windows runtime setup further; expand validation of the self-contained Mac package.
 - Implement LLM models to manage the workflow.
 
 ## Feedback & collaboration

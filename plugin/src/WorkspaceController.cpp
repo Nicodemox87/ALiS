@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 #include "WorkspaceController.h"
+#include "PlatformPaths.h"
 #include "MemorySafety.h"
 
 #include "WorkspaceDock.h"
@@ -268,27 +269,14 @@ namespace alis
 			}
 		});
 
-		QString python = qEnvironmentVariable("ALIS_PYTHON");
-		if (python.isEmpty()) python = qEnvironmentVariable("QARCHAEOLIDAR_PYTHON");
-		if (python.isEmpty()) {
-			const QString managed = QDir(QDir::homePath()).filePath(QStringLiteral(".alis/runtime-cu128/Scripts/python.exe"));
-			const QString verified = QDir(QDir::homePath()).filePath(QStringLiteral(".alis/runtime-cu128/alis-runtime-ready.json"));
-			if (QFileInfo::exists(managed) && QFileInfo::exists(verified)) python = managed;
-		}
-		if (python.isEmpty()) python = QStandardPaths::findExecutable(QStringLiteral("python.exe"));
-		if (python.isEmpty()) python = QStandardPaths::findExecutable(QStringLiteral("python"));
+		QString python = defaultPythonPath();
 		if (python.isEmpty())
 		{
 			showError(QStringLiteral("Python was not found. Install Python 3.10+ and the ALiS worker requirements, "
 			                         "or set the ALIS_PYTHON environment variable to a trusted Python executable."));
 			return;
 		}
-		QString worker = QDir(QCoreApplication::applicationDirPath()).filePath(QStringLiteral("worker/ALiS/qal_ml_worker.py"));
-		if (!QFileInfo::exists(worker))
-		{
-			const QString legacyWorker = QDir(QCoreApplication::applicationDirPath()).filePath(QStringLiteral("worker/qArchaeoLiDAR/qal_ml_worker.py"));
-			if (QFileInfo::exists(legacyWorker)) worker = legacyWorker;
-		}
+		QString worker = pythonWorkerPath();
 		const QString appData = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
 		QString defaultRepository = QDir(appData).filePath(QStringLiteral("ALiS/repository"));
 		const QString legacyRepository = QDir(appData).filePath(QStringLiteral("qArchaeoLiDAR/repository"));
@@ -2012,7 +2000,7 @@ namespace alis
 		m_mlStartedMilliseconds = QDateTime::currentMSecsSinceEpoch();
 		m_mlCancelled = false;
 		m_mlProcess->setProgram(python);
-		m_mlProcess->setArguments(QStringList() << QStringLiteral("-u") << worker << arguments);
+		m_mlProcess->setArguments(pythonIsolationArguments(python) << QStringLiteral("-u") << worker << arguments);
 		m_mlProcess->setWorkingDirectory(QFileInfo(worker).absolutePath());
 		m_dock->setBusy(true);
 		QString progressTitle = QStringLiteral("Predict ASPRS");

@@ -1,0 +1,16 @@
+diff --git a/qCC/main.cpp b/qCC/main.cpp
+index 5592747..b567351 100644
+--- a/qCC/main.cpp
++++ b/qCC/main.cpp
+@@ -160,6 +160,11 @@ int main(int argc, char **argv)
+ 	ccApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+ #endif
+ 
++#ifdef Q_OS_MACOS
++    // Qt 5 native panels hang in ViewBridge on macOS 27. Use Qt's file dialogs.
++    ccApplication::setAttribute(Qt::AA_DontUseNativeDialogs);
++#endif
++
+     ccApplication::InitOpenGL();
+ 
+ 	ccApplication app(argc, argv, commandLine);
