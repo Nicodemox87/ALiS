@@ -1,0 +1,48 @@
+ALiS complete online installer — Windows x64 — alpha.5.7 / setup revision 1
+
+This wizard checks for the compatible CloudCompare 2.13.2 / Qt5 host. If absent,
+it downloads the official installer and installs a dedicated compatible host.
+Existing incompatible application folders are not overwritten. The official
+CloudCompare installer may update its own Windows uninstall registration.
+
+The wizard also installs the ALiS plugin and creates an isolated Python 3.12
+environment with NumPy, SciPy, scikit-learn, XGBoost, laspy/lazrs and PyTorch.
+No trained models or survey data are included. Your datasets are not uploaded.
+
+Run normally as your Windows user, not with "Run as administrator". Windows
+will request administrator approval ONLY for native component installations.
+Close CloudCompare and save any work before starting. Internet is required.
+Allow at least 5 GiB free for CPU, 12 GiB for CUDA; downloads may be several GB.
+
+CPU (recommended): ML and deep learning on any supported x64 PC.
+NVIDIA CUDA: optional, needs a supported GPU and driver. Drivers are NOT installed
+or modified. A real computation verifies CUDA; a failure is reported, never
+silently labelled as success. Rerun with CPU if your GPU is unsupported.
+
+Python 3.12 is retained for compatibility with existing ALiS models. If a usable
+3.12 x64 interpreter exists it is reused without changing its packages. Otherwise
+the official Python 3.12.10 Windows installer is used (the final full-maintenance
+3.12 installer, NOT the latest security-only source release).
+
+Downloads use HTTPS and pinned SHA-256 values. Package installs use PyPI and
+the official PyTorch index, inside the dedicated venv, not global Python.
+No antivirus, execution-policy, UAC or Windows security settings are disabled.
+Individual UAC confirmations/passwords must be handled by the user.
+
+By proceeding you authorise the listed downloads and installations. Review the
+component licences before continuing:
+ALiS: GPL-2.0-or-later, included in this wizard.
+CloudCompare: https://github.com/CloudCompare/CloudCompare/blob/v2.13.2/license.txt
+Python: https://docs.python.org/3.12/license.html
+PyTorch: https://github.com/pytorch/pytorch/blob/v2.10.0/LICENSE
+Other package licences are included in their installed distributions.
+
+This research alpha is not digitally signed. Obtain it from the ALiS release
+and compare its published checksum. Stop if it differs or consult your IT team.
+
+Logs are in %LOCALAPPDATA%\ALiS\InstallerLogs. A failed step is reported clearly;
+rerunning reuses verified downloads. The previous Python selection is changed
+only after all runtime checks succeed. No earlier environments are deleted.
+
+Removing ALiS through Windows Installed Apps does not remove CloudCompare,
+Python or your models/data. Retained runtime folders can be reviewed separately.

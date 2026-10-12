@@ -1,0 +1,74 @@
+name: Windows complete installer
+on:
+  push:
+    branches: ['codex/windows-complete-installer']
+    paths: ['packaging/windows-complete/**', 'tools/build_windows_complete.py', 'tools/tests/test_windows_complete.py', '.github/workflows/windows-complete.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: windows-2022
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Unit tests and compile
+        shell: pwsh
+        run: |
+          $python = (Get-ChildItem "$env:RUNNER_TOOL_CACHE\Python\3.12.*\x64\python.exe" | Sort-Object FullName | Select-Object -Last 1).FullName
+          if (!$python) { throw 'Python 3.12 build interpreter missing on runner' }
+          & $python -m unittest discover -s tools/tests -p test_windows_complete.py -v
+          if ($LASTEXITCODE) { throw 'Unit tests failed' }
+          $iscc = 'C:\Program Files (x86)\Inno Setup 6\ISCC.exe'
+          if (!(Test-Path $iscc)) { throw 'Inno Setup 6 missing on runner' }
+          & $python tools/build_windows_complete.py --iscc $iscc
+          if ($LASTEXITCODE) { throw 'Build failed' }
+      - name: Clean-host complete CPU setup
+        shell: pwsh
+        run: |
+          $setup = (Resolve-Path output/complete-bootstrap/ALiS-0.1.0-alpha.5.7-Windows-x64-Complete-Setup-r1.exe).Path
+          $process = Start-Process -FilePath $setup -ArgumentList '/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /ALLOWADMIN=1 /BACKEND=cpu /LOG=complete-ci.log' -Wait -PassThru -WindowStyle Hidden
+          if ($process.ExitCode) { throw "Complete setup failed: $($process.ExitCode)" }
+          $success = Get-ChildItem "$env:LOCALAPPDATA\ALiS\InstallerLogs" -Filter SUCCESS.json -Recurse | Select-Object -First 1
+          if (!$success) { throw 'No verified success report' }
+          $report = Get-Content $success.FullName -Raw | ConvertFrom-Json
+          if (!$report.installed_host) { throw 'Expected a clean-host installation' }
+          & $report.python -I -c 'import torch; assert torch.__version__ == "2.10.0+cpu"'
+          if ($LASTEXITCODE) { throw 'PyTorch CPU check failed' }
+      - name: Installed-worker block regressions
+        shell: pwsh
+        run: |
+          $success = Get-ChildItem "$env:LOCALAPPDATA\ALiS\InstallerLogs" -Filter SUCCESS.json -Recurse | Select-Object -First 1
+          $r = Get-Content $success.FullName -Raw | ConvertFrom-Json
+          $env:ALIS_TEST_BLOCK_WORKER = Join-Path $r.host 'ALiS_prepare_block.exe'
+          $env:PYTHONPATH = Join-Path $r.host 'worker\ALiS'
+          $env:QT_QPA_PLATFORM = 'minimal'
+          & $r.python -m unittest discover -s plugin/worker/tests -p test_preparation.py -v
+          if ($LASTEXITCODE) { throw 'Installed-worker regression failed' }
+      - name: Save setup evidence and packages
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-complete-setup
+          path: |
+            output/complete-bootstrap/ALiS-*
+            complete-ci.log
+            ~/AppData/Local/ALiS/InstallerLogs/
+          retention-days: 30
+  publish:
+    needs: validate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: windows-complete-setup
+          path: verified
+      - name: Publish new assets without replacing existing release files
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          find verified -type f -name 'ALiS-*' -print0 | while IFS= read -r -d '' file; do
+            gh release upload v0.1.0-alpha.5.7 "$file" --repo Nicodemox87/ALiS
+          done
