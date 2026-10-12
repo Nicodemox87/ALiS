@@ -43,8 +43,15 @@ jobs:
           $env:ALIS_TEST_BLOCK_WORKER = Join-Path $r.host 'ALiS_prepare_block.exe'
           $env:PYTHONPATH = Join-Path $r.host 'worker\ALiS'
           $env:QT_QPA_PLATFORM = 'minimal'
-          & $r.python -m unittest discover -s plugin/worker/tests -p test_preparation.py -v
+          & $r.python -c 'import os, pathlib, unittest, qal_ml; assert pathlib.Path(qal_ml.__file__).resolve().is_relative_to(pathlib.Path(os.environ["PYTHONPATH"]).resolve()), qal_ml.__file__; print("Testing installed package:", qal_ml.__file__); suite=unittest.defaultTestLoader.discover("plugin/worker/tests", pattern="test_preparation.py"); result=unittest.TextTestRunner(verbosity=2).run(suite); raise SystemExit(not result.wasSuccessful())'
           if ($LASTEXITCODE) { throw 'Installed-worker regression failed' }
+      - name: Stage logs on the artifact volume
+        if: always()
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path output/complete-evidence -Force | Out-Null
+          if (Test-Path complete-ci.log) { Copy-Item -LiteralPath complete-ci.log -Destination output/complete-evidence }
+          if (Test-Path "$env:LOCALAPPDATA\ALiS\InstallerLogs") { Copy-Item -LiteralPath "$env:LOCALAPPDATA\ALiS\InstallerLogs" -Destination output/complete-evidence -Recurse }
       - name: Save setup evidence and packages
         if: always()
         uses: actions/upload-artifact@v4
@@ -52,8 +59,7 @@ jobs:
           name: windows-complete-setup
           path: |
             output/complete-bootstrap/ALiS-*
-            complete-ci.log
-            ~/AppData/Local/ALiS/InstallerLogs/
+            output/complete-evidence/
           retention-days: 30
   publish:
     needs: validate
