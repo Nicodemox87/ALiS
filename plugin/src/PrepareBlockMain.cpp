@@ -51,7 +51,7 @@ int main(int argc,char**argv){
   }
   ComputeReport report;std::string error;ComputeOptions opts;opts.maxThreadCount=j.value("threads").toInt(4);
   BlockProgress progress;
-  if(!req.empty())check(engine.compute(req,report,error,&progress,opts),error.c_str());
+  if(!req.empty()){const bool computed=engine.compute(req,report,error,&progress,opts);check(computed,error.c_str());}
   TerrainResult terrain;
   if(needsHag){
    check(j.value("allow_tiled_hag").toBool(),"HAG requires explicit tiled-terrain approval");

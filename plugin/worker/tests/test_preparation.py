@@ -32,6 +32,16 @@ class PreparationTest(unittest.TestCase):
         self.model=self.root/'model.joblib';joblib.dump(dict(schema=MODEL_SCHEMA,artifact_id='block-test',classifier_id='random_forest',model_family='random_forest',estimator=est,preprocessor=prep,feature_schema={'names':self.names,'count':len(self.names)},class_mapping={'probability_column_to_asprs':[2,6]},target_domain='asprs_working',provenance={}),self.model)
         self.config=dict(model=str(self.model),source=str(self.las),native=NATIVE,metric_units=True,block_m=4,memory_gib=.6)
     def tearDown(self):self.temp.cleanup()
+    def test_dense_neighbourhood_error_does_not_commit_features(self):
+        folder=self.root/'dense';folder.mkdir();n=200001
+        a=np.arange(n,dtype=np.float64)
+        xyz=np.column_stack((a%101,(a//101)%101,a//10201))*.0001
+        xyz.astype('<f8').tofile(folder/'xyz.f64')
+        p.save(folder/'request.json',dict(directory=str(folder),point_count=n,origin=[0,0,0],features=['neighbor_count@10'],cache_bytes=64*1024**2,threads=2))
+        result=subprocess.run([NATIVE,str(folder/'request.json')],capture_output=True,text=True,timeout=60)
+        self.assertNotEqual(result.returncode,0)
+        self.assertIn('neighbourhood safety limit',result.stderr.lower())
+        self.assertFalse((folder/'features.f32').exists())
     def assembled(self,job):
         entries=p.read(job/'prepared.json')['blocks'];out=np.empty_like(self.global_features);seen=np.zeros(self.n,dtype=int)
         for b in entries:
