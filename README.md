@@ -137,7 +137,7 @@ This workflow requires Python: it is included in the Mac installer; the Windows 
 
 [Complete setup SHA-256](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.8/ALiS-Windows-Complete-r1-SHA256SUMS.txt) · [Complete setup source](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.8/ALiS-0.1.0-alpha.5.8-Windows-x64-Complete-Source-r1.zip) · [Plugin-only checksums](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.8/CHECKSUMS_SHA256.txt) · [Release notes](docs/RELEASE_ALPHA58.md) · [Build from source](BUILDING.md)
 
-[Current Windows prerelease](https://github.com/Nicodemox87/ALiS/releases/tag/v0.1.0-alpha.5.8) · [Fixes and validation](docs/RELEASE_ALPHA58.md). Historical alpha.5.7 evidence: [installer](docs/WINDOWS_COMPLETE_VALIDATION.md), [native package](docs/RELEASE_VALIDATION.md). [Repository backup downloads](downloads) retain the historical alpha.5.7 packages; use the current release above for updates.
+[Current Windows prerelease](https://github.com/Nicodemox87/ALiS/releases/tag/v0.1.0-alpha.5.8) · [Fixes and limits](docs/RELEASE_ALPHA58.md) · [Validation](docs/VALIDATION_ALPHA58.md). Historical alpha.5.7 evidence: [installer](docs/WINDOWS_COMPLETE_VALIDATION.md), [native package](docs/RELEASE_VALIDATION.md). [Repository backup downloads](downloads) retain the historical alpha.5.7 packages; use the current release above for updates.
 
 The installer is **unsigned**. Verify its origin and checksum; do not disable security protections. Packages contain no training data, pretrained weights or unpublished paper. The complete online wizard installs prerequisites and the alpha.5.8 plugin; the plugin-only installer/ZIP remain alternatives for managed environments.
 
