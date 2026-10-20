@@ -523,6 +523,7 @@ namespace
 		std::atomic<bool> failed { false };
 		std::atomic<bool> neighbourhoodLimitExceeded { false };
 		std::size_t candidateLimit = 200000;
+		bool inspectCandidateCells = false;
 		CCCoreLib::GenericProgressCallback* callback = nullptr;
 	};
 
@@ -759,7 +760,7 @@ namespace
 			// sorted Morton index before letting it allocate that buffer.
 			// One extra shell covers boundary rounding in the upstream search.
 			const auto& codes=cell.parentOctree->pointsAndTheirCellCodes();
-			if(context->candidateLimit && codes.size()>context->candidateLimit) {
+			if(context->inspectCandidateCells) {
 				const double cellSize=cell.parentOctree->getCellSize(cell.level);
 				const int side=1<<cell.level;
 				const int reach=cellSize>0 ? int(std::min(double(side),1+std::ceil(context->scales->back().localRadius/cellSize))) : side;
@@ -1403,6 +1404,25 @@ namespace alis
 		void* parameters[] = { &context };
 		const PointCoordinateType maximumLocalRadius = static_cast<PointCoordinateType>(scales.back().localRadius);
 		const unsigned char octreeLevel = m_impl->octree->findBestLevelForAGivenNeighbourhoodSizeExtraction(maximumLocalRadius);
+		if(context.candidateLimit && pointCount>context.candidateLimit) {
+			// A single allocation-free pass bounds every cell's population.
+			// Sparse/ordinary clouds can then skip per-cell cube lookups entirely.
+			const auto& codes=m_impl->octree->pointsAndTheirCellCodes();
+			const int shift=3*(CCCoreLib::DgmOctree::MAX_OCTREE_LEVEL-octreeLevel);
+			std::size_t population=0, maximumPopulation=0;
+			auto previous=codes.front().theCode>>shift;
+			for(std::size_t i=0;i<codes.size();++i) {
+				if((i&65535)==0 && progress && progress->isCancelRequested()){error="Feature computation was canceled during the neighbourhood preflight.";return false;}
+				const auto code=codes[i].theCode>>shift;
+				if(code!=previous){maximumPopulation=std::max(maximumPopulation,population);population=0;previous=code;}
+				++population;
+			}
+			maximumPopulation=std::max(maximumPopulation,population);
+			const double side=double(1<<octreeLevel), size=m_impl->octree->getCellSize(octreeLevel);
+			const double reach=size>0 ? std::min(side,1+std::ceil(scales.back().localRadius/size)) : side;
+			const long double width=std::min(side,2*reach+1);
+			context.inspectCandidateCells=static_cast<long double>(maximumPopulation)*width*width*width>context.candidateLimit;
+		}
 		const unsigned processedCells = m_impl->octree->executeFunctionForAllCellsAtLevel(
 			octreeLevel,
 			&computeFeaturesInCell,
