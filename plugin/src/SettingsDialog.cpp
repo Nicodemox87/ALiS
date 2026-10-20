@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 #include "SettingsDialog.h"
 #include "MacUpdates.h"
+#include "WindowsUpdates.h"
 #include "ModelCatalog.h"
 
 #include <QCheckBox>
@@ -30,36 +31,21 @@
 
 namespace
 {
-	const QString CurrentVersion = QStringLiteral("0.1.0-alpha.5.7");
+	const QString CurrentVersion = QStringLiteral("0.1.0-alpha.5.8");
 
 	QVector<int> versionParts(const QString& value)
 	{
-		const QRegularExpression expression(QStringLiteral("^(\\d+)\\.(\\d+)\\.(\\d+)(?:-alpha\\.(\\d+))?"),
-			QRegularExpression::CaseInsensitiveOption);
-		const QRegularExpressionMatch match = expression.match(value);
-		if (!match.hasMatch()) return {};
-		return {match.captured(1).toInt(), match.captured(2).toInt(), match.captured(3).toInt(),
-			match.captured(4).isEmpty() ? 1000000 : match.captured(4).toInt()};
+		return alis::windowsVersionParts(value);
 	}
 
 	QString installerVersion(const QFileInfo& installer)
 	{
-		const QRegularExpression expression(QStringLiteral("^ALiS-(.+)-CloudCompare-.*-Setup\\.exe$"),
-			QRegularExpression::CaseInsensitiveOption);
-		const QRegularExpressionMatch match = expression.match(installer.fileName());
-		return match.hasMatch() ? match.captured(1) : QString();
+		return alis::windowsInstallerVersion(installer.fileName());
 	}
 
 	bool newerVersion(const QString& candidate, const QString& reference)
 	{
-		const QVector<int> left = versionParts(candidate);
-		const QVector<int> right = versionParts(reference);
-		if (left.isEmpty() || right.isEmpty()) return false;
-		for (int i = 0; i < qMin(left.size(), right.size()); ++i)
-		{
-			if (left[i] != right[i]) return left[i] > right[i];
-		}
-		return false;
+		return alis::newerWindowsVersion(candidate,reference);
 	}
 
 	QString newestLocalInstaller()
@@ -74,7 +60,7 @@ namespace
 		auto considerDirectory = [&bestPath, &bestVersion](const QString& directory)
 		{
 			const QDir dir(directory);
-			for (const QFileInfo& candidate : dir.entryInfoList(QStringList() << QStringLiteral("ALiS-*-Setup.exe"), QDir::Files))
+			for (const QFileInfo& candidate : dir.entryInfoList(QStringList() << QStringLiteral("ALiS-*-Setup*.exe"), QDir::Files))
 			{
 				const QString version = installerVersion(candidate);
 				if (newerVersion(version, bestVersion))
@@ -101,7 +87,7 @@ namespace
 		if (!installer.isFile() || installerVersion(installer).isEmpty())
 		{
 			QMessageBox::warning(parent, QStringLiteral("Invalid update package"),
-				QStringLiteral("Choose an ALiS Windows Setup package named ALiS-…-CloudCompare-…-Setup.exe."));
+				QStringLiteral("Choose an ALiS Windows plugin-only Setup.exe or Windows-x64-Complete-Setup-r1.exe package."));
 			return false;
 		}
 		if (QMessageBox::question(parent, QStringLiteral("Install ALiS update"),
@@ -112,7 +98,8 @@ namespace
 		// Pin the update to the host that is currently running ALiS. Inno Setup
 		// otherwise reuses the last installation directory, which may be another
 		// (and ABI-incompatible) CloudCompare/Qt installation on the same PC.
-		const QStringList arguments{QStringLiteral("/DIR=%1").arg(QDir::toNativeSeparators(QCoreApplication::applicationDirPath()))};
+		const QString key=installer.fileName().contains(QStringLiteral("-Complete-Setup-"),Qt::CaseInsensitive)?QStringLiteral("/HOSTDIR=%1"):QStringLiteral("/DIR=%1");
+		const QStringList arguments{key.arg(QDir::toNativeSeparators(QCoreApplication::applicationDirPath()))};
 		if (QProcess::startDetached(path, arguments)) return true;
 		QMessageBox::critical(parent, QStringLiteral("Update launch failed"),
 			QStringLiteral("Windows could not start the selected installer."));
@@ -182,7 +169,7 @@ namespace alis
 			"<a href='mailto:nicodemo.abate@cnr.it'>nicodemo.abate@cnr.it</a></p>"
 			"<p>Built as one CloudCompare plugin suite. Thanks to the CloudCompare, CCCoreLib, qCSF, q3DMASC, lidR, scikit-learn, XGBoost and scientific open-source communities.</p>"
 			"<hr><h3>Testing Preview</h3>"
-			"<p><b>Version 0.1.0-alpha.5.7 — test and evaluation build.</b> "
+			"<p><b>Version 0.1.0-alpha.5.8 — test and evaluation build.</b> "
 			"This preview may be used for testing, scientific evaluation and workflow validation. "
 			"It is not a certified production release: classifications and derived products must be reviewed by a qualified operator, and original data should be preserved.</p>"
 			"<p>Distributed under the GNU GPL v2 or later; see the included license and testing notice.</p>"
@@ -195,7 +182,7 @@ namespace alis
 			"<p>Roussel et al., <i>lidR: Airborne LiDAR Data Manipulation and Visualization for Forestry Applications</i>.</p>"
 			"<p>ASPRS LAS Specification 1.4 R16 / 1.5 R00; CloudCompare and q3DMASC technical documentation.</p>")), QStringLiteral("Bibliography"));
 		tabs->addTab(readOnlyPage(QStringLiteral(
-			"<h2>What's new — 0.1.0-alpha.5.7 Testing Preview</h2>"
+			"<h2>What's new — 0.1.0-alpha.5.8 Testing Preview</h2><p>Annotation selection fixes; bounded feature neighbourhood buffers, RAM preflight, limited CPU workers and memory-pressure cancellation. Update detection now compares every alpha version component and accepts complete installers.</p>"
 			"<p><b>Prepare data for this model:</b> exact model feature schema, loaded CC snapshots or LAS/LAZ on disk; adaptive bounded blocks, radius-preserving halo, checkpoints and isolated native processing. Derived predictions and confidence can be returned to CC without replacing source labels. Tiled terrain requires explicit review.</p>"
 			"<p>Main branding now pairs ALiS with the unchanged CNR-ISPC institutional mark below. Small toolbar and Windows icons remain ALiS-only for readability.</p>"
 			"<p>Updated visual identity: vegetation, temple and LiDAR logo, coordinated navy/red icons for the workspace, annotation, classification, terrain, features and settings. Installer and shortcuts use the same identity. Processing algorithms, data and model formats are unchanged.</p>"
@@ -217,7 +204,7 @@ namespace alis
 		QLabel* updateInfo = new QLabel(QStringLiteral(
 			"ALiS can find a newer Setup package already downloaded in Downloads, on the Desktop or in the last selected folder. "
 			"The updater targets the CloudCompare installation that contains this running plugin; save your session and close CloudCompare when the installer asks. "
-			"A signed online release channel will be connected here when the public repository is published."));
+			"Download new packages from the official ALiS GitHub releases page."));
 		updateInfo->setWordWrap(true); updatesLayout->addWidget(updateInfo);
 		QLabel* hostPath = new QLabel(QStringLiteral("Current CloudCompare folder: %1").arg(QDir::toNativeSeparators(QCoreApplication::applicationDirPath())));
 		hostPath->setTextInteractionFlags(Qt::TextSelectableByMouse); hostPath->setWordWrap(true); updatesLayout->addWidget(hostPath);
@@ -250,7 +237,7 @@ namespace alis
 			QSettings settings;
 			const QString path = QFileDialog::getOpenFileName(this, QStringLiteral("Select ALiS update installer"),
 				settings.value(QStringLiteral("ALiS/lastUpdateDirectory")).toString(),
-				QStringLiteral("ALiS Windows Setup (ALiS-*-Setup.exe);;Applications (*.exe)"));
+				QStringLiteral("ALiS Windows Setup (ALiS-*-Setup*.exe);;Applications (*.exe)"));
 			if (path.isEmpty()) return;
 			launchInstaller(this, path);
 		});

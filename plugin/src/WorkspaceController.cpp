@@ -1180,8 +1180,10 @@ namespace alis
 			for (double radius : cleanPositiveRadii(radiiMetres)) { FeatureRequest request; request.feature = feature; request.radius = radius; requests.push_back(request); }
 		}
 		if (requests.empty()) { showError(QStringLiteral("Only HAG was selected; compute it in Terrain.")); return; }
-		const double estimatedBytes = double(m_selectedCloud->size()) * (128.0 + 12.0 * requests.size());
-		if (estimatedBytes > double(availableRamBytes()) * .40) {
+		const auto initialFreeRam=availableRamBytes();
+		const double estimatedBytes = double(m_selectedCloud->size()) * (128.0 + 12.0 * requests.size())
+			+ 4.0*std::min<unsigned>(m_selectedCloud->size(),200000)*96.0;
+		if (estimatedBytes > double(initialFreeRam) * .40) {
 			showError(QStringLiteral("Full-cloud features would require approximately %1 GiB of additional RAM, including cache, octree and Scalar Fields. Processing was not started. Use Classification > Supervised > 7 > Prepare data for this model for bounded blocks from this loaded cloud or directly from LAS/LAZ. Model radii are preserved.").arg(estimatedBytes / (1024.*1024.*1024.), 0, 'f', 1));
 			return;
 		}
@@ -1195,16 +1197,24 @@ namespace alis
 		progress.setMethodTitle(QStringLiteral("ALiS — multiscale feature computation"));
 		progress.setInfo(QStringLiteral("Building/reusing the octree and computing neighbourhood features…"));
 		ComputeReport report; std::string error; ComputeOptions options;
+		options.additionalMemoryBudget=static_cast<std::size_t>(initialFreeRam*2/5);
+		options.maxThreadCount=4;
 		FeatureProgress workerProgress;
 		connect(&progress, &QProgressDialog::canceled, &progress, [&]() { workerProgress.canceled.store(true); });
 		progress.show();
 		bool success = false;
+		bool memoryPressure = false;
 		try
 		{
 			auto future = std::async(std::launch::async, [&]() { return found->second->compute(requests, report, error, &workerProgress, options); });
 			QEventLoop loop;
 			QTimer poll;
+			unsigned polls=0;
+			const auto reserveRam=std::max<std::uint64_t>(512ull<<20,std::min<std::uint64_t>(2ull<<30,initialFreeRam/10));
 			connect(&poll, &QTimer::timeout, &loop, [&]() {
+				if(++polls%20==0 && availableRamBytes()<reserveRam) {
+					memoryPressure=true;workerProgress.canceled.store(true);
+				}
 				QString title, info;
 				{ std::lock_guard<std::mutex> lock(workerProgress.mutex); title = workerProgress.title; info = workerProgress.info; }
 				progress.setWindowTitle(title);
@@ -1217,7 +1227,7 @@ namespace alis
 			success = future.get();
 		}
 		catch (const std::exception& exception) { error = exception.what(); }
-		if (!success || workerProgress.canceled.load()) { progress.hide(); m_dock->clearProgress(); showError(workerProgress.canceled.load() ? QStringLiteral("Feature computation canceled. No new Scalar Fields were published.") : QString::fromStdString(error)); return; }
+		if (!success || workerProgress.canceled.load()) { progress.hide(); m_dock->clearProgress(); showError(memoryPressure ? QStringLiteral("Feature computation stopped because available RAM fell below the safety reserve. No new Scalar Fields were published. Free memory or use bounded spatial blocks.") : workerProgress.canceled.load() ? QStringLiteral("Feature computation canceled. No new Scalar Fields were published.") : QString::fromStdString(error)); return; }
 		QStringList published;QString publicationError;
 		m_dock->setProgress(QStringLiteral("Publishing feature scalar fields"),0,0,false);
 		progress.setMethodTitle(QStringLiteral("ALiS — publishing feature fields"));

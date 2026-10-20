@@ -101,6 +101,16 @@ namespace alis
 			};
 			drag(canvas,canvas->screen({{-1,-1,0}}),canvas->screen({{24.95,60,0}}),Qt::NoModifier);
 			check(studio.m_selectedCount==125000, "real rectangle gesture selects first half");
+			// A real release can arrive without the final move (coalescing,
+			// remote desktop, rapid drag); the release position must win.
+			{
+				QMouseEvent p(QEvent::MouseButtonPress,canvas->screen({{25,-1,0}}),Qt::LeftButton,Qt::LeftButton,Qt::NoModifier); QApplication::sendEvent(canvas,&p);
+				QMouseEvent r(QEvent::MouseButtonRelease,canvas->screen({{60,60,0}}),Qt::LeftButton,Qt::NoButton,Qt::NoModifier); QApplication::sendEvent(canvas,&r);
+				check(studio.m_selectedCount==125000 && !studio.m_selected[0] && studio.m_selected[499], "rectangle release without moves uses final coordinates");
+				drag(canvas,canvas->screen({{60,60,0}}),canvas->screen({{25,-1,0}}),Qt::NoModifier);
+				check(studio.m_selectedCount==125000 && studio.m_selected[499], "reverse rectangle drag selects identical points");
+				drag(canvas,canvas->screen({{-1,-1,0}}),canvas->screen({{24.95,60,0}}),Qt::NoModifier);
+			}
 			drag(canvas,canvas->screen({{25,-1,0}}),canvas->screen({{60,60,0}}),Qt::ControlModifier);
 			check(studio.m_selectedCount==250000 && studio.m_mode->currentIndex()==0, "Ctrl adds second half without changing Replace menu");
 			drag(canvas,canvas->screen({{25,-1,0}}),canvas->screen({{60,60,0}}),Qt::NoModifier);
@@ -112,6 +122,30 @@ namespace alis
 			QMouseEvent polygonStart(QEvent::MouseButtonPress,QPointF(40,40),Qt::LeftButton,Qt::LeftButton,Qt::ControlModifier); QApplication::sendEvent(canvas,&polygonStart);
 			QMouseEvent polygonNext(QEvent::MouseButtonPress,QPointF(60,40),Qt::LeftButton,Qt::LeftButton,Qt::NoModifier); QApplication::sendEvent(canvas,&polygonNext);
 			check(canvas->m_gestureMode==1 && canvas->m_drawing, "polygon keeps Ctrl mode from first vertex"); canvas->cancelPath();
+			{
+				auto click=[&](QPointF p){
+					QMouseEvent press(QEvent::MouseButtonPress,p,Qt::LeftButton,Qt::LeftButton,Qt::NoModifier);QApplication::sendEvent(canvas,&press);
+					QMouseEvent release(QEvent::MouseButtonRelease,p,Qt::LeftButton,Qt::NoButton,Qt::NoModifier);QApplication::sendEvent(canvas,&release);
+				};
+				const QPointF a=canvas->screen({{-1,-1,0}}), b=canvas->screen({{24.95,-1,0}}), c=canvas->screen({{24.95,60,0}}), d=canvas->screen({{-1,60,0}});
+				click(a);
+				QMouseEvent hover(QEvent::MouseMove,b,Qt::NoButton,Qt::NoButton,Qt::NoModifier);QApplication::sendEvent(canvas,&hover);
+				check(canvas->m_hasHover && canvas->m_hover==b && canvas->m_path.size()==1, "polygon hover previews edge without committing a vertex");
+				click(b);click(c);
+				QMouseEvent finish(QEvent::MouseButtonDblClick,d,Qt::LeftButton,Qt::LeftButton,Qt::NoModifier);QApplication::sendEvent(canvas,&finish);
+				check(studio.m_selectedCount==125000 && !canvas->m_drawing, "polygon double-click includes its actual final vertex");
+				const auto selected=studio.m_selected;
+				click(a);click(b);click(a);
+				QKeyEvent enter(QEvent::KeyPress,Qt::Key_Return,Qt::NoModifier);QApplication::sendEvent(canvas,&enter);
+				check(studio.m_selected==selected, "degenerate polygon does not clear previous selection");
+				click(a);click(b);click(c);
+				QKeyEvent backspace(QEvent::KeyPress,Qt::Key_Backspace,Qt::NoModifier);QApplication::sendEvent(canvas,&backspace);
+				check(canvas->m_path.size()==2,"Backspace removes one polygon vertex");
+				click(c);click(d);QApplication::sendEvent(canvas,&enter);
+				check(studio.m_selectedCount==125000 && !canvas->m_drawing,"Enter commits clicked polygon vertices");
+				// Restore the preceding test's full selection for wand checks.
+				studio.selectPolygon(0,1,rectangle);
+			}
 			studio.m_tool->setCurrentIndex(3); studio.m_wandRadius->setValue(.1);
 			const auto beforeWand=studio.m_selectedCount;
 			QMouseEvent wand(QEvent::MouseButtonPress,canvas->screen({{0,0,0}}),Qt::LeftButton,Qt::LeftButton,Qt::ControlModifier); QApplication::sendEvent(canvas,&wand);

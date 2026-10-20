@@ -7,9 +7,10 @@ import json
 import shutil
 import subprocess
 import zipfile
+from refresh_complete_manifest import refresh
 
-VERSION = '0.1.0-alpha.5.7'
 ROOT = Path(__file__).resolve().parents[1]
+VERSION = json.loads((ROOT/'plugin/info.json').read_text(encoding='utf-8'))['version']
 
 def digest(path):
     return hashlib.file_digest(path.open('rb'), 'sha256').hexdigest()
@@ -67,12 +68,14 @@ def main():
     zip_path = out/f'ALiS-{VERSION}-CloudCompare-2.13.2-Windows-x64.zip'
     archive(stage, zip_path)
     subprocess.run([str(args.iscc), '/O'+str(out), str(ROOT/'packaging/ALiS.iss')], check=True)
+    refresh(ROOT,VERSION,out/f'ALiS-{VERSION}-CloudCompare-2.13.2-Windows-x64-Setup.exe',digest(args.dll),digest(args.block_worker))
     source_paths = []
     for folder in ['plugin', 'profiles', 'tools', 'third_party', 'docs', '.github']:
         source_paths.extend(files(ROOT/folder))
     source_paths.extend(p for p in ROOT.iterdir() if p.is_file() and p.suffix in ['.md', '.txt', '.cff'])
     source_paths.extend([ROOT/'LICENSE', ROOT/'.gitignore', ROOT/'packaging/ALiS.iss', ROOT/'packaging/ALiS Launcher.cmd'])
     source_paths.extend(files(ROOT/'packaging/assets'))
+    source_paths.extend(files(ROOT/'packaging/windows-complete'))
     archive(ROOT, out/f'ALiS-{VERSION}-Source.zip', sorted(set(source_paths)))
     products = sorted(out.glob(f'ALiS-{VERSION}-*.zip')) + sorted(out.glob(f'ALiS-{VERSION}-*.exe'))
     (out/'CHECKSUMS_SHA256.txt').write_text(''.join(f'{digest(p)}  {p.name}\n' for p in products), encoding='ascii')

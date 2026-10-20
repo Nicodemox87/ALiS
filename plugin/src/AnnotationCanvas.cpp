@@ -26,7 +26,7 @@ namespace alis
 		format.setProfile(QSurfaceFormat::NoProfile); format.setDepthBufferSize(24); setFormat(format);
 		setMinimumSize(250,170); setFocusPolicy(Qt::StrongFocus); setMouseTracking(true);
 		setObjectName(QStringLiteral("ALiS.Studio.View.%1").arg(panel));
-		setToolTip(QStringLiteral("Left: select; hold Ctrl at the start to ADD. Polygon: double-click to finish. Wheel: zoom. Middle drag: pan. Right drag: rotate in 3D, pan in orthographic views. Esc cancels the outline. Selections include ALL points through the slab, not just the frontmost visible points."));
+		setToolTip(QStringLiteral("Left: select; hold Ctrl at the start to ADD. Rectangle/lasso: drag and release. Polygon: click vertices, then double-click or Enter to finish; Backspace removes the last vertex. Wheel: zoom. Middle drag: pan. Right drag: rotate in 3D, pan in orthographic views. Esc cancels the outline. Selections include ALL points through the slab, not just the frontmost visible points."));
 		m_camera.orient(view, s->m_axis->currentIndex(), s->m_sectionNormal); fit();
 	}
 	AnnotationCanvas::~AnnotationCanvas()
@@ -68,7 +68,7 @@ namespace alis
 		invalidate();
 	}
 	void AnnotationCanvas::invalidate() { update(); }
-	void AnnotationCanvas::cancelPath() { m_path.clear(); m_drawing=false; update(); }
+	void AnnotationCanvas::cancelPath() { m_path.clear(); m_drawing=false; m_hasHover=false; update(); }
 	QPointF AnnotationCanvas::screen(const AnnotationVector& p) const
 	{ const auto q=m_camera.project(p); return {q.first*m_camera.pixelsPerUnit+width()*.5,height()*.5-q.second*m_camera.pixelsPerUnit}; }
 	QPointF AnnotationCanvas::plane(QPointF p) const
@@ -156,7 +156,12 @@ namespace alis
 		{
 			painter.setPen(QPen(QColor(56,189,248),2)); painter.setBrush(QColor(56,189,248,30));
 			if(s->m_placingSection) { painter.setBrush(Qt::NoBrush); painter.drawPolyline(m_path); }
-			else if(s->m_tool->currentIndex()==0 && m_path.size()>=2) painter.drawRect(QRectF(m_path.front(),m_path.back()).normalized()); else painter.drawPolygon(m_path);
+			else if(s->m_tool->currentIndex()==0 && m_path.size()>=2) painter.drawRect(QRectF(m_path.front(),m_path.back()).normalized());
+			else {
+				QPolygonF outline=m_path;
+				if(s->m_tool->currentIndex()==1 && m_hasHover) outline << m_hover;
+				painter.drawPolygon(outline);
+			}
 		}
 		if(s->m_placingSection) { painter.setPen(QColor(56,189,248)); painter.drawText(12,20,m_camera.view==AnnotationView::Top ? QStringLiteral("Drag section line here — Esc cancels") : QStringLiteral("Draw in Top / XY")); }
 		painter.setBrush(Qt::NoBrush); painter.setPen(QPen(s->m_activeCanvas==this?QColor(56,189,248):QColor(60,75,90),2)); painter.drawRect(rect().adjusted(1,1,-1,-1));
@@ -192,7 +197,9 @@ namespace alis
 			}
 			if(seed!=std::numeric_limits<unsigned>::max()) s->selectWand(seed,m_gestureMode); return;
 		}
-		if(tool!=1) m_path.clear(); m_path<<e->localPos(); m_drawing=true; update();
+		if(tool!=1) m_path.clear();
+		if(m_path.isEmpty() || m_path.back()!=e->localPos()) m_path<<e->localPos();
+		m_hover=e->localPos(); m_hasHover=tool==1; m_drawing=true; update();
 	}
 	void AnnotationCanvas::mouseMoveEvent(QMouseEvent* e)
 	{
@@ -203,6 +210,10 @@ namespace alis
 			else for(int i=0;i<3;++i)m_camera.center[i]+=(-delta.x()*m_camera.right[i]+delta.y()*m_camera.up[i])/m_camera.pixelsPerUnit;
 			invalidate(); s->cameraChanged(this); return;
 		}
+		// Polygon vertices are clicks, but the live edge follows the cursor
+		// with NO button held. Do not add hover samples to the committed path.
+		if(m_drawing && !s->m_placingSection && s->m_tool->currentIndex()==1)
+		{ m_hover=e->localPos(); m_hasHover=true; update(); return; }
 		if(!m_drawing || !(e->buttons()&Qt::LeftButton))return;
 		if(s->m_placingSection || s->m_tool->currentIndex()==0){if(m_path.size()==1)m_path<<e->localPos();else m_path.back()=e->localPos();}
 		else if(s->m_tool->currentIndex()==2 && (m_path.back()-e->localPos()).manhattanLength()>=3)m_path<<e->localPos();
@@ -218,12 +229,29 @@ namespace alis
 			auto world=[this](QPointF screenPoint) { const auto q=plane(screenPoint); AnnotationVector result=m_camera.center; for(int i=0;i<3;++i) result[i]+=q.x()*m_camera.right[i]+q.y()*m_camera.up[i]; return result; };
 			s->placeSection(world(start),world(end)); return;
 		}
-		if(e->button()==Qt::LeftButton && m_drawing && s->m_tool->currentIndex()!=1)finishPath();
+		if(e->button()==Qt::LeftButton && m_drawing && s->m_tool->currentIndex()!=1) {
+			// Qt/OS may coalesce mouse moves. Release is authoritative, even
+			// when no MouseMove was delivered (fast drags / remote desktops).
+			if(s->m_tool->currentIndex()==0) {
+				if(m_path.size()==1) m_path<<e->localPos(); else m_path.back()=e->localPos();
+			} else if(m_path.isEmpty() || m_path.back()!=e->localPos()) m_path<<e->localPos();
+			finishPath();
+		}
 	}
 	void AnnotationCanvas::mouseDoubleClickEvent(QMouseEvent* e)
-	{ if(!s->m_placingSection && e->button()==Qt::LeftButton && s->m_tool->currentIndex()==1 && m_drawing)finishPath(); }
+	{
+		if(!s->m_placingSection && e->button()==Qt::LeftButton && s->m_tool->currentIndex()==1 && m_drawing) {
+			if(m_path.isEmpty() || m_path.back()!=e->localPos()) m_path<<e->localPos();
+			finishPath();
+		}
+	}
 	void AnnotationCanvas::keyPressEvent(QKeyEvent* e)
-	{ if(e->key()==Qt::Key_Escape){cancelPath();if(s->m_placingSection)s->m_drawSection->setChecked(false);e->accept();}else QOpenGLWidget::keyPressEvent(e); }
+	{
+		if(e->key()==Qt::Key_Escape){cancelPath();m_panning=false;m_rotating=false;if(s->m_placingSection)s->m_drawSection->setChecked(false);e->accept();}
+		else if((e->key()==Qt::Key_Return || e->key()==Qt::Key_Enter) && m_drawing && !s->m_placingSection && s->m_tool->currentIndex()==1){finishPath();e->accept();}
+		else if(e->key()==Qt::Key_Backspace && m_drawing && !s->m_placingSection && s->m_tool->currentIndex()==1){m_path.removeLast();if(m_path.isEmpty())cancelPath();else update();e->accept();}
+		else QOpenGLWidget::keyPressEvent(e);
+	}
 	void AnnotationCanvas::wheelEvent(QWheelEvent* e)
 	{
 		s->setActiveCanvas(this); cancelPath();m_autoFit=false;const QPointF before=plane(e->position());
@@ -236,7 +264,18 @@ namespace alis
 		QPolygonF polygon;
 		if(s->m_tool->currentIndex()==0 && m_path.size()>=2){const QRectF r=QRectF(m_path.front(),m_path.back()).normalized();if(r.width()>=3 && r.height()>=3)polygon<<r.topLeft()<<r.topRight()<<r.bottomRight()<<r.bottomLeft();}
 		else polygon=m_path;
+		// Reject clicks/lines without clearing a previous Replace selection.
+		// Test extent and non-collinearity, not signed area: a self-crossing
+		// lasso uses the even/odd fill rule and can have zero signed area.
+		bool valid=false;
+		const auto bounds=polygon.boundingRect();
+		if(polygon.size()>=3 && bounds.width()>=3 && bounds.height()>=3) {
+			for(int i=1;i+1<polygon.size();++i) {
+				const auto a=polygon[i]-polygon[0], b=polygon[i+1]-polygon[0];
+				if(std::abs(a.x()*b.y()-a.y()*b.x())>=1) {valid=true;break;}
+			}
+		}
 		for(QPointF& point:polygon)point=plane(point);
-		cancelPath();if(polygon.size()>=3)s->selectProjectedPolygon(m_camera,polygon,m_gestureMode);
+		cancelPath();if(valid)s->selectProjectedPolygon(m_camera,polygon,m_gestureMode);
 	}
 }

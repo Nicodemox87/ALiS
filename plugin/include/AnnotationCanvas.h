@@ -52,6 +52,8 @@ namespace alis
 		bool m_glReady = false, m_autoFit = true, m_drawing = false, m_panning = false, m_rotating = false;
 		int m_gestureMode = 0;
 		QPolygonF m_path;
+		QPointF m_hover;
+		bool m_hasHover = false;
 		QPoint m_previous;
 	};
 }

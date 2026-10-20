@@ -1,0 +1,87 @@
+name: Build and validate annotation and feature safety release
+on:
+  push:
+    branches: ['codex/annotation-feature-safety']
+    paths: ['plugin/**', 'tools/build_safety_release.ps1', '.github/workflows/windows-safety-release.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: windows-safety-release
+  cancel-in-progress: false
+jobs:
+  build-test-publish:
+    runs-on: windows-2022
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Build prerequisites
+        shell: pwsh
+        run: |
+          $python=(Get-ChildItem "$env:RUNNER_TOOL_CACHE\Python\3.12.*\x64\python.exe" | Sort-Object FullName | Select-Object -Last 1).FullName
+          "ALIS_BUILD_PYTHON=$python" | Out-File -LiteralPath $env:GITHUB_ENV -Append -Encoding utf8
+          & $python -m pip install aqtinstall==3.3.0
+          if($LASTEXITCODE){throw 'Qt downloader installation failed'}
+          & $python -m aqt install-qt windows desktop 5.15.2 win64_msvc2019_64 --outputdir "$env:RUNNER_TEMP/Qt"
+          if($LASTEXITCODE){throw 'Qt SDK download failed'}
+      - name: Native build and regression tests
+        shell: pwsh
+        run: ./tools/build_safety_release.ps1 -QtRoot "$env:RUNNER_TEMP/Qt/5.15.2/msvc2019_64"
+      - name: Package native plugin and complete setup
+        shell: pwsh
+        run: |
+          $qt="$env:RUNNER_TEMP/Qt/5.15.2/msvc2019_64"
+          $iscc='C:/Program Files (x86)/Inno Setup 6/ISCC.exe'
+          Invoke-WebRequest 'https://download.qt.io/archive/qt/5.15/5.15.2/submodules/qtbase-everywhere-src-5.15.2.tar.xz' -OutFile output/qtbase-everywhere-src-5.15.2.tar.xz
+          if((Get-FileHash output/qtbase-everywhere-src-5.15.2.tar.xz).Hash.ToLower() -ne '909fad2591ee367993a75d7e2ea50ad4db332f05e1c38dd7a5a274e156a4e0f8'){throw 'Qt source hash mismatch'}
+          & $env:ALIS_BUILD_PYTHON tools/package_public.py --dll "$env:ALIS_NATIVE_DIR/ALIS_PLUGIN.dll" --block-worker "$env:ALIS_NATIVE_DIR/ALiS_prepare_block.exe" --qt-minimal "$qt/plugins/platforms/qminimal.dll" --qt-source output/qtbase-everywhere-src-5.15.2.tar.xz --iscc $iscc
+          if($LASTEXITCODE){throw 'Native packaging failed'}
+          & $env:ALIS_BUILD_PYTHON tools/refresh_complete_manifest.py
+          if($LASTEXITCODE){throw 'Manifest refresh failed'}
+          & $env:ALIS_BUILD_PYTHON -m unittest discover -s tools/tests -p test_windows_complete.py -v
+          if($LASTEXITCODE){throw 'Bootstrap unit tests failed'}
+          & $env:ALIS_BUILD_PYTHON tools/build_windows_complete.py --iscc $iscc
+          if($LASTEXITCODE){throw 'Complete setup build failed'}
+          $cache="$env:LOCALAPPDATA/ALiS/InstallerCache"
+          New-Item -ItemType Directory -Path $cache -Force | Out-Null
+          Copy-Item downloads/*-Windows-x64-Setup.exe -Destination $cache
+      - name: Clean host installation and installed worker regression
+        shell: pwsh
+        run: |
+          $setup=(Get-ChildItem output/complete-bootstrap/*-Complete-Setup-r1.exe).FullName
+          $p=Start-Process -FilePath $setup -ArgumentList '/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /ALLOWADMIN=1 /BACKEND=cpu /LOG=output/complete-ci.log' -Wait -PassThru -WindowStyle Hidden
+          if($p.ExitCode){throw "Complete installation failed: $($p.ExitCode)"}
+          $s=Get-ChildItem "$env:LOCALAPPDATA/ALiS/InstallerLogs" -Filter SUCCESS.json -Recurse | Select-Object -First 1
+          if(!$s){throw 'Verified installation report missing'}
+          $r=Get-Content -LiteralPath $s.FullName -Raw | ConvertFrom-Json
+          if(!$r.installed_host){throw 'Expected a new host installation'}
+          $env:ALIS_TEST_BLOCK_WORKER=Join-Path $r.host 'ALiS_prepare_block.exe'
+          $env:PYTHONPATH=Join-Path $r.host 'worker/ALiS'
+          $env:QT_QPA_PLATFORM='minimal'
+          & $r.python -c 'import os,pathlib,unittest,qal_ml; assert pathlib.Path(qal_ml.__file__).resolve().is_relative_to(pathlib.Path(os.environ["PYTHONPATH"]).resolve()); suite=unittest.defaultTestLoader.discover("plugin/worker/tests",pattern="test_preparation.py"); raise SystemExit(not unittest.TextTestRunner(verbosity=2).run(suite).wasSuccessful())'
+          if($LASTEXITCODE){throw 'Installed block regression failed'}
+      - name: Publish alpha.5.8 after successful checks
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: pwsh
+        run: |
+          $files=@(Get-ChildItem downloads/ALiS-0.1.0-alpha.5.8-* | ForEach-Object FullName)
+          $files+=@('downloads/CHECKSUMS_SHA256.txt','downloads/VERSION.json','output/qtbase-everywhere-src-5.15.2.tar.xz')
+          $files+=@(Get-ChildItem output/complete-bootstrap/ALiS-* | ForEach-Object FullName)
+          & gh release create v0.1.0-alpha.5.8 @files --repo Nicodemox87/ALiS --target $env:GITHUB_SHA --title 'ALiS 0.1.0-alpha.5.8 — Annotation and feature safety' --notes-file docs/RELEASE_ALPHA58.md --prerelease
+          if($LASTEXITCODE){throw 'Release publication failed; existing assets were not overwritten'}
+      - name: Collect evidence
+        if: always()
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path output/evidence -Force | Out-Null
+          if(Test-Path "$env:LOCALAPPDATA/ALiS/InstallerLogs"){Copy-Item -LiteralPath "$env:LOCALAPPDATA/ALiS/InstallerLogs" -Destination output/evidence -Recurse}
+          if(Test-Path output/native-build/build/Testing){Copy-Item -LiteralPath output/native-build/build/Testing -Destination output/evidence -Recurse}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: alpha58-installation-and-test-evidence
+          path: |
+            output/evidence
+            output/complete-ci.log
+          retention-days: 30

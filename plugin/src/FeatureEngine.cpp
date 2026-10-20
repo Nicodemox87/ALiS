@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 #include "FeatureEngine.h"
+#include "MemorySafety.h"
 
 #include <ccBBox.h>
 #include <ccNormalVectors.h>
@@ -520,6 +521,9 @@ namespace
 		double inverseGlobalScale = 1.0;
 		CCVector3d globalShift { 0.0, 0.0, 0.0 };
 		std::atomic<bool> failed { false };
+		std::atomic<bool> neighbourhoodLimitExceeded { false };
+		std::size_t candidateLimit = 200000;
+		CCCoreLib::GenericProgressCallback* callback = nullptr;
 	};
 
 	double safeRatio(double numerator, double denominator)
@@ -744,11 +748,37 @@ namespace
 
 		try
 		{
+			if (context->failed.load() || (context->callback && context->callback->isCancelRequested())) return false;
 			CCCoreLib::DgmOctree::NearestNeighboursSearchStruct search;
 			search.level = cell.level;
 			cell.parentOctree->getCellPos(cell.truncatedCode, cell.level, search.cellPos, true);
 			cell.parentOctree->computeCellCenter(search.cellPos, cell.level, search.cellCenter);
 
+			// CCCoreLib retains all candidates in the surrounding cube, NOT
+			// just spherical neighbours. Count an upper bound from its existing
+			// sorted Morton index before letting it allocate that buffer.
+			// One extra shell covers boundary rounding in the upstream search.
+			const auto& codes=cell.parentOctree->pointsAndTheirCellCodes();
+			if(context->candidateLimit && codes.size()>context->candidateLimit) {
+				const double cellSize=cell.parentOctree->getCellSize(cell.level);
+				const int side=1<<cell.level;
+				const int reach=cellSize>0 ? int(std::min(double(side),1+std::ceil(context->scales->back().localRadius/cellSize))) : side;
+				const int shift=3*(CCCoreLib::DgmOctree::MAX_OCTREE_LEVEL-cell.level);
+				std::size_t count=0;
+				for(int x=std::max(0,search.cellPos.x-reach);x<=std::min(side-1,search.cellPos.x+reach);++x)
+				for(int y=std::max(0,search.cellPos.y-reach);y<=std::min(side-1,search.cellPos.y+reach);++y)
+				for(int z=std::max(0,search.cellPos.z-reach);z<=std::min(side-1,search.cellPos.z+reach);++z) {
+					if(context->failed.load() || (context->callback && context->callback->isCancelRequested())) return false;
+					const auto code=CCCoreLib::DgmOctree::GenerateTruncatedCellCode(Tuple3i(x,y,z),cell.level);
+					auto less=[shift](const CCCoreLib::DgmOctree::IndexAndCode& p, CCCoreLib::DgmOctree::CellCode c){return (p.theCode>>shift)<c;};
+					auto first=std::lower_bound(codes.begin(),codes.end(),code,less);
+					auto last=std::lower_bound(first,codes.end(),code+1,less);
+					count+=std::size_t(last-first);
+					if(count>context->candidateLimit) {
+						context->neighbourhoodLimitExceeded.store(true);context->failed.store(true);return false;
+					}
+				}
+			}
 			const unsigned cellPointCount = cell.points->size();
 			search.pointsInNeighbourhood.resize(cellPointCount);
 			for (unsigned i = 0; i < cellPointCount; ++i)
@@ -761,7 +791,7 @@ namespace
 			const ScaleWork& largestScale = context->scales->back();
 			for (unsigned localIndex = 0; localIndex < cellPointCount; ++localIndex)
 			{
-				if (context->failed.load())
+				if (context->failed.load() || (context->callback && context->callback->isCancelRequested()))
 				{
 					return false;
 				}
@@ -1273,6 +1303,16 @@ namespace alis
 			return false;
 		}
 		const std::size_t requestedBytes = missingKeys.size() * pointCount * sizeof(ScalarType);
+		const int threads=options.multiThread ? std::max(1,std::min(8,options.maxThreadCount>0?options.maxThreadCount:4)) : 1;
+		const std::uint64_t budget=options.additionalMemoryBudget ? options.additionalMemoryBudget : availableRamBytes()*2/5;
+		// Octree / cell traversal bookkeeping plus bounded per-thread search,
+		// quantiles and allocator overhead. Existing arrays already consume RAM.
+		const long double scratch=static_cast<long double>(threads)*std::min<std::size_t>(pointCount,options.maxNeighbourhoodCandidates?options.maxNeighbourhoodCandidates:pointCount)*96;
+		const long double needed=static_cast<long double>(requestedBytes)+static_cast<long double>(pointCount)*128+scratch;
+		if(needed>budget) {
+			error="Feature safety budget exceeded before allocation. Use smaller spatial blocks with full-radius overlap, fewer output fields, or free RAM. No radii or points were changed.";
+			return false;
+		}
 		const std::size_t existingBytes = m_impl->bytes();
 		if (m_impl->byteLimit
 		    && (existingBytes > m_impl->byteLimit || requestedBytes > m_impl->byteLimit - existingBytes))
@@ -1358,6 +1398,8 @@ namespace alis
 		context.scales = &scales;
 		context.inverseGlobalScale = 1.0 / globalScale;
 		context.globalShift = m_impl->cloud->getGlobalShift();
+		context.candidateLimit = options.maxNeighbourhoodCandidates;
+		context.callback = progress;
 		void* parameters[] = { &context };
 		const PointCoordinateType maximumLocalRadius = static_cast<PointCoordinateType>(scales.back().localRadius);
 		const unsigned char octreeLevel = m_impl->octree->findBestLevelForAGivenNeighbourhoodSizeExtraction(maximumLocalRadius);
@@ -1368,10 +1410,12 @@ namespace alis
 			options.multiThread,
 			progress,
 			"ALiS multiscale features",
-			options.maxThreadCount);
+			threads);
 		if (processedCells == 0 || context.failed.load() || (progress && progress->isCancelRequested()))
 		{
-			error = context.failed.load()
+			error = context.neighbourhoodLimitExceeded.load()
+			        ? "Feature neighbourhood safety limit exceeded before search allocation (dense data / large radius). Reduce the requested radius explicitly or use reviewed spatial blocks; do not shrink overlap. No neighbours were truncated and no partial feature cache was published."
+			        : context.failed.load()
 			        ? "Feature computation failed (most likely insufficient memory or a numerical worker failure)."
 			        : "Feature computation was canceled or no octree cell could be processed.";
 			return false;

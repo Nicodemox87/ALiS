@@ -1,4 +1,4 @@
-#define Version "0.1.0-alpha.5.7"
+#define Version "0.1.0-alpha.5.8"
 #define PythonURL "https://www.python.org/ftp/python/3.12.10/python-3.12.10-amd64.exe"
 #define PythonSHA "67b5635e80ea51072b87941312d00ec8927c4db9ba18938f7ad2d27b328b95fb"
 [Setup]

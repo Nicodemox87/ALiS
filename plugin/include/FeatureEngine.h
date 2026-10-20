@@ -112,8 +112,13 @@ namespace alis
 	{
 		//! Uses CCCoreLib cell-level parallelism (QtConcurrent/TBB, as configured by CloudCompare).
 		bool multiThread = true;
-		//! 0 lets CCCoreLib use its configured maximum.
-		int maxThreadCount = 0;
+		//! Conservative default; 0 is also interpreted as four, never all CPUs.
+		int maxThreadCount = 4;
+		//! Bound the octree candidate buffer BEFORE neighbourhood allocation.
+		//! A conservative cell-cube upper bound; aborts, never truncates neighbours.
+		std::size_t maxNeighbourhoodCandidates = 200000;
+		//! 0 derives a budget from currently available RAM. Excludes existing cache.
+		std::size_t additionalMemoryBudget = 0;
 	};
 
 	struct ComputeReport
