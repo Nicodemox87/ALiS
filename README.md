@@ -17,7 +17,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.7/ALiS-0.1.0-alpha.5.7-Windows-x64-Complete-Setup-r1.exe"><strong>Download Windows installer</strong></a> ·
+  <a href="https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.8/ALiS-0.1.0-alpha.5.8-Windows-x64-Complete-Setup-r1.exe"><strong>Download Windows installer</strong></a> ·
   <a href="https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.7/ALiS-0.1.0-alpha.5.7-macOS-arm64-Setup.pkg"><strong>Download macOS installer</strong></a> ·
   <a href="#getting-started">Getting started</a> ·
   <a href="#capabilities">Capabilities</a> ·
@@ -37,7 +37,7 @@ Archaeological LiDAR interpretation is not just a classification problem. It req
 
 **ALiS brings these steps into a connected CloudCompare workflow**, combining geometric analysis, expert annotation and reusable classification models. Its purpose is to support interpretation and reproducible analysis—not to replace archaeological judgement.
 
-> **Public testing version: 0.1.0-alpha.5.7.** Source, installer and manual-install package are available below. This is a research alpha, not a production-certified release.
+> **Windows testing version: 0.1.0-alpha.5.8.** Annotation selection fixes and feature memory protections are included. [Changes and limits](docs/RELEASE_ALPHA58.md). The Mac installer remains alpha.5.7 pending a matching build of these fixes. This is a research alpha.
 >
 > **Windows and macOS downloads are available separately.** The Windows complete online wizard detects or installs CloudCompare 2.13.2, installs ALiS and prepares Python with ML/deep learning. The Mac package includes CloudCompare, Python and all six classifiers; it requires **Apple Silicon and macOS 27 or later**. This Mac preview is unsigned by Apple and is not notarized.
 >
@@ -110,7 +110,7 @@ The PointNet-style classifier operates on local XYZ neighbourhoods. It is **not 
 
 | | Windows | macOS |
 | :--- | :--- | :--- |
-| **Installer** | **[Download Windows complete setup (.exe)](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.7/ALiS-0.1.0-alpha.5.7-Windows-x64-Complete-Setup-r1.exe)** | **[Download macOS (.pkg)](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.7/ALiS-0.1.0-alpha.5.7-macOS-arm64-Setup.pkg)** |
+| **Installer** | **[Download Windows complete setup (.exe)](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.8/ALiS-0.1.0-alpha.5.8-Windows-x64-Complete-Setup-r1.exe)** | **[Download macOS (.pkg)](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.7/ALiS-0.1.0-alpha.5.7-macOS-arm64-Setup.pkg)** |
 | **Computer** | Windows x64 | Apple Silicon (M1 or later), **macOS 27+**; no Intel build |
 | **CloudCompare** | Compatible **2.13.2/Qt5** detected or installed automatically | **2.13.2 included** in ALiS.app |
 | **Python and classifiers** | Python + ML/DL installed by the wizard; CPU or optional NVIDIA CUDA | **Python and all six CPU classifiers included** |
@@ -131,15 +131,15 @@ This workflow requires Python: it is included in the Mac installer; the Windows 
 
 **[Complete installation guide →](docs/WINDOWS_COMPLETE_INSTALLER.md)** · [Manual/plugin-only guide](docs/INSTALLATION.md) · [Installation infographic (SVG)](docs/media/install-guide.svg)
 
-### Windows: download 0.1.0-alpha.5.7
+### Windows: download 0.1.0-alpha.5.8
 
-**[Download Windows installer — complete setup](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.7/ALiS-0.1.0-alpha.5.7-Windows-x64-Complete-Setup-r1.exe)** · [Plugin-only installer](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.7/ALiS-0.1.0-alpha.5.7-CloudCompare-2.13.2-Windows-x64-Setup.exe) · [Manual-install ZIP](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.7/ALiS-0.1.0-alpha.5.7-CloudCompare-2.13.2-Windows-x64.zip) · [Plugin source ZIP](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.7/ALiS-0.1.0-alpha.5.7-Source.zip)
+**[Download Windows installer — complete setup](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.8/ALiS-0.1.0-alpha.5.8-Windows-x64-Complete-Setup-r1.exe)** · [Plugin-only installer](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.8/ALiS-0.1.0-alpha.5.8-CloudCompare-2.13.2-Windows-x64-Setup.exe) · [Manual-install ZIP](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.8/ALiS-0.1.0-alpha.5.8-CloudCompare-2.13.2-Windows-x64.zip) · [Plugin source ZIP](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.8/ALiS-0.1.0-alpha.5.8-Source.zip)
 
-[Complete setup SHA-256](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.7/ALiS-Windows-Complete-r1-SHA256SUMS.txt) · [Complete setup source](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.7/ALiS-0.1.0-alpha.5.7-Windows-x64-Complete-Source-r1.zip) · [Plugin-only checksums](downloads/CHECKSUMS_SHA256.txt) · [Release notes](RELEASE_NOTES.md) · [Build from source](BUILDING.md)
+[Complete setup SHA-256](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.8/ALiS-Windows-Complete-r1-SHA256SUMS.txt) · [Complete setup source](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.8/ALiS-0.1.0-alpha.5.8-Windows-x64-Complete-Source-r1.zip) · [Plugin-only checksums](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.8/CHECKSUMS_SHA256.txt) · [Release notes](docs/RELEASE_ALPHA58.md) · [Build from source](BUILDING.md)
 
-[Versioned GitHub prerelease](https://github.com/Nicodemox87/ALiS/releases/tag/v0.1.0-alpha.5.7) · [Complete installer validation](docs/WINDOWS_COMPLETE_VALIDATION.md) · [Native package validation](docs/RELEASE_VALIDATION.md). Repository-hosted plugin-only backup downloads are available in [downloads](downloads).
+[Current Windows prerelease](https://github.com/Nicodemox87/ALiS/releases/tag/v0.1.0-alpha.5.8) · [Fixes and validation](docs/RELEASE_ALPHA58.md). Historical alpha.5.7 evidence: [installer](docs/WINDOWS_COMPLETE_VALIDATION.md), [native package](docs/RELEASE_VALIDATION.md). [Repository backup downloads](downloads) retain the historical alpha.5.7 packages; use the current release above for updates.
 
-The installer is **unsigned**. Verify its origin and checksum; do not disable security protections. Packages contain no training data, pretrained weights or unpublished paper. The complete online wizard installs prerequisites and the unchanged alpha.5.7 plugin; the plugin-only installer/ZIP remain alternatives for managed environments.
+The installer is **unsigned**. Verify its origin and checksum; do not disable security protections. Packages contain no training data, pretrained weights or unpublished paper. The complete online wizard installs prerequisites and the alpha.5.8 plugin; the plugin-only installer/ZIP remain alternatives for managed environments.
 
 | Component | Windows package requirements |
 | :--- | :--- |

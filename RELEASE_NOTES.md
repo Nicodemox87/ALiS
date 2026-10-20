@@ -1,3 +1,9 @@
+# ALiS 0.1.0-alpha.5.8 — 20 October 2026
+
+Windows maintenance release: rectangle/polygon/lasso event handling, live polygon edge and keyboard completion; conservative feature RAM and dense-neighbourhood protections, bounded CPU parallelism and memory-pressure cancellation; corrected numeric alpha-version update checks. Complete setup includes CloudCompare detection/installation and Python ML/DL. See [release notes, limits and validation](docs/RELEASE_ALPHA58.md). Mac binary corrections require a matching Mac build; the alpha.5.7 Mac installer remains available.
+
+---
+
 # Windows complete online installer — 12 October 2026
 
 The main **Download Windows installer** link now supplies the new **Complete Setup r1**. It detects compatible CloudCompare 2.13.2 x64/Qt5 or installs the official host, installs the unchanged ALiS alpha.5.7 plugin, and prepares isolated Python, ML and PyTorch dependencies. Choose CPU or optional NVIDIA CUDA 12.8. Internet and confirmation of Windows administrator prompts are required; NVIDIA drivers are not installed.

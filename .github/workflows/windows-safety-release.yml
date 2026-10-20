@@ -8,7 +8,7 @@ permissions:
   contents: write
 concurrency:
   group: windows-safety-release
-  cancel-in-progress: false
+  cancel-in-progress: true
 jobs:
   build-test-publish:
     runs-on: windows-2022

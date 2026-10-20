@@ -1,6 +1,6 @@
 # Build the native plugin
 
-The released binary targets **CloudCompare 2.13.2, Windows x64, Qt 5.15.2 MSVC2019_64**, compiled with Visual Studio 2022 Build Tools. It is not ABI-compatible with arbitrary hosts. The public `plugin/` snapshot corresponds to the alpha.5.7 production source; newer unpublished study batch adapters are not part of this release.
+The released binary targets **CloudCompare 2.13.2, Windows x64, Qt 5.15.2 MSVC2019_64**, compiled with Visual Studio 2022 Build Tools. It is not ABI-compatible with arbitrary hosts. The public `plugin/` snapshot includes the alpha.5.8 annotation and feature safety corrections. `.github/workflows/windows-safety-release.yml` builds and tests the matching Windows packages from source.
 
 ## Prerequisites
 

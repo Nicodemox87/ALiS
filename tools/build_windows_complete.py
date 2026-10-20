@@ -18,7 +18,7 @@ prefix = f'ALiS-{version}-Windows-x64-Complete-'
 exe = out/(prefix+'Setup-r1.exe')
 src = out/(prefix+'Source-r1.zip')
 paths = sorted((root/'packaging/windows-complete').glob('*'))
-paths += [root/'packaging/assets/ALiS.ico', root/'LICENSE', root/'tools/build_windows_complete.py',
+paths += [root/'packaging/assets/ALiS.ico', root/'LICENSE', root/'plugin/info.json', root/'tools/build_windows_complete.py',
           root/'tools/tests/test_windows_complete.py', root/'docs/WINDOWS_COMPLETE_INSTALLER.md',
           root/'.github/workflows/windows-complete.yml']
 with zipfile.ZipFile(src,'w',zipfile.ZIP_DEFLATED,compresslevel=9) as z:

@@ -2,9 +2,9 @@
 
 **Recommended: [use the new complete online setup](WINDOWS_COMPLETE_INSTALLER.md)** to detect/install CloudCompare, ALiS, Python and ML/DL automatically. The instructions below remain valid for **plugin-only/manual installation** into an existing host.
 
-**For ALiS 0.1.0-alpha.5.7 — research testing preview.**
+**For ALiS 0.1.0-alpha.5.8 — research testing preview.**
 
-[Download plugin-only installer (existing host required)](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.7/ALiS-0.1.0-alpha.5.7-CloudCompare-2.13.2-Windows-x64-Setup.exe) · [All release assets](https://github.com/Nicodemox87/ALiS/releases/tag/v0.1.0-alpha.5.7) · [Back to home](../README.md)
+[Download plugin-only installer (existing host required)](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.8/ALiS-0.1.0-alpha.5.8-CloudCompare-2.13.2-Windows-x64-Setup.exe) · [All release assets](https://github.com/Nicodemox87/ALiS/releases/tag/v0.1.0-alpha.5.8) · [Back to home](../README.md)
 
 For the complete setup overview, see the [updated installation infographic](media/install-guide.svg).
 
@@ -18,9 +18,9 @@ Run that installer and note the installation directory. The default is normally 
 
 ## 2. Download ALiS — choose the installer, not the source
 
-Open the [ALiS alpha.5.7 release](https://github.com/Nicodemox87/ALiS/releases/tag/v0.1.0-alpha.5.7). Expand **Assets** if necessary and download:
+Open the [ALiS alpha.5.8 release](https://github.com/Nicodemox87/ALiS/releases/tag/v0.1.0-alpha.5.8). Expand **Assets** if necessary and download:
 
-`ALiS-0.1.0-alpha.5.7-CloudCompare-2.13.2-Windows-x64-Setup.exe`
+`ALiS-0.1.0-alpha.5.8-CloudCompare-2.13.2-Windows-x64-Setup.exe`
 
 | File | Intended use |
 | --- | --- |

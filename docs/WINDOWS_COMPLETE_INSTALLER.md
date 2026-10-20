@@ -1,10 +1,10 @@
 # Complete Windows installer
 
-**ALiS alpha.5.7, installer revision 1.** This new online setup wraps the unchanged native Windows plugin release. It does not include a new classification algorithm or silently replace historical release assets.
+**ALiS alpha.5.8, installer revision 1.** The complete online setup includes the Annotation Studio fixes and feature-memory protections described in the [release notes](RELEASE_ALPHA58.md).
 
 ## One download, guided setup
 
-1. Download `ALiS-0.1.0-alpha.5.7-Windows-x64-Complete-Setup-r1.exe` from the ALiS alpha.5.7 release. Compare its SHA-256 with `ALiS-Windows-Complete-r1-SHA256SUMS.txt`.
+1. Download `ALiS-0.1.0-alpha.5.8-Windows-x64-Complete-Setup-r1.exe` from the ALiS alpha.5.8 release. Compare its SHA-256 with `ALiS-Windows-Complete-r1-SHA256SUMS.txt` attached to that same release.
 2. Save your work and close CloudCompare. Double-click the installer **normally**, not with Run as administrator.
 3. Review the licences/download notice. Choose **CPU** (recommended, includes deep learning) or **NVIDIA CUDA 12.8** if you have a compatible GPU/driver.
 4. The wizard finds compatible Python 3.12 x64 or installs it for your user, searches for CloudCompare 2.13.2 x64/Qt5, installs that host if missing, installs ALiS, and prepares an isolated ML/DL environment. Confirm the Windows administrator prompts for native components yourself.
@@ -33,4 +33,4 @@ The original plugin-only Setup.exe and manual ZIP remain available for administr
 
 ## Provenance and validation
 
-The host and Python download URLs are official vendor endpoints with pinned SHA-256. The existing ALiS installer is pinned to the original alpha.5.7 hash. See the source manifest and source archive for exact contents. A clean Windows CI install and smoke tests gate publication; UAC interaction under alternate administrator credentials and a real CUDA GPU still require machine-specific acceptance testing.
+The host and Python download URLs are official vendor endpoints with pinned SHA-256. The ALiS installer, plugin and native worker hashes are pinned to this release. See the release's complete-setup JSON manifest and source archive for exact contents. A clean Windows CI install and smoke tests gate publication; UAC interaction under alternate administrator credentials and a real CUDA GPU still require machine-specific acceptance testing. Historical alpha.5.7 installers continue to install alpha.5.7; download the current version for these corrections.
