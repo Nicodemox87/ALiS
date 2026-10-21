@@ -1,10 +1,10 @@
 # Complete Windows installer
 
-**ALiS alpha.5.8, installer revision 1.** The complete online setup includes the Annotation Studio fixes and feature-memory protections described in the [release notes](RELEASE_ALPHA58.md).
+**ALiS alpha.5.9, installer revision 1.** The complete online setup includes progressive spatial features, BIN resume, startup update checks, Annotation Studio fixes and feature-memory protections described in the [release notes](RELEASE_ALPHA59.md).
 
 ## One download, guided setup
 
-1. Download `ALiS-0.1.0-alpha.5.8-Windows-x64-Complete-Setup-r1.exe` from the ALiS alpha.5.8 release. Compare its SHA-256 with `ALiS-Windows-Complete-r1-SHA256SUMS.txt` attached to that same release.
+1. Download `ALiS-0.1.0-alpha.5.9-Windows-x64-Complete-Setup-r1.exe` from the ALiS alpha.5.9 release. Compare its SHA-256 with `ALiS-Windows-Complete-r1-SHA256SUMS.txt` attached to that same release.
 2. Save your work and close CloudCompare. Double-click the installer **normally**, not with Run as administrator.
 3. Review the licences/download notice. Choose **CPU** (recommended, includes deep learning) or **NVIDIA CUDA 12.8** if you have a compatible GPU/driver.
 4. The wizard finds compatible Python 3.12 x64 or installs it for your user, searches for CloudCompare 2.13.2 x64/Qt5, installs that host if missing, installs ALiS, and prepares an isolated ML/DL environment. Confirm the Windows administrator prompts for native components yourself.

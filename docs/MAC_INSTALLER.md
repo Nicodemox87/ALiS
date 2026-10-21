@@ -1,13 +1,13 @@
 # ALiS for macOS — complete Apple Silicon installer
 
-ALiS **0.1.0-alpha.5.7, Mac build 1** is available alongside the existing Windows release. The Mac installer includes CloudCompare 2.13.2, ALiS, Python 3.12 and all six CPU classifiers. It is a research preview, not a production-certified product.
+ALiS **0.1.0-alpha.5.9, Mac build 1** is available alongside the existing Windows release. The Mac installer includes CloudCompare 2.13.2, ALiS, Python 3.12 and all six CPU classifiers. It is a research preview, not a production-certified product.
 
-**[Download macOS (.pkg)](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.7/ALiS-0.1.0-alpha.5.7-macOS-arm64-Setup.pkg)** · [Checksums](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.7/ALiS-macOS-SHA256SUMS.txt) · [Release](https://github.com/Nicodemox87/ALiS/releases/tag/v0.1.0-alpha.5.7) · [Windows guide](INSTALLATION.md)
+**[Download macOS (.pkg)](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.9/ALiS-0.1.0-alpha.5.9-macOS-arm64-Setup.pkg)** · [Checksums](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.9/ALiS-macOS-SHA256SUMS.txt) · [Release](https://github.com/Nicodemox87/ALiS/releases/tag/v0.1.0-alpha.5.9) · [Windows guide](INSTALLATION.md)
 
 ## Requirements and contents
 
 - **Apple Silicon (M1 or later), macOS 27 or later.** This package does not support Intel Macs or macOS 15/26: several bundled native libraries require macOS 27.
-- Approximately **173 MB** to download and **670 MB** installed. Allow at least 2 GB free for download, installation and a backup of an existing app; cloud processing needs additional storage and RAM appropriate to the job.
+- Exact download size and SHA256 are recorded in the release manifest. Allow at least 2 GB free for download, installation and a backup of an existing app; cloud processing needs additional storage and RAM appropriate to the job.
 - An administrator must authorize installation into `/Applications/ALiS.app`. Institutional security policies may require IT assistance.
 - No Homebrew, Xcode, system Python or network dependency download is needed to install or begin using ALiS. Network access is used for optional GitHub update checks.
 - Bundled: CloudCompare 2.13.2 / Qt 5.15.19; Python, NumPy, SciPy, scikit-learn, XGBoost, PyTorch, laspy and lazrs. Random Forest, Extra Trees, Histogram Gradient Boosting, XGBoost, MLP and the experimental PointNet-style model run on CPU. CUDA is unavailable on macOS; Metal/MPS is not enabled.
@@ -16,7 +16,7 @@ ALiS **0.1.0-alpha.5.7, Mac build 1** is available alongside the existing Window
 ## Install and authorize
 
 1. Download the `.pkg` from the official release. The GitHub-generated “Source code” archives are not installers; Windows `.exe` and `.zip` packages are separate downloads.
-2. Optionally verify the installer against `ALiS-macOS-SHA256SUMS.txt`. SHA256: `4b7bf8c5064989b1951899ed2687af1451d4394aa5205ca62462669fd6dd10bc`.
+2. Verify the installer against `ALiS-macOS-SHA256SUMS.txt` or `ALiS-macOS-arm64.json` attached to the **same release**. Do not reuse an older release's checksum.
 3. Save any ALiS session and quit ALiS and its processing jobs. Open the package, follow Installer and authorize with your administrator credentials or Touch ID when prompted.
 4. This preview is **not signed with Apple Developer ID and is not notarized**. Its app has an ad hoc integrity signature. If macOS blocks the package, first attempt to open it, then open **System Settings → Privacy & Security → Open Anyway** and confirm. Repeat for ALiS if needed on first launch. Do not disable Gatekeeper. [Apple's instructions](https://support.apple.com/en-us/102445).
 5. Open **Applications → ALiS**. Its workspace appears automatically. No separate Python setup is required.
@@ -47,7 +47,7 @@ To uninstall, quit ALiS and move ALiS.app to the Trash. External data, settings 
 
 ## Validation and limitations
 
-Tested on **M4 Max, macOS 27.0.1**: 7 native tests, 32 Python tests passed (one CUDA-only test skipped), and 16 updater tests. All six classifiers completed synthetic training/prediction. The extracted and installed app matched the signed payload, and the installed GUI's GitHub check was verified. A second clean Mac has not yet been tested. These checks do not certify scientific accuracy or full-survey performance. [Validation details](MAC_INSTALLER_TESTS.md).
+The **earlier alpha.5.7** was tested on M4 Max, macOS 27.0.1: 7 native tests, 32 Python tests passed (one CUDA-only test skipped), and 16 updater tests, with all six classifiers completing synthetic training/prediction. These are historical results, not alpha.5.9 GUI acceptance. The **alpha.5.9** pipeline builds/tests native arm64 code and audits the actual extracted PKG and bundled worker before publication. Hands-on GUI acceptance on the user's Mac remains necessary. These checks do not certify scientific accuracy or full-survey performance. [Historical validation details](MAC_INSTALLER_TESTS.md).
 
 ## Build and publish a later Mac version
 

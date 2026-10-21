@@ -132,7 +132,7 @@ def main():
     info=app/'Contents/Info.plist';plist=plistlib.loads(info.read_bytes())
     plist['CFBundleShortVersionString']=release['version'].split('-')[0]
     numbers=re.findall(r'\d+',release['version'])
-    plist['CFBundleVersion']='.'.join(numbers[:2]+[''.join(numbers[2:]),str(release['build'])])
+    plist['CFBundleVersion']='.'.join(numbers[:2]+[str(int(''.join(numbers[2:]))*100+release['build'])])
     plist['LSMinimumSystemVersion']=release['minimum_macos']
     info.write_bytes(plistlib.dumps(plist))
     for p in app.rglob('*'):

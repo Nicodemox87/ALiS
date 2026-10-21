@@ -2,9 +2,9 @@
 
 **Recommended: [use the new complete online setup](WINDOWS_COMPLETE_INSTALLER.md)** to detect/install CloudCompare, ALiS, Python and ML/DL automatically. The instructions below remain valid for **plugin-only/manual installation** into an existing host.
 
-**For ALiS 0.1.0-alpha.5.8 — research testing preview.**
+**For ALiS 0.1.0-alpha.5.9 — research testing preview.**
 
-[Download plugin-only installer (existing host required)](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.8/ALiS-0.1.0-alpha.5.8-CloudCompare-2.13.2-Windows-x64-Setup.exe) · [All release assets](https://github.com/Nicodemox87/ALiS/releases/tag/v0.1.0-alpha.5.8) · [Back to home](../README.md)
+[Download plugin-only installer (existing host required)](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.9/ALiS-0.1.0-alpha.5.9-CloudCompare-2.13.2-Windows-x64-Setup.exe) · [All release assets](https://github.com/Nicodemox87/ALiS/releases/tag/v0.1.0-alpha.5.9) · [Back to home](../README.md)
 
 For the complete setup overview, see the [updated installation infographic](media/install-guide.svg).
 
@@ -18,9 +18,9 @@ Run that installer and note the installation directory. The default is normally 
 
 ## 2. Download ALiS — choose the installer, not the source
 
-Open the [ALiS alpha.5.8 release](https://github.com/Nicodemox87/ALiS/releases/tag/v0.1.0-alpha.5.8). Expand **Assets** if necessary and download:
+Open the [ALiS alpha.5.9 release](https://github.com/Nicodemox87/ALiS/releases/tag/v0.1.0-alpha.5.9). Expand **Assets** if necessary and download:
 
-`ALiS-0.1.0-alpha.5.8-CloudCompare-2.13.2-Windows-x64-Setup.exe`
+`ALiS-0.1.0-alpha.5.9-CloudCompare-2.13.2-Windows-x64-Setup.exe`
 
 | File | Intended use |
 | --- | --- |
@@ -33,10 +33,10 @@ You need **one** installation route: Setup.exe **or** the manual ZIP. Neither in
 
 ## 3. Verify the download and close CloudCompare
 
-Download [CHECKSUMS_SHA256.txt](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.7/CHECKSUMS_SHA256.txt). In PowerShell, calculate the installer checksum, replacing the example path with its actual location:
+Download [CHECKSUMS_SHA256.txt](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.9/CHECKSUMS_SHA256.txt). In PowerShell, calculate the installer checksum, replacing the example path with its actual location:
 
 ```powershell
-Get-FileHash -Algorithm SHA256 -LiteralPath 'C:\path\to\ALiS-0.1.0-alpha.5.7-CloudCompare-2.13.2-Windows-x64-Setup.exe'
+Get-FileHash -Algorithm SHA256 -LiteralPath 'C:\path\to\ALiS-0.1.0-alpha.5.9-CloudCompare-2.13.2-Windows-x64-Setup.exe'
 ```
 
 Compare the entire hash against the matching filename in the checksum file; uppercase/lowercase is irrelevant. If it differs, do not run the file.

@@ -17,8 +17,8 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.8/ALiS-0.1.0-alpha.5.8-Windows-x64-Complete-Setup-r1.exe"><strong>Download Windows installer</strong></a> ·
-  <a href="https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.7/ALiS-0.1.0-alpha.5.7-macOS-arm64-Setup.pkg"><strong>Download macOS installer</strong></a> ·
+  <a href="https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.9/ALiS-0.1.0-alpha.5.9-Windows-x64-Complete-Setup-r1.exe"><strong>Download Windows installer</strong></a> ·
+  <a href="https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.9/ALiS-0.1.0-alpha.5.9-macOS-arm64-Setup.pkg"><strong>Download macOS installer</strong></a> ·
   <a href="#getting-started">Getting started</a> ·
   <a href="#capabilities">Capabilities</a> ·
   <a href="#workflow">Workflow</a> ·
@@ -37,7 +37,7 @@ Archaeological LiDAR interpretation is not just a classification problem. It req
 
 **ALiS brings these steps into a connected CloudCompare workflow**, combining geometric analysis, expert annotation and reusable classification models. Its purpose is to support interpretation and reproducible analysis—not to replace archaeological judgement.
 
-> **Windows testing version: 0.1.0-alpha.5.8.** Annotation selection fixes and feature memory protections are included. [Changes and limits](docs/RELEASE_ALPHA58.md). The Mac installer remains alpha.5.7 pending a matching build of these fixes. This is a research alpha.
+> **Testing version: 0.1.0-alpha.5.9.** Progressive block features, BIN resume, optional startup update checks and AI-assisted development disclosure. Separate native Windows and Apple Silicon packages. [Changes and limits](docs/RELEASE_ALPHA59.md) · [Updates and privacy](docs/UPDATES.md). This is a research alpha.
 >
 > **Windows and macOS downloads are available separately.** The Windows complete online wizard detects or installs CloudCompare 2.13.2, installs ALiS and prepares Python with ML/deep learning. The Mac package includes CloudCompare, Python and all six classifiers; it requires **Apple Silicon and macOS 27 or later**. This Mac preview is unsigned by Apple and is not notarized.
 >
@@ -110,14 +110,14 @@ The PointNet-style classifier operates on local XYZ neighbourhoods. It is **not 
 
 | | Windows | macOS |
 | :--- | :--- | :--- |
-| **Installer** | **[Download Windows complete setup (.exe)](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.8/ALiS-0.1.0-alpha.5.8-Windows-x64-Complete-Setup-r1.exe)** | **[Download macOS (.pkg)](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.7/ALiS-0.1.0-alpha.5.7-macOS-arm64-Setup.pkg)** |
+| **Installer** | **[Download Windows complete setup (.exe)](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.9/ALiS-0.1.0-alpha.5.9-Windows-x64-Complete-Setup-r1.exe)** | **[Download macOS (.pkg)](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.9/ALiS-0.1.0-alpha.5.9-macOS-arm64-Setup.pkg)** |
 | **Computer** | Windows x64 | Apple Silicon (M1 or later), **macOS 27+**; no Intel build |
 | **CloudCompare** | Compatible **2.13.2/Qt5** detected or installed automatically | **2.13.2 included** in ALiS.app |
 | **Python and classifiers** | Python + ML/DL installed by the wizard; CPU or optional NVIDIA CUDA | **Python and all six CPU classifiers included** |
-| **Updates** | Existing Windows downloaded-package workflow | Automatic daily GitHub check; optional manual check and verified download |
+| **Updates** | Optional daily startup check and manual check; confirmed download/installation | Optional daily startup check; manual check and verified download |
 | **Instructions** | [Windows complete setup](docs/WINDOWS_COMPLETE_INSTALLER.md) | [Mac guide and security authorization](docs/MAC_INSTALLER.md) |
 
-Both packages are research previews. Choose only the installer for your operating system. The Mac download is approximately **173 MB** and installs without Homebrew, a compiler or additional runtime downloads. Windows packages and installation steps remain available below.
+Both packages are research previews. Choose only the installer for your operating system; exact sizes and SHA256 are attached to the release. The Mac package installs without Homebrew, a compiler or additional runtime downloads. Windows packages and installation steps remain available below.
 
 ### New: prepare a cloud for an existing model
 
@@ -131,15 +131,15 @@ This workflow requires Python: it is included in the Mac installer; the Windows 
 
 **[Complete installation guide →](docs/WINDOWS_COMPLETE_INSTALLER.md)** · [Manual/plugin-only guide](docs/INSTALLATION.md) · [Installation infographic (SVG)](docs/media/install-guide.svg)
 
-### Windows: download 0.1.0-alpha.5.8
+### Windows: download 0.1.0-alpha.5.9
 
-**[Download Windows installer — complete setup](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.8/ALiS-0.1.0-alpha.5.8-Windows-x64-Complete-Setup-r1.exe)** · [Plugin-only installer](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.8/ALiS-0.1.0-alpha.5.8-CloudCompare-2.13.2-Windows-x64-Setup.exe) · [Manual-install ZIP](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.8/ALiS-0.1.0-alpha.5.8-CloudCompare-2.13.2-Windows-x64.zip) · [Plugin source ZIP](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.8/ALiS-0.1.0-alpha.5.8-Source.zip)
+**[Download Windows installer — complete setup](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.9/ALiS-0.1.0-alpha.5.9-Windows-x64-Complete-Setup-r1.exe)** · [Plugin-only installer](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.9/ALiS-0.1.0-alpha.5.9-CloudCompare-2.13.2-Windows-x64-Setup.exe) · [Manual-install ZIP](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.9/ALiS-0.1.0-alpha.5.9-CloudCompare-2.13.2-Windows-x64.zip) · [Plugin source ZIP](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.9/ALiS-0.1.0-alpha.5.9-Source.zip)
 
-[Complete setup SHA-256](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.8/ALiS-Windows-Complete-r1-SHA256SUMS.txt) · [Complete setup source](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.8/ALiS-0.1.0-alpha.5.8-Windows-x64-Complete-Source-r1.zip) · [Plugin-only checksums](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.8/CHECKSUMS_SHA256.txt) · [Release notes](docs/RELEASE_ALPHA58.md) · [Build from source](BUILDING.md)
+[Complete setup SHA-256](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.9/ALiS-Windows-Complete-r1-SHA256SUMS.txt) · [Complete setup source](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.9/ALiS-0.1.0-alpha.5.9-Windows-x64-Complete-Source-r1.zip) · [Plugin-only checksums](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.9/CHECKSUMS_SHA256.txt) · [Release notes](docs/RELEASE_ALPHA59.md) · [Build from source](BUILDING.md)
 
-[Current Windows prerelease](https://github.com/Nicodemox87/ALiS/releases/tag/v0.1.0-alpha.5.8) · [Fixes and limits](docs/RELEASE_ALPHA58.md) · [Validation](docs/VALIDATION_ALPHA58.md). Historical alpha.5.7 evidence: [installer](docs/WINDOWS_COMPLETE_VALIDATION.md), [native package](docs/RELEASE_VALIDATION.md). [Repository backup downloads](downloads) retain the historical alpha.5.7 packages; use the current release above for updates.
+[Current prerelease](https://github.com/Nicodemox87/ALiS/releases/tag/v0.1.0-alpha.5.9) · [Changes, tests and limits](docs/RELEASE_ALPHA59.md). Historical evidence: [alpha.5.8](docs/VALIDATION_ALPHA58.md), [alpha.5.7 installer](docs/WINDOWS_COMPLETE_VALIDATION.md), [alpha.5.7 native package](docs/RELEASE_VALIDATION.md). [Repository backup downloads](downloads) retain historical packages; use the current release above for updates.
 
-The installer is **unsigned**. Verify its origin and checksum; do not disable security protections. Packages contain no training data, pretrained weights or unpublished paper. The complete online wizard installs prerequisites and the alpha.5.8 plugin; the plugin-only installer/ZIP remain alternatives for managed environments.
+The installer is **unsigned**. Verify its origin and checksum; do not disable security protections. Packages contain no training data, pretrained weights or unpublished paper. The complete online wizard installs prerequisites and the alpha.5.9 plugin; the plugin-only installer/ZIP remain alternatives for managed environments.
 
 | Component | Windows package requirements |
 | :--- | :--- |
@@ -164,7 +164,7 @@ No separate runtime command is needed with complete setup. **Native terrain/feat
 
 ### macOS: download and install
 
-**[Download macOS installer (.pkg)](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.7/ALiS-0.1.0-alpha.5.7-macOS-arm64-Setup.pkg)** · [Mac source ZIP](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.7/ALiS-0.1.0-alpha.5.7-macOS-Source.zip) · [Mac SHA-256 checksums](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.7/ALiS-macOS-SHA256SUMS.txt) · [Mac validation](docs/MAC_INSTALLER_TESTS.md)
+**[Download macOS installer (.pkg)](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.9/ALiS-0.1.0-alpha.5.9-macOS-arm64-Setup.pkg)** · [Mac source ZIP](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.9/ALiS-0.1.0-alpha.5.9-macOS-Source.zip) · [Mac SHA-256 checksums](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.9/ALiS-macOS-SHA256SUMS.txt) · [Mac validation](docs/MAC_INSTALLER_TESTS.md)
 
 1. Check **Apple Silicon** and **macOS 27 or later** in About This Mac. Intel Macs and macOS 15/26 are not supported by this package.
 2. Download the `.pkg`, save your work and quit ALiS, then open the installer. Authorize installation when macOS asks.
@@ -176,7 +176,7 @@ No separate runtime command is needed with complete setup. **Native terrain/feat
 
 **Data preservation:** the installer manages `/Applications/ALiS.app` and backs up the previous bundle under `/Library/Application Support/ALiS/Backups`. It preserves external data, models, reports, preferences, other CloudCompare installations and shared dependencies. Keep personal files outside the app bundle; plugins added inside an old bundle are retained in its backup and need a compatibility check before reuse. To uninstall, quit ALiS and move ALiS.app to the Trash; your external data and backups remain.
 
-**Validation scope:** native and Python regressions, all six CPU classifiers, installer extraction, installation and the GUI update check were tested on an M4 Max with macOS 27.0.1. A second clean Mac has not yet been tested. These are software checks, not certification of scientific accuracy. [Full Mac guide →](docs/MAC_INSTALLER.md)
+**Validation scope:** alpha.5.9 is gated by native arm64 CI tests, Python regressions and a relocated installer-payload audit. The earlier alpha.5.7 was tested on an M4 Max with macOS 27.0.1, including all six CPU classifiers and the GUI update check; that historical GUI test is not a test of alpha.5.9. The new release still needs hands-on user acceptance on the target Mac. These checks do not certify scientific accuracy. [Full Mac guide →](docs/MAC_INSTALLER.md)
 
 Source code lives in [plugin](plugin); presets in [profiles](profiles). See [third-party notices](THIRD_PARTY_NOTICES.md), [contributing](CONTRIBUTING.md) and [security guidance](SECURITY.md). Existing Windows release assets are retained unchanged. Mac installers and their corresponding source/checksum assets are additional downloads; future binary revisions receive a new version or Mac build number.
 

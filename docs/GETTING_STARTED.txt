@@ -1,7 +1,7 @@
-ALiS 0.1.0-alpha.5.8 - GETTING STARTED (plugin-only package)
+ALiS 0.1.0-alpha.5.9 - GETTING STARTED (plugin-only package)
 
 For automatic installation of CloudCompare, ALiS, Python and ML/DL, download
-the Windows Complete Setup from https://github.com/Nicodemox87/ALiS/releases/tag/v0.1.0-alpha.5.8
+the Windows Complete Setup from https://github.com/Nicodemox87/ALiS/releases/tag/v0.1.0-alpha.5.9
 Complete guide: https://github.com/Nicodemox87/ALiS/blob/main/docs/WINDOWS_COMPLETE_INSTALLER.md
 The steps below describe the plugin-only installer for an existing host.
 

@@ -8,9 +8,12 @@ mkdir -p "$work"
 work="$(cd "$work" && pwd)"
 host="$work/CloudCompare-src"
 if [[ ! -d "$host/.git" ]]; then
-  git clone --recursive --depth 1 --shallow-submodules --branch v2.13.2 https://github.com/CloudCompare/CloudCompare.git "$host"
+  git clone --depth 1 --branch v2.13.2 https://github.com/CloudCompare/CloudCompare.git "$host"
 fi
 [[ "$(git -C "$host" rev-parse HEAD)" == 49dbbb662f296c7780aae717897c85b3cb3764ed ]] || { echo 'Unexpected host revision'; exit 1; }
+# Only CCCoreLib is needed. Unrelated optional plugins can have unavailable
+# upstream repositories and must not prevent a clean ALiS build.
+git -C "$host" submodule update --init --depth 1 libs/qCC_db/extern/CCCoreLib
 # The pinned host has three unqualified vector types rejected by Apple Clang.
 for patch in "$repo"/tools/patches/cloudcompare-2.13.2-*.patch; do
 if git -C "$host" apply --check "$patch" 2>/dev/null; then
