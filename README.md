@@ -22,12 +22,21 @@
   <a href="#getting-started">Getting started</a> ·
   <a href="#capabilities">Capabilities</a> ·
   <a href="#workflow">Workflow</a> ·
+  <a href="#ai-assisted-development-and-transparency">AI transparency</a> ·
   <a href="https://github.com/Nicodemox87/ALiS/releases">Releases</a> ·
   <a href="https://doi.org/10.5281/zenodo.22934837">Zenodo DOI</a> ·
   <a href="https://github.com/Nicodemox87/ALiS/issues">Report an issue</a>
 </p>
 
 ---
+
+## AI-assisted development and transparency
+
+**Developed by Dr Nicodemo Abate (CNR-ISPC) with generative AI assistance from OpenAI ChatGPT and Codex.** AI tools supported source-code development, debugging, tests, documentation and visual assets. Scientific direction, requirements and release decisions remain with the human project lead; AI is not listed as an author or a certifying authority.
+
+**Regulatory references:** [Regulation (EU) 2024/1689 (AI Act), Article 50](https://eur-lex.europa.eu/eli/reg/2024/1689/oj), concerning transparency for specified AI systems and synthetic content, and [Italian Law 23 September 2025, no. 132, Article 25](https://www.gazzettaufficiale.it/eli/id/2025/09/25/25G00143/sg), concerning human intellectual work created with AI assistance.
+
+**Why this notice:** this is a voluntary development-provenance disclosure, not a statement that these laws require a blanket “AI-generated” label on all AI-assisted software. The [European Commission's Article 50 guidance](https://digital-strategy.ec.europa.eu/en/faqs/transparency-obligations-under-article-50-ai-act) distinguishes source code from synthetic content subject to marking. This notice does not certify legal conformity, change licences or replace expert validation of scientific results. [Full disclosure and legal context](docs/AI_DISCLOSURE.md).
 
 ## Why ALiS?
 
@@ -210,7 +219,7 @@ Consiglio Nazionale delle Ricerche — Istituto di Scienze del Patrimonio Cultur
 
 The affiliation identifies the author's institution; it does not imply institutional certification of the software or its outputs.
 
-### AI-assisted development
+### Development responsibility
 
 ALiS was developed with assistance from generative AI tools (**OpenAI ChatGPT/Codex**) for source code, debugging, tests, documentation and visual assets. Scientific direction, requirements and release decisions remain with **Dr Nicodemo Abate, CNR-ISPC**. AI is not an author or a certifying authority. Automated tests do not replace expert review of scientific results.
 
