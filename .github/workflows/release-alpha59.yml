@@ -1,0 +1,136 @@
+name: ALiS alpha.5.9 Windows and macOS release
+on:
+  push:
+    branches: ['codex/annotation-feature-safety']
+    paths: ['plugin/**', 'tools/**', 'packaging/**', '.github/workflows/release-alpha59.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: alis-alpha59-release
+  cancel-in-progress: false
+jobs:
+  windows:
+    runs-on: windows-2022
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Install build prerequisites
+        shell: pwsh
+        run: |
+          $python=(Get-ChildItem "$env:RUNNER_TOOL_CACHE/Python/3.12.*/x64/python.exe" | Sort-Object FullName | Select-Object -Last 1).FullName
+          "ALIS_BUILD_PYTHON=$python" | Out-File -LiteralPath $env:GITHUB_ENV -Append -Encoding utf8
+          & $python -m pip install aqtinstall==3.3.0
+          if($LASTEXITCODE){throw 'Qt downloader failed'}
+          & $python -m aqt install-qt windows desktop 5.15.2 win64_msvc2019_64 --outputdir "$env:RUNNER_TEMP/Qt"
+          if($LASTEXITCODE){throw 'Qt download failed'}
+      - name: Build and native regression suite
+        shell: pwsh
+        run: ./tools/build_safety_release.ps1 -QtRoot "$env:RUNNER_TEMP/Qt/5.15.2/msvc2019_64"
+      - name: Package and verify
+        shell: pwsh
+        run: |
+          $qt="$env:RUNNER_TEMP/Qt/5.15.2/msvc2019_64"
+          $iscc='C:/Program Files (x86)/Inno Setup 6/ISCC.exe'
+          Invoke-WebRequest 'https://download.qt.io/archive/qt/5.15/5.15.2/submodules/qtbase-everywhere-src-5.15.2.tar.xz' -OutFile output/qtbase-everywhere-src-5.15.2.tar.xz
+          if((Get-FileHash output/qtbase-everywhere-src-5.15.2.tar.xz).Hash.ToLower() -ne '909fad2591ee367993a75d7e2ea50ad4db332f05e1c38dd7a5a274e156a4e0f8'){throw 'Qt source hash mismatch'}
+          & $env:ALIS_BUILD_PYTHON tools/package_public.py --dll "$env:ALIS_NATIVE_DIR/ALIS_PLUGIN.dll" --block-worker "$env:ALIS_NATIVE_DIR/ALiS_prepare_block.exe" --qt-minimal "$qt/plugins/platforms/qminimal.dll" --qt-source output/qtbase-everywhere-src-5.15.2.tar.xz --iscc $iscc
+          if($LASTEXITCODE){throw 'Native packaging failed'}
+          & $env:ALIS_BUILD_PYTHON tools/verify_public_package.py
+          if($LASTEXITCODE){throw 'Package integrity failed'}
+          & $env:ALIS_BUILD_PYTHON -m unittest discover -s tools/tests -v
+          if($LASTEXITCODE){throw 'Installer unit tests failed'}
+          & $env:ALIS_BUILD_PYTHON tools/build_windows_complete.py --iscc $iscc
+          if($LASTEXITCODE){throw 'Complete installer failed'}
+          New-Item -ItemType Directory -Path "$env:LOCALAPPDATA/ALiS/InstallerCache" -Force | Out-Null
+          Copy-Item downloads/*-Windows-x64-Setup.exe -Destination "$env:LOCALAPPDATA/ALiS/InstallerCache"
+          $setup=(Get-ChildItem output/complete-bootstrap/*-Complete-Setup-r1.exe).FullName
+          $p=Start-Process $setup -ArgumentList '/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /ALLOWADMIN=1 /BACKEND=cpu /LOG=output/complete-ci.log' -Wait -PassThru -WindowStyle Hidden
+          if($p.ExitCode){throw 'Clean host installation failed'}
+          $success=Get-ChildItem "$env:LOCALAPPDATA/ALiS/InstallerLogs" -Filter SUCCESS.json -Recurse | Select-Object -First 1
+          if(!$success){throw 'Installation receipt missing'}
+          $r=Get-Content $success.FullName -Raw | ConvertFrom-Json
+          $env:ALIS_TEST_BLOCK_WORKER=Join-Path $r.host 'ALiS_prepare_block.exe'
+          $env:PYTHONPATH=Join-Path $r.host 'worker/ALiS'
+          $env:QT_QPA_PLATFORM='minimal'
+          & $r.python -c 'import unittest; s=unittest.defaultTestLoader.discover("plugin/worker/tests",pattern="test_preparation.py"); raise SystemExit(not unittest.TextTestRunner(verbosity=2).run(s).wasSuccessful())'
+          if($LASTEXITCODE){throw 'Installed worker regression failed'}
+          New-Item -ItemType Directory output/release -Force | Out-Null
+          Copy-Item downloads/ALiS-0.1.0-alpha.5.9-* output/release
+          Copy-Item downloads/CHECKSUMS_SHA256.txt,downloads/VERSION.json,output/qtbase-everywhere-src-5.15.2.tar.xz output/release
+          Copy-Item output/complete-bootstrap/ALiS-* output/release
+      - uses: actions/upload-artifact@v4
+        with:
+          name: alpha59-windows
+          path: output/release/
+          retention-days: 30
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: alpha59-windows-evidence
+          path: |
+            output/native-build/build/Testing/
+            output/complete-ci.log
+          retention-days: 30
+  macos:
+    runs-on: xcode-27
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Native arm64 prerequisites
+        run: |
+          test "$(uname -m)" = arm64
+          brew install qt@5 laszip eigen libomp cmake ninja
+      - name: Build and test native app
+        run: bash tools/build_macos.sh
+      - name: Package and audit relocated installer
+        run: |
+          python3 tools/build_macos_installer.py
+          python3 tools/verify_macos_installer.py output/mac-installer/ALiS-0.1.0-alpha.5.9-macOS-arm64-Setup.pkg output/mac-installer/verified --stage output/mac-installer/stage/Applications/ALiS.app
+          mkdir -p output/release
+          cp output/mac-installer/ALiS-0.1.0-alpha.5.9-macOS-arm64-Setup.pkg output/mac-installer/ALiS-macOS-arm64.json output/release/
+          git archive --format=zip HEAD -o output/release/ALiS-0.1.0-alpha.5.9-macOS-Source.zip
+          tar --exclude=.git -czf output/release/ALiS-macOS-CloudCompare-2.13.2-source.tar.gz -C output/macos CloudCompare-src
+          cd output/release
+          shasum -a 256 * > ALiS-macOS-SHA256SUMS.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: alpha59-macos
+          path: output/release/
+          retention-days: 30
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: alpha59-macos-evidence
+          path: |
+            output/macos/build/Testing/
+            output/mac-installer/stage/Applications/ALiS.app/Contents/Resources/ALiS/*audit.json
+          retention-days: 30
+  publish:
+    needs: [windows, macos]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: alpha59-windows
+          path: verified
+          merge-multiple: true
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: alpha59-macos
+          path: verified
+          merge-multiple: true
+      - name: Publish only after both platforms pass
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          cd verified
+          sha256sum -c CHECKSUMS_SHA256.txt
+          sha256sum -c ALiS-Windows-Complete-r1-SHA256SUMS.txt
+          sha256sum -c ALiS-macOS-SHA256SUMS.txt
+          cd ..
+          gh release create v0.1.0-alpha.5.9 verified/* --target "$GITHUB_SHA" --title 'ALiS 0.1.0-alpha.5.9 — Progressive features and updates' --notes-file docs/RELEASE_ALPHA59.md --prerelease

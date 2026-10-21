@@ -55,6 +55,20 @@ int main(int argc,char** argv) {
 		check(!alis::newerWindowsVersion("0.1.0-alpha.5.7","0.1.0-alpha.5.8"),"older package not offered");
 		check(alis::windowsInstallerVersion("ALiS-0.1.0-alpha.5.8-Windows-x64-Complete-Setup-r1.exe")=="0.1.0-alpha.5.8","complete installer recognized");
 		check(alis::windowsInstallerVersion("ALiS-0.1.0-alpha.5.8-CloudCompare-2.13.2-Windows-x64-Setup.exe")=="0.1.0-alpha.5.8","plugin-only installer recognized");
+		auto release=[](const QString& v)->QJsonObject {
+			const QString tag="v"+v,name="ALiS-"+v+"-Windows-x64-Complete-Setup-r1.exe";
+			QJsonObject asset;asset["name"]=name;asset["size"]=1024;asset["browser_download_url"]=QString("https://github.com/Nicodemox87/ALiS/releases/download/"+tag+"/"+name);
+			QJsonObject result;result["tag_name"]=tag;result["html_url"]=QString("https://github.com/Nicodemox87/ALiS/releases/tag/"+tag);result["assets"]=QJsonArray{asset};return result;
+		};
+		auto next=release("0.1.0-alpha.5.10");
+		check(alis::newestWindowsRelease({release("0.1.0-alpha.5.8"),next},"0.1.0-alpha.5.9")==next,"startup updater selects numeric newest platform installer");
+		check(alis::newestWindowsRelease({next},"0.1.0-alpha.5.10").isEmpty(),"startup updater ignores current version");
+		auto draft=next;draft["draft"]=true;check(alis::newestWindowsRelease({draft},"0.1.0-alpha.5.9").isEmpty(),"draft ignored");
+		auto missing=next;missing["assets"]=QJsonArray();check(alis::newestWindowsRelease({missing},"0.1.0-alpha.5.9").isEmpty(),"no installer no update");
+		auto foreign=next;foreign["html_url"]="https://example.com/update";check(alis::newestWindowsRelease({foreign},"0.1.0-alpha.5.9").isEmpty(),"foreign release page rejected");
+		foreign=next;foreign["assets"]=QJsonArray{QJsonObject{{"name","ALiS-0.1.0-alpha.5.10-Windows-x64-Complete-Setup-r1.exe"},{"size",100},{"browser_download_url","https://example.com/a.exe"}}};
+		check(alis::newestWindowsRelease({foreign},"0.1.0-alpha.5.9").isEmpty(),"foreign installer rejected");
+		check(alis::newestWindowsRelease({release("invalid")},"0.1.0-alpha.5.9").isEmpty(),"invalid version rejected");
 		std::cout<<"PASS: "<<checks<<" feature safety checks\n";return 0;
 	} catch(const std::exception& e){std::cerr<<"FAIL: "<<e.what()<<'\n';return 1;}
 }

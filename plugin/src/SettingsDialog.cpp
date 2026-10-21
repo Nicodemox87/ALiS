@@ -2,6 +2,7 @@
 #include "SettingsDialog.h"
 #include "MacUpdates.h"
 #include "WindowsUpdates.h"
+#include "ReleaseVersion.h"
 #include "ModelCatalog.h"
 
 #include <QCheckBox>
@@ -31,7 +32,7 @@
 
 namespace
 {
-	const QString CurrentVersion = QStringLiteral("0.1.0-alpha.5.8");
+	const QString CurrentVersion = QStringLiteral(ALIS_RELEASE_VERSION);
 
 	QVector<int> versionParts(const QString& value)
 	{
@@ -168,8 +169,11 @@ namespace alis
 			"<p>For bug reports, improvements, ideas, and suggestions for changes or new implementations:<br>"
 			"<a href='mailto:nicodemo.abate@cnr.it'>nicodemo.abate@cnr.it</a></p>"
 			"<p>Built as one CloudCompare plugin suite. Thanks to the CloudCompare, CCCoreLib, qCSF, q3DMASC, lidR, scikit-learn, XGBoost and scientific open-source communities.</p>"
+			"<h3>AI-assisted development disclosure</h3>"
+			"<p>ALiS was developed with assistance from generative AI tools (OpenAI ChatGPT/Codex), including support for source code, debugging, tests, documentation and visual assets. Scientific direction, requirements and release decisions remain with Dr Nicodemo Abate. AI is not an author or a certifying authority. Automated tests do not replace expert review; users must validate scientific outputs.</p>"
+			"<p>This development-provenance disclosure is distinct from the ML/DL classifiers available in ALiS. It does not change software or third-party licences, imply institutional endorsement, or constitute a claim of legal conformity. See the distributed AI_DISCLOSURE.md for scope and legal references.</p>"
 			"<hr><h3>Testing Preview</h3>"
-			"<p><b>Version 0.1.0-alpha.5.8 — test and evaluation build.</b> "
+			"<p><b>Version 0.1.0-alpha.5.9 — Testing Preview.</b> "
 			"This preview may be used for testing, scientific evaluation and workflow validation. "
 			"It is not a certified production release: classifications and derived products must be reviewed by a qualified operator, and original data should be preserved.</p>"
 			"<p>Distributed under the GNU GPL v2 or later; see the included license and testing notice.</p>"
@@ -182,7 +186,7 @@ namespace alis
 			"<p>Roussel et al., <i>lidR: Airborne LiDAR Data Manipulation and Visualization for Forestry Applications</i>.</p>"
 			"<p>ASPRS LAS Specification 1.4 R16 / 1.5 R00; CloudCompare and q3DMASC technical documentation.</p>")), QStringLiteral("Bibliography"));
 		tabs->addTab(readOnlyPage(QStringLiteral(
-			"<h2>What's new — 0.1.0-alpha.5.8 Testing Preview</h2><p>Annotation selection fixes; bounded feature neighbourhood buffers, RAM preflight, limited CPU workers and memory-pressure cancellation. Update detection now compares every alpha version component and accepts complete installers.</p>"
+			"<h2>What's new — 0.1.0-alpha.5.9</h2><p>Automatic, optional update checks at startup on Windows and macOS (at most once daily). No silent installation. AI-assisted development disclosure. Progressive spatial features update either the current cloud or one full-cloud copy. Pending rows are NaN; no geometry copies per block. Compact feature checkpoints, geometry-order fingerprint, BIN save/reopen with progress and exact schema resume. Explicit training subsets remain available.</p>"
 			"<p><b>Prepare data for this model:</b> exact model feature schema, loaded CC snapshots or LAS/LAZ on disk; adaptive bounded blocks, radius-preserving halo, checkpoints and isolated native processing. Derived predictions and confidence can be returned to CC without replacing source labels. Tiled terrain requires explicit review.</p>"
 			"<p>Main branding now pairs ALiS with the unchanged CNR-ISPC institutional mark below. Small toolbar and Windows icons remain ALiS-only for readability.</p>"
 			"<p>Updated visual identity: vegetation, temple and LiDAR logo, coordinated navy/red icons for the workspace, annotation, classification, terrain, features and settings. Installer and shortcuts use the same identity. Processing algorithms, data and model formats are unchanged.</p>"
@@ -251,6 +255,16 @@ namespace alis
         auto* checkUpdate = new QPushButton(QStringLiteral("Check GitHub for Mac updates now"));
         updatesLayout->addWidget(checkUpdate);
         connect(checkUpdate, &QPushButton::clicked, this, [this](){checkMacUpdates(this);});
+#endif
+#ifdef Q_OS_WIN
+        auto* automaticWindowsUpdate = new QCheckBox(QStringLiteral("Check for updates at startup (at most once a day)"));
+        automaticWindowsUpdate->setChecked(QSettings().value("ALiS/updates/automatic", true).toBool());
+        automaticWindowsUpdate->setToolTip(QStringLiteral("Contacts the official public GitHub release API. No clouds, models, paths or project data are sent. Includes testing previews. No automatic download or installation."));
+        updatesLayout->addWidget(automaticWindowsUpdate);
+        connect(automaticWindowsUpdate,&QCheckBox::toggled,this,[](bool enabled){QSettings().setValue("ALiS/updates/automatic",enabled);});
+        auto* checkWindowsUpdate = new QPushButton(QStringLiteral("Check GitHub for Windows updates now"));
+        updatesLayout->addWidget(checkWindowsUpdate);
+        connect(checkWindowsUpdate,&QPushButton::clicked,this,[this](){checkWindowsUpdates(this);});
 #endif
 		updatesLayout->addStretch(1);
 		tabs->addTab(updates, QStringLiteral("Updates"));

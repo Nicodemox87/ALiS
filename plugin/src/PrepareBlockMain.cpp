@@ -50,6 +50,7 @@ int main(int argc,char**argv){
    needsHag|=key=="hag@0"&&!supplied.contains(key);parsed.push_back(fk);
   }
   ComputeReport report;std::string error;ComputeOptions opts;opts.maxThreadCount=j.value("threads").toInt(4);
+  if(j.value("memory_bytes").toDouble()>0)opts.additionalMemoryBudget=size_t(j.value("memory_bytes").toDouble());
   BlockProgress progress;
   if(!req.empty()){const bool computed=engine.compute(req,report,error,&progress,opts);check(computed,error.c_str());}
   TerrainResult terrain;

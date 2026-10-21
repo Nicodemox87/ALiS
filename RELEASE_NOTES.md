@@ -1,3 +1,11 @@
+# ALiS 0.1.0-alpha.5.9 — 21 October 2026
+
+Progressive spatial features on the current cloud or one full-cloud copy, without per-block geometry duplication; compact checkpoints, BIN save/reopen/resume, exact geometry/schema validation and selected-block training subsets. Optional daily startup update checks on Windows and macOS. AI-assisted development disclosure in Credits and GitHub documentation. [Changes, validation scope and limitations](docs/RELEASE_ALPHA59.md) · [Updates and privacy](docs/UPDATES.md) · [AI disclosure](docs/AI_DISCLOSURE.md).
+
+Native packages are published only after successful platform build/test and installer verification. The previous release remains the downloadable version until the new assets exist.
+
+---
+
 # ALiS 0.1.0-alpha.5.8 — 20 October 2026
 
 Windows maintenance release: rectangle/polygon/lasso event handling, live polygon edge and keyboard completion; conservative feature RAM and dense-neighbourhood protections, bounded CPU parallelism and memory-pressure cancellation; corrected numeric alpha-version update checks. Complete setup includes CloudCompare detection/installation and Python ML/DL. See [release notes, limits and validation](docs/RELEASE_ALPHA58.md). Mac binary corrections require a matching Mac build; the alpha.5.7 Mac installer remains available.

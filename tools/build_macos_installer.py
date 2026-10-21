@@ -131,7 +131,8 @@ def main():
     (resources/'deployment-audit.json').write_text(json.dumps(deployment,indent=2))
     info=app/'Contents/Info.plist';plist=plistlib.loads(info.read_bytes())
     plist['CFBundleShortVersionString']=release['version'].split('-')[0]
-    plist['CFBundleVersion']='0.1.507.'+str(release['build'])
+    numbers=re.findall(r'\d+',release['version'])
+    plist['CFBundleVersion']='.'.join(numbers[:2]+[''.join(numbers[2:]),str(release['build'])])
     plist['LSMinimumSystemVersion']=release['minimum_macos']
     info.write_bytes(plistlib.dumps(plist))
     for p in app.rglob('*'):
@@ -154,7 +155,7 @@ def main():
 <organization>org.alis</organization>
 <domains enable_localSystem="true" enable_currentUserHome="false" enable_anywhere="false"/>
 <options customize="never" require-scripts="false" hostArchitectures="arm64"/>
-<volume-check><allowed-os-versions><os-version min="27.0"/></allowed-os-versions></volume-check>
+<volume-check><allowed-os-versions><os-version min="'''+release['minimum_macos']+'''"/></allowed-os-versions></volume-check>
 <welcome file="Welcome.html" mime-type="text/html"/>
 <conclusion file="Conclusion.html" mime-type="text/html"/>
 <license file="LICENSE.txt" mime-type="text/plain"/>

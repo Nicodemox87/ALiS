@@ -57,6 +57,7 @@ namespace alis
 		void setProcessingSuggestion(const QString& text);
 		void showAnnotationWorkspace();
 		void showPrepareFeatures();
+		void showClassificationWorkspace();
 		void setModelRepositoryPath(const QString& path);
 		void setCatalogCloudProfile(const QJsonObject& profile);
 		void refreshModelCatalog();
@@ -159,6 +160,7 @@ namespace alis
 		void saveScalePresetRequested(const QVector<double>& radii);
 		void featureSelectionChanged(const QStringList& featureIds);
 		void computeFeaturesRequested(const QStringList& featureIds, const QVector<double>& radii);
+		void spatialBlocksRequested();
 		void compareScalesRequested(const QString& featureId);
 
 		void exportModelDatasetRequested(const QStringList& featureKeys, const QString& repositoryPath);

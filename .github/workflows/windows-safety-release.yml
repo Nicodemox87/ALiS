@@ -1,8 +1,5 @@
 name: Build and validate annotation and feature safety release
 on:
-  push:
-    branches: ['codex/annotation-feature-safety']
-    paths: ['plugin/**', 'tools/build_safety_release.ps1', '.github/workflows/windows-safety-release.yml']
   workflow_dispatch:
 permissions:
   contents: write

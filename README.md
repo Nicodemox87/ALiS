@@ -210,6 +210,12 @@ Consiglio Nazionale delle Ricerche — Istituto di Scienze del Patrimonio Cultur
 
 The affiliation identifies the author's institution; it does not imply institutional certification of the software or its outputs.
 
+### AI-assisted development
+
+ALiS was developed with assistance from generative AI tools (**OpenAI ChatGPT/Codex**) for source code, debugging, tests, documentation and visual assets. Scientific direction, requirements and release decisions remain with **Dr Nicodemo Abate, CNR-ISPC**. AI is not an author or a certifying authority. Automated tests do not replace expert review of scientific results.
+
+This is a development-provenance disclosure, distinct from the ML/DL classifiers in the tool; it is not a claim of regulatory certification or a change to software/third-party licences. [Full disclosure and official regulatory references](docs/AI_DISCLOSURE.md).
+
 ## Citation
 
 **Zenodo DOI supplied by the author:** [10.5281/zenodo.22934837](https://doi.org/10.5281/zenodo.22934837).

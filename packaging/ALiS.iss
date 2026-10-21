@@ -1,5 +1,5 @@
 #define ProductName "ALiS - Archaeological LiDAR Studio"
-#define ProductVersion "0.1.0-alpha.5.8"
+#define ProductVersion "0.1.0-alpha.5.9"
 #define ProductPublisher "Dott. Nicodemo Abate — CNR-ISPC"
 
 [Setup]

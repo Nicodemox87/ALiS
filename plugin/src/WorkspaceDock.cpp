@@ -1020,6 +1020,11 @@ namespace alis
 		m_computeFeaturesButton = commandButton(QStringLiteral("Compute Selected Features"),
 		                                        "ALiS.Workspace.Features.ComputeSelected");
 		selectionLayout->addWidget(m_computeFeaturesButton);
+		auto* spatialBlocks = commandButton(QStringLiteral("Spatial blocks... (select / features / training)"), "ALiS.Workspace.Features.SpatialBlocks");
+		spatialBlocks->setToolTip(QStringLiteral("Full-resolution selected XY cores, bounded isolated feature worker and contextual halo. Source labels and existing fields are preserved. Only the map preview is sampled."));
+		selectionLayout->addWidget(spatialBlocks);
+		registerCommandButton(spatialBlocks);
+		connect(spatialBlocks, &QPushButton::clicked, this, &WorkspaceDock::spatialBlocksRequested);
 		layout->addWidget(selectionGroup);
 		connect(m_featureList, &QListWidget::itemChanged, this, [this](QListWidgetItem*)
 		{

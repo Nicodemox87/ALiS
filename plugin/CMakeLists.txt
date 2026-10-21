@@ -90,6 +90,7 @@ if(PLUGIN_STANDARD_ALIS)
 		src/ModelResultsDialog.cpp
 		src/SettingsDialog.cpp
 		src/ALiSPlugin.cpp
+		src/WindowsUpdates.cpp
 	)
 	target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 	# AddPlugin() uses CMake's plain target_link_libraries signature for this
@@ -101,7 +102,7 @@ if(PLUGIN_STANDARD_ALIS)
 		${ALIS_QT_WIDGETS}
 	)
 	target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_14)
-	target_sources(${PROJECT_NAME} PRIVATE src/WorkspacePreparation.cpp)
+	target_sources(${PROJECT_NAME} PRIVATE src/WorkspacePreparation.cpp src/SpatialBlocksDialog.cpp)
 	add_executable(ALiS_prepare_block src/PrepareBlockMain.cpp src/FeatureEngine.cpp src/GroundFilter.cpp src/TerrainEngine.cpp)
 	target_include_directories(ALiS_prepare_block PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 	target_link_libraries(ALiS_prepare_block PRIVATE ALiSAuditLogic ALiSCSFCore QCC_DB_LIB ${ALIS_QT_WIDGETS})
@@ -141,12 +142,14 @@ if(PLUGIN_STANDARD_ALIS)
 			src/FeatureEngine.cpp src/GroundFilter.cpp src/TerrainEngine.cpp
 			src/AnnotationStudio.cpp src/AnnotationCanvas.cpp)
 		target_include_directories(ALiS_processing_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
-		target_sources(ALiS_processing_tests PRIVATE src/WorkspacePreparation.cpp)
+		target_sources(ALiS_processing_tests PRIVATE src/WorkspacePreparation.cpp src/SpatialBlocksDialog.cpp tests/test_spatial_blocks_dialog.cpp tests/test_spatial_block_grid.cpp)
 		target_link_libraries(ALiS_processing_tests PRIVATE ALiSAuditLogic ALiSCSFCore CCPluginAPI QCC_IO_LIB QCC_DB_LIB ${ALIS_QT_WIDGETS})
 		target_compile_features(ALiS_processing_tests PRIVATE cxx_std_14)
 		target_compile_options(ALiS_processing_tests PRIVATE "$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
 		if(BUILD_TESTING)
 			add_test(NAME ALiS.processing COMMAND ALiS_processing_tests)
+			add_test(NAME ALiS.spatial_blocks COMMAND ALiS_processing_tests --spatial-blocks-regression)
+			set_tests_properties(ALiS.spatial_blocks PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=minimal")
 			set_tests_properties(ALiS.processing PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
 		endif()
 		add_executable(ALiS_export_features tests/export_classifier_features.cpp src/FeatureEngine.cpp src/GroundFilter.cpp src/TerrainEngine.cpp)

@@ -470,6 +470,7 @@ namespace alis
 		connect(m_dock, &WorkspaceDock::vegetationExtractRequested, this, &WorkspaceController::extractVegetation);
 		connect(m_dock, &WorkspaceDock::vegetationFeatureRefinementRequested, this, [this](const QString& directory){QString error;if(!refineVegetationWithRanges(directory,error))showError(error);});
 		connect(m_dock, &WorkspaceDock::computeFeaturesRequested, this, &WorkspaceController::computeFeatures);
+		connect(m_dock, &WorkspaceDock::spatialBlocksRequested, this, &WorkspaceController::openSpatialBlocks);
 		connect(m_dock, &WorkspaceDock::selectTrainingSetRequested, this, &WorkspaceController::selectTrainingSet);
 		connect(m_dock, &WorkspaceDock::selectClassificationCloudRequested, this, &WorkspaceController::selectClassificationCloud);
 		connect(m_dock, &WorkspaceDock::prepareModelDataRequested, this, &WorkspaceController::prepareModelData);

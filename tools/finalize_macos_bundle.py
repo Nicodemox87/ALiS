@@ -85,6 +85,8 @@ def main():
         for f in keg.iterdir():
             if f.is_file() and (f.name.lower().startswith(('license','copying','notice','copyright')) or f.name=='INSTALL_RECEIPT.json'):shutil.copy2(f,dest/f.name)
     shutil.copy2(repo/'docs/MAC_INSTALL_LOCAL.md',app/'Contents/Resources/ALiS/MAC_INSTALL_LOCAL.md')
+    for name in ('AI_DISCLOSURE.md','UPDATES.md','PROGRESSIVE_FEATURES.md','SPATIAL_BLOCKS.md','RELEASE_ALPHA59.md'):
+        shutil.copy2(repo/'docs'/name,app/'Contents/Resources/ALiS'/name)
     info=app/'Contents/Info.plist'
     data=plistlib.loads(info.read_bytes());data['CFBundleIdentifier']='org.alis.CloudCompare';data['CFBundleName']='ALiS CloudCompare';data['CFBundleDisplayName']='ALiS CloudCompare';info.write_bytes(plistlib.dumps(data))
     report=app/'Contents/Resources/ALiS/native-bundle-audit.json';report.parent.mkdir(parents=True,exist_ok=True);report.write_text(json.dumps(audit,indent=2))

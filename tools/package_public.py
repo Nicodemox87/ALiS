@@ -49,7 +49,7 @@ def main():
             copy(p, stage/'worker/ALiS'/p.relative_to(ROOT/'plugin/worker'))
     for name in ['setup_cpu_runtime.ps1', 'setup_cuda_runtime.ps1', 'verify_cuda_runtime.py']:
         copy(ROOT/'tools'/name, stage/'worker/ALiS'/name)
-    for name in ['GETTING_STARTED.txt', 'RUNTIME.md', 'MODEL_PREPARATION.md']:
+    for name in ['GETTING_STARTED.txt', 'RUNTIME.md', 'MODEL_PREPARATION.md', 'PROGRESSIVE_FEATURES.md', 'SPATIAL_BLOCKS.md', 'AI_DISCLOSURE.md', 'UPDATES.md']:
         copy(ROOT/'docs'/name, stage/'doc/ALiS'/name)
     for name in ['LICENSE', 'THIRD_PARTY_NOTICES.md', 'TESTING_NOTICE.txt', 'RELEASE_NOTES.md']:
         copy(ROOT/name, stage/'doc/ALiS'/name)
@@ -76,6 +76,7 @@ def main():
     source_paths.extend([ROOT/'LICENSE', ROOT/'.gitignore', ROOT/'packaging/ALiS.iss', ROOT/'packaging/ALiS Launcher.cmd'])
     source_paths.extend(files(ROOT/'packaging/assets'))
     source_paths.extend(files(ROOT/'packaging/windows-complete'))
+    source_paths.extend(files(ROOT/'packaging/macos'))
     archive(ROOT, out/f'ALiS-{VERSION}-Source.zip', sorted(set(source_paths)))
     products = sorted(out.glob(f'ALiS-{VERSION}-*.zip')) + sorted(out.glob(f'ALiS-{VERSION}-*.exe'))
     (out/'CHECKSUMS_SHA256.txt').write_text(''.join(f'{digest(p)}  {p.name}\n' for p in products), encoding='ascii')
