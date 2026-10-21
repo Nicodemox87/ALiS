@@ -1,4 +1,4 @@
-# Native spatial-block panel (local development preview)
+# Native spatial-block panel (historical development notes)
 
 Historical alpha.5.9-dev.1 description. The progressive destination and BIN
 resume implementation in **[PROGRESSIVE_FEATURES.md](PROGRESSIVE_FEATURES.md)**
@@ -63,4 +63,5 @@ core-only training subset and unchanged source. The existing processing suite
 passes 368 checks. Real-survey interactive acceptance is recorded separately;
 synthetic checks are not classification accuracy validation.
 
-This is a local development build, not a published GitHub release.
+This document describes the historical dev.1 design, not the current output
+model. Use PROGRESSIVE_FEATURES.md for alpha.5.9 behaviour and persistence.

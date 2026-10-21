@@ -71,4 +71,5 @@ per-core BIN files, partial BIN round-trip, exact schema reuse with no duplicate
 SFs, pause/stop and a single complete copy for multiple blocks. This is software
 correctness evidence, not classification accuracy validation.
 
-This is a local development build. Public GitHub release remains unchanged.
+Research testing preview. See the matching release's CI evidence and limitations;
+these checks do not establish scientific accuracy or certify production use.
