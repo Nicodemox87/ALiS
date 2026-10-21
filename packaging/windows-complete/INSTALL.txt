@@ -1,4 +1,4 @@
-ALiS complete online installer — Windows x64 — alpha.5.7 / setup revision 1
+ALiS complete online installer — Windows x64 — alpha.5.9 / setup revision 1
 
 This wizard checks for the compatible CloudCompare 2.13.2 / Qt5 host. If absent,
 it downloads the official installer and installs a dedicated compatible host.

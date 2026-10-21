@@ -13,7 +13,7 @@ args = parser.parse_args()
 version = json.loads((root/'plugin/info.json').read_text(encoding='utf-8'))['version']
 out = root/'output/complete-bootstrap'
 out.mkdir(parents=True, exist_ok=True)
-subprocess.run([args.iscc, str(root/'packaging/windows-complete/CompleteSetup.iss')], check=True)
+subprocess.run([args.iscc, '/DVersion='+version, str(root/'packaging/windows-complete/CompleteSetup.iss')], check=True)
 prefix = f'ALiS-{version}-Windows-x64-Complete-'
 exe = out/(prefix+'Setup-r1.exe')
 src = out/(prefix+'Source-r1.zip')

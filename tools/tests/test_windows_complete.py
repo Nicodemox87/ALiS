@@ -80,6 +80,11 @@ class CompleteSetupTests(unittest.TestCase):
         self.assertIn(m['python']['url'], iss)
     def test_no_execution_policy_override(self):
         self.assertNotIn('ExecutionPolicy', MODULE.read_text())
+    def test_complete_setup_version_supplied_by_build(self):
+        script=(MODULE.parents[2]/'tools/build_windows_complete.py').read_text()
+        iss=(MODULE.parent/'CompleteSetup.iss').read_text(encoding='utf-8')
+        self.assertIn("'/DVersion='+version",script)
+        self.assertIn('#ifndef Version',iss)
     def test_checksum_failure_never_runs_payload(self):
         import io
         response = io.BytesIO(b'wrong payload')

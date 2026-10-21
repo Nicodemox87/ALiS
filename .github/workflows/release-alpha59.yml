@@ -133,4 +133,10 @@ jobs:
           sha256sum -c ALiS-Windows-Complete-r1-SHA256SUMS.txt
           sha256sum -c ALiS-macOS-SHA256SUMS.txt
           cd ..
-          gh release create v0.1.0-alpha.5.9 verified/* --target "$GITHUB_SHA" --title 'ALiS 0.1.0-alpha.5.9 — Progressive features and updates' --notes-file docs/RELEASE_ALPHA59.md --prerelease
+          python3 - <<'PY'
+          import os, pathlib, re
+          text=pathlib.Path('docs/RELEASE_ALPHA59.md').read_text()
+          text=re.sub(r'\]\(([^:/)]+\.md)\)',lambda m:'](https://github.com/Nicodemox87/ALiS/blob/'+os.environ['GITHUB_SHA']+'/docs/'+m[1]+')',text)
+          pathlib.Path('release-body.md').write_text(text)
+          PY
+          gh release create v0.1.0-alpha.5.9 verified/* --target "$GITHUB_SHA" --title 'ALiS 0.1.0-alpha.5.9 — Progressive features and updates' --notes-file release-body.md --prerelease
