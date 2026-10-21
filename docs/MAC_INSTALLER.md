@@ -51,6 +51,8 @@ The **earlier alpha.5.7** was tested on M4 Max, macOS 27.0.1: 7 native tests, 32
 
 ## Build and publish a later Mac version
 
+Current release evidence: [alpha.5.9 native build, installed worker and PKG audit](VALIDATION_ALPHA59.md).
+
 Developer prerequisites: Xcode Command Line Tools and Homebrew `cmake ninja qt@5 eigen laszip python@3.12 libomp`. End users do not need these tools.
 
 1. Run `bash tools/build_macos.sh` to build the pinned CloudCompare host, apply tracked patches and run native tests.

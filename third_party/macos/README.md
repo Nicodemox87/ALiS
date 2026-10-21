@@ -2,7 +2,9 @@
 
 The Mac installer is an additional distribution alongside the unchanged Windows packages. Its application includes third-party notices under `ALiS.app/Contents/Resources/ALiS/licenses`; Python distributions retain their bundled licence files.
 
-Source assets are attached to [the same release](https://github.com/Nicodemox87/ALiS/releases/tag/v0.1.0-alpha.5.7):
+For **alpha.5.9**, the matching ALiS Mac source ZIP and patched CloudCompare/CCCoreLib source archive are attached to [the current release](https://github.com/Nicodemox87/ALiS/releases/tag/v0.1.0-alpha.5.9). The runtime is pinned in `packaging/macos`. Qt remains 5.15.19: its corresponding source archive and patches remain accessible under the earlier release linked below. The new installer contains dependency/deployment audit reports and component licences. The following inventory documents the historical alpha.5.7 source set; do not treat its binary audit as an alpha.5.9 audit.
+
+Historical source assets are attached to [alpha.5.7](https://github.com/Nicodemox87/ALiS/releases/tag/v0.1.0-alpha.5.7):
 
 - `ALiS-0.1.0-alpha.5.7-macOS-Source.zip`: ALiS source and build/packaging scripts matching Mac build 1, with updated public documentation. No confidential research data or private Git history.
 - `ALiS-macOS-CloudCompare-2.13.2-source.tar.gz`: CloudCompare at `49dbbb662f296c7780aae717897c85b3cb3764ed`, initialized submodules, the three tracked macOS patches already applied, and the ALiS plugin. Git metadata is excluded. ALiS and CloudCompare use GPL-2.0-or-later; component notices remain with their source.

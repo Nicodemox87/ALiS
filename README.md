@@ -37,7 +37,7 @@ Archaeological LiDAR interpretation is not just a classification problem. It req
 
 **ALiS brings these steps into a connected CloudCompare workflow**, combining geometric analysis, expert annotation and reusable classification models. Its purpose is to support interpretation and reproducible analysis—not to replace archaeological judgement.
 
-> **Testing version: 0.1.0-alpha.5.9.** Progressive block features, BIN resume, optional startup update checks and AI-assisted development disclosure. Separate native Windows and Apple Silicon packages. [Changes and limits](docs/RELEASE_ALPHA59.md) · [Updates and privacy](docs/UPDATES.md). This is a research alpha.
+> **Testing version: 0.1.0-alpha.5.9.** Progressive block features, BIN resume, optional startup update checks and AI-assisted development disclosure. Separate native Windows and Apple Silicon packages. [Changes and limits](docs/RELEASE_ALPHA59.md) · [Verified release tests](docs/VALIDATION_ALPHA59.md) · [Updates and privacy](docs/UPDATES.md). This is a research alpha.
 >
 > **Windows and macOS downloads are available separately.** The Windows complete online wizard detects or installs CloudCompare 2.13.2, installs ALiS and prepares Python with ML/deep learning. The Mac package includes CloudCompare, Python and all six classifiers; it requires **Apple Silicon and macOS 27 or later**. This Mac preview is unsigned by Apple and is not notarized.
 >

@@ -1,6 +1,6 @@
 {
   "schema": "alis-complete-setup/1",
-  "revision": "0.1.0-alpha.5.8-complete-r1",
+  "revision": "0.1.0-alpha.5.9-complete-r1",
   "cloudcompare": {
     "filename": "CloudCompare_v2.13.2_setup_x64.exe",
     "url": "https://www.cloudcompare.org/release/CloudCompare_v2.13.2_setup_x64.exe",
@@ -12,11 +12,11 @@
     "sha256": "67b5635e80ea51072b87941312d00ec8927c4db9ba18938f7ad2d27b328b95fb"
   },
   "alis": {
-    "filename": "ALiS-0.1.0-alpha.5.8-CloudCompare-2.13.2-Windows-x64-Setup.exe",
-    "url": "https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.8/ALiS-0.1.0-alpha.5.8-CloudCompare-2.13.2-Windows-x64-Setup.exe",
-    "sha256": "87317037d764a823f8b3bae7575d54db7ebe28752117bc3b67862a5cc04bbc33",
-    "dll_sha256": "08ed4d165a12460f6902f4fb0e061c41011c2f0833a732250d774b79e5b770a6",
-    "worker_sha256": "178d59f2edcd77f7e196df216b663d0327f6e69f23b830ecf394f4831733ac0e"
+    "filename": "ALiS-0.1.0-alpha.5.9-CloudCompare-2.13.2-Windows-x64-Setup.exe",
+    "url": "https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.9/ALiS-0.1.0-alpha.5.9-CloudCompare-2.13.2-Windows-x64-Setup.exe",
+    "sha256": "9eac9b4e69272c5e3713ab515a73ea07ad30c30e3cc17c2a9f5f4bc572233681",
+    "dll_sha256": "9534038dca7e273b68af0290790b1ec021fb3479ee95353241953f4fb9d68255",
+    "worker_sha256": "8ecc87390fe59b8657a5dc8b6bb4d49b29f6eae3124dc8628dfafcd99069cd7a"
   },
   "packages": ["numpy==2.0.1", "scipy==1.15.3", "scikit-learn==1.6.0", "joblib==1.4.2", "threadpoolctl==3.6.0", "xgboost==2.1.3", "laspy==2.6.1", "lazrs==0.8.2"],
   "torch": {"cpu": "torch==2.10.0+cpu", "cuda": "torch==2.10.0+cu128"}
