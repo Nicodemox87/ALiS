@@ -36,7 +36,11 @@ cmake -S "$host" -B "$work/build" -G Ninja \
   -DOPTION_MAC_CUSTOM_DEPLOYMENT=ON -DOPTION_BUILD_CCVIEWER=OFF -DPLUGIN_IO_QLAS=ON -DPLUGIN_STANDARD_QCSF=ON \
   -DCCCORELIB_USE_TBB=OFF -DCCCORELIB_USE_CGAL=OFF
 cmake --build "$work/build" --parallel "${ALIS_BUILD_JOBS:-3}"
-QT_QPA_PLATFORM=offscreen ctest --test-dir "$work/build" -C Release -R '^ALiS\.' --output-on-failure
+if ! QT_QPA_PLATFORM=offscreen ctest --test-dir "$work/build" -C Release -R '^ALiS\.' --output-on-failure; then
+  test_binary="$work/build/plugins/private/qArchaeoLiDAR/ALiS_processing_tests"
+  QT_QPA_PLATFORM=offscreen lldb --batch -o run -o bt -- "$test_binary" --spatial-blocks-regression || true
+  exit 1
+fi
 cmake --install "$work/build"
 python3 "$repo/tools/finalize_macos_bundle.py" "$work/install/CloudCompare/CloudCompare.app"
 echo "Installed development host: $work/install/CloudCompare/CloudCompare.app"

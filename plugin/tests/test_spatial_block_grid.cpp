@@ -9,6 +9,6 @@ int spatialGridRegression(){int n=0;auto check=[&](bool b){++n;if(!b)throw std::
  for(int y=0;y<=99;++y)for(int x=0;x<=125;++x){int core=partial.cell(x,y);check(core>=0&&core<partial.size());check(partial.context(core,x,y,0));}
  bool rejected=false;try{alis::SpatialBlockGrid huge(0,0,1000,1000,1);}catch(...){rejected=true;}check(rejected);
  rejected=false;try{alis::SpatialBlockGrid invalid(0,0,10,10,0);}catch(...){rejected=true;}check(rejected);
- std::cout<<n<<" grid / edge / halo checks passed\n";
+ std::cout<<n<<" grid / edge / halo checks passed"<<std::endl;
  return 0;
 }
