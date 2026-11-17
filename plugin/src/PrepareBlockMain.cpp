@@ -11,6 +11,7 @@
 #include <QJsonDocument>
 #include <QJsonArray>
 #include <QJsonObject>
+#include <QElapsedTimer>
 #include <limits>
 #include <QSaveFile>
 #include <iostream>
@@ -33,6 +34,7 @@ int main(int argc,char**argv){
  // backend in this isolated process, never CloudCompare's GUI or a popup.
  qputenv("QT_QPA_PLATFORM", "minimal");
  QApplication app(argc,argv);
+ QElapsedTimer phaseTimer;phaseTimer.start();
  try{
   check(argc==2,"Usage: ALiS_prepare_block <request.json>"); QFile jf(QString::fromLocal8Bit(argv[1]));check(jf.open(QIODevice::ReadOnly),"Cannot read request");
   const auto j=QJsonDocument::fromJson(jf.readAll()).object(); QDir dir(j.value("directory").toString());
@@ -51,7 +53,16 @@ int main(int argc,char**argv){
   }
   ComputeReport report;std::string error;ComputeOptions opts;opts.maxThreadCount=j.value("threads").toInt(4);
   if(j.value("memory_bytes").toDouble()>0)opts.additionalMemoryBudget=size_t(j.value("memory_bytes").toDouble());
+  std::vector<unsigned char> queryMask;
+  if(j.contains("query_indices_file")){
+   const QString name=j.value("query_indices_file").toString();check(name=="query_indices.u32","Unsupported core query file");
+   QFile q(dir.filePath(name));check(q.open(QIODevice::ReadOnly)&&q.size()>0&&q.size()%4==0&&quint64(q.size()/4)<=n,"Invalid core query indices");
+   queryMask.assign(size_t(n),0);quint32 previous=0;bool first=true;quint64 queries=0;
+   while(!q.atEnd()){const auto b=q.read(65536*4);check(b.size()%4==0,"Truncated core query indices");for(int k=0;k<b.size();k+=4){quint32 index;std::memcpy(&index,b.constData()+k,4);check(index<n&&(first||index>previous),"Core query indices must be sorted, unique and within support");queryMask[index]=1;previous=index;first=false;++queries;}}
+   opts.queryMask=&queryMask;std::cout<<"CORE_QUERIES "<<queries<<" SUPPORT_POINTS "<<n<<std::endl;
+  }
   BlockProgress progress;
+  const double loadSeconds=phaseTimer.nsecsElapsed()/1.e9;
   if(!req.empty()){const bool computed=engine.compute(req,report,error,&progress,opts);check(computed,error.c_str());}
   TerrainResult terrain;
   if(needsHag){
@@ -64,10 +75,12 @@ int main(int argc,char**argv){
    TerrainEngine te;terrain=te.run(cloud,ground.isGround,tp);check(terrain.succeeded(),terrain.message.toUtf8().constData());
   }
   // Supplied columns are bounded by the same block memory estimate.
+  phaseTimer.restart();
   std::vector<QByteArray> raw;raw.resize(keys.size());std::vector<const std::vector<ScalarType>*> columns(keys.size(),nullptr);
   for(int f=0;f<keys.size();++f){auto key=keys[f].toString();if(supplied.contains(key)){QFile file(dir.filePath(supplied.value(key).toString()));check(file.open(QIODevice::ReadOnly)&&quint64(file.size())==n*4,"Invalid supplied feature size");raw[f]=file.readAll();}else if(key!="hag@0")columns[f]=engine.cachedValues(parsed[f]);}
   QSaveFile out(dir.filePath("features.f32"));check(out.open(QIODevice::WriteOnly),"Cannot write features");std::vector<float> buffer;buffer.reserve(8192*keys.size());
-  for(unsigned i=0;i<n;++i){for(int f=0;f<keys.size();++f){float v;if(!raw[f].isEmpty())std::memcpy(&v,raw[f].constData()+size_t(i)*4,4);else if(keys[f].toString()=="hag@0")v=float(terrain.heightAboveGround[i]);else {check(columns[f]!=nullptr,"Missing feature column");v=(*columns[f])[i];}buffer.push_back(v);}if((i+1)%8192==0||i+1==n){auto bytes=qint64(buffer.size()*4);check(out.write(reinterpret_cast<char*>(buffer.data()),bytes)==bytes,"Feature write failed");buffer.clear();}}
-  check(out.commit(),"Cannot commit features");std::cout<<"READY "<<n<<" rows x "<<keys.size()<<" features"<<std::endl;return 0;
+  std::vector<bool> hagColumn(size_t(keys.size()),false);for(int f=0;f<keys.size();++f){hagColumn[size_t(f)]=keys[f].toString()=="hag@0";check(!raw[f].isEmpty()||hagColumn[size_t(f)]||columns[f]!=nullptr,"Missing feature column");}
+  for(unsigned i=0;i<n;++i){for(int f=0;f<keys.size();++f){float v;if(!raw[f].isEmpty())std::memcpy(&v,raw[f].constData()+size_t(i)*4,4);else if(hagColumn[size_t(f)])v=float(terrain.heightAboveGround[i]);else v=(*columns[f])[i];buffer.push_back(v);}if((i+1)%8192==0||i+1==n){auto bytes=qint64(buffer.size()*4);check(out.write(reinterpret_cast<char*>(buffer.data()),bytes)==bytes,"Feature write failed");buffer.clear();}}
+  check(out.commit(),"Cannot commit features");const QJsonObject timing{{"load_seconds",loadSeconds},{"compute_seconds",report.elapsedSeconds},{"query_seconds",report.querySeconds},{"output_seconds",phaseTimer.nsecsElapsed()/1.e9}};std::cout<<"ALIS_TIMING "<<QJsonDocument(timing).toJson(QJsonDocument::Compact).constData()<<std::endl;std::cout<<"READY "<<n<<" rows x "<<keys.size()<<" features"<<std::endl;return 0;
  }catch(const std::exception&e){std::cerr<<e.what()<<std::endl;return 1;}
 }

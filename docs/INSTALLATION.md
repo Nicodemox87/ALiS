@@ -1,5 +1,11 @@
 # Install ALiS on Windows
 
+## Current Windows release: alpha.5.21
+
+Download the [alpha.5.21 Windows plugin ZIP](https://github.com/Nicodemox87/ALiS/releases/tag/v0.1.0-alpha.5.21) and checksums. Save your project, close CloudCompare, extract the ZIP and run `Install_ALiS.cmd`, authorizing Windows yourself. It verifies payloads, preserves backups and updates an **existing CloudCompare 2.13.2 x64 / Qt5** installation. It does not install CloudCompare, Python, CUDA or drivers. For a different host directory use the included `Install_ALiS.ps1 -CloudCompareDir 'D:\Apps\CloudCompare'` from an administrator session. Read the included `INSTALL.txt` before manual deployment.
+
+**[Full operational guide (Italian)](USER_GUIDE_IT.md)** · [Changes and limits](RELEASE_ALPHA521.md). The macOS update is the next roadmap step; this Windows ZIP is not a Mac update. The instructions and complete installer links below describe the **older alpha.5.9 bootstrap package**, not the latest plugin.
+
 **Recommended: [use the new complete online setup](WINDOWS_COMPLETE_INSTALLER.md)** to detect/install CloudCompare, ALiS, Python and ML/DL automatically. The instructions below remain valid for **plugin-only/manual installation** into an existing host.
 
 **For ALiS 0.1.0-alpha.5.9 — research testing preview.**

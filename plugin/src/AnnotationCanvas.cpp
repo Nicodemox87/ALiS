@@ -31,7 +31,7 @@ namespace alis
 	}
 	AnnotationCanvas::~AnnotationCanvas()
 	{
-		if (context()) { makeCurrent(); m_buffer.destroy(); m_program.removeAllShaders(); doneCurrent(); }
+		if (context()) { makeCurrent(); m_chunks.clear(); m_buffer.destroy(); m_program.removeAllShaders(); doneCurrent(); }
 	}
 	void AnnotationCanvas::fit()
 	{
@@ -92,25 +92,39 @@ namespace alis
 	void AnnotationCanvas::uploadPoints()
 	{
 		if(m_uploadedRevision==s->m_renderRevision) return;
+		m_allocationFailed = false;
 		struct Vertex {float x,y,z,r,g,b;};
-		std::vector<Vertex> vertices; vertices.reserve(s->m_renderPoints.size());
+		// Keep individual Qt buffer allocations well below their signed-int limit.
+		const std::size_t chunkSize = 1000000;
+		std::vector<Vertex> vertices; vertices.reserve(std::min(chunkSize,s->m_renderPoints.size()));
+		m_chunks.clear(); m_chunkCounts.clear();
+		auto flush = [&]() {
+			if(vertices.empty()) return;
+			auto buffer = std::make_unique<QOpenGLBuffer>(QOpenGLBuffer::VertexBuffer);
+			if(!buffer->create() || !buffer->bind()) throw std::bad_alloc();
+			buffer->allocate(vertices.data(),int(vertices.size()*sizeof(Vertex)));
+			const bool allocated = buffer->size()==int(vertices.size()*sizeof(Vertex)); buffer->release();
+			if(!allocated) throw std::bad_alloc();
+			m_chunkCounts.push_back(int(vertices.size())); m_chunks.push_back(std::move(buffer)); vertices.clear();
+		};
 		const AnnotationVector origin{{(s->m_min[0]+s->m_max[0])*.5,(s->m_min[1]+s->m_max[1])*.5,(s->m_min[2]+s->m_max[2])*.5}};
 		for(const auto& p:s->m_renderPoints)
 		{
 			const QRgb c=s->m_selected[p.id]?qRgb(255,223,0):p.colour;
 			vertices.push_back({float(p.xyz[0]-origin[0]),float(p.xyz[1]-origin[1]),float(p.xyz[2]-origin[2]),qRed(c)/255.f,qGreen(c)/255.f,qBlue(c)/255.f});
+			if(vertices.size()==chunkSize) flush();
 		}
-		m_buffer.bind(); m_buffer.allocate(vertices.data(),int(vertices.size()*sizeof(Vertex))); m_buffer.release();
-		m_vertexCount=int(vertices.size()); m_uploadedRevision=s->m_renderRevision;
+		flush(); m_uploadedRevision=s->m_renderRevision;
 	}
 	void AnnotationCanvas::paintGL()
 	{
 		glClearColor(14.f/255,24.f/255,38.f/255,1); glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 		if(m_glReady)
 		{
-			uploadPoints(); glEnable(GL_DEPTH_TEST); glDepthFunc(GL_LEQUAL); glDisable(GL_BLEND);
+			try { uploadPoints(); } catch(const std::bad_alloc&) { m_chunks.clear(); m_chunkCounts.clear(); m_allocationFailed=true; m_uploadedRevision=s->m_renderRevision; ccLog::Error("[ALiS] Annotation display allocation failed. Lower the display percentage; no source points or labels were changed."); }
+			glEnable(GL_DEPTH_TEST); glDepthFunc(GL_LEQUAL); glDisable(GL_BLEND);
 			glPointSize(float(devicePixelRatioF())*1.6f);
-			m_program.bind(); m_buffer.bind();
+			m_program.bind();
 			auto vector=[](const AnnotationVector& v){return QVector3D(float(v[0]),float(v[1]),float(v[2]));};
 			AnnotationVector center=m_camera.center; double diagonal=0,offset=0;
 			for(int i=0;i<3;++i){center[i]-=(s->m_min[i]+s->m_max[i])*.5; offset+=center[i]*center[i]; diagonal+=std::pow(s->m_max[i]-s->m_min[i],2);}
@@ -119,12 +133,16 @@ namespace alis
 			m_program.setUniformValue("screenScale",QVector2D(float(2*m_camera.pixelsPerUnit/std::max(1,width())),float(2*m_camera.pixelsPerUnit/std::max(1,height()))));
 			m_program.setUniformValue("depthRange",float(std::sqrt(diagonal)*2+std::sqrt(offset)+1));
 			m_program.enableAttributeArray("position"); m_program.enableAttributeArray("colour");
-			m_program.setAttributeBuffer("position",GL_FLOAT,0,3,6*sizeof(float)); m_program.setAttributeBuffer("colour",GL_FLOAT,3*sizeof(float),3,6*sizeof(float));
-			glDrawArrays(GL_POINTS,0,m_vertexCount);
+			for(std::size_t chunk=0;chunk<m_chunks.size();++chunk) {
+				m_chunks[chunk]->bind();
+				m_program.setAttributeBuffer("position",GL_FLOAT,0,3,6*sizeof(float)); m_program.setAttributeBuffer("colour",GL_FLOAT,3*sizeof(float),3,6*sizeof(float));
+				glDrawArrays(GL_POINTS,0,m_chunkCounts[chunk]); m_chunks[chunk]->release();
+			}
 			m_program.disableAttributeArray("position"); m_program.disableAttributeArray("colour"); m_buffer.release(); m_program.release(); glDisable(GL_DEPTH_TEST);
 		}
 		QPainter painter(this); painter.setPen(QColor(220,230,240));
 		if(!m_glReady) painter.drawText(rect(),Qt::AlignCenter,QStringLiteral("OpenGL unavailable — see tooltip"));
+		if(m_allocationFailed) painter.drawText(rect(),Qt::AlignCenter,QStringLiteral("Display memory exhausted — lower the percentage and Apply.\nNo points were rendered; source and labels are unchanged."));
 		if(s->m_section->isChecked() && !s->m_placingSection)
 		{
 			// World-space slab guides, projected with the same camera as the points.

@@ -75,12 +75,26 @@ class Source:
             with laspy.open(self.path) as f:
                 self.n=f.header.point_count;self.origin=f.header.mins.tolist();self.attrs=list(f.header.point_format.dimension_names)
                 self.header=f.header.copy()
+                aliases={};original_aliases={};rgb_encoding=None
+                for vlr in list(f.header.vlrs)+list(f.header.evlrs or []):
+                    if vlr.user_id=='ALiS' and vlr.record_id==1:
+                        try:
+                            mapping=json.loads(vlr.record_data_bytes())
+                            if mapping.get('schema')=='alis-disk-feature-export/1':
+                                aliases=mapping.get('features',{});rgb_encoding=mapping.get('rgb_encoding')
+                                if {c.get('name') for c in mapping.get('original_columns',[]) if c.get('kind')=='rgb'}!={'red','green','blue'}:rgb_encoding=None
+                                for index,alias in mapping.get('original_fields',{}).items():
+                                    original_aliases[mapping['original_columns'][int(index)]['name']]=alias
+                        except (ValueError,TypeError):pass
                 if f.header.point_format.id in (4,5,9,10):raise ValueError('Waveform LAS needs a waveform-aware exporter; this path will not silently discard waveform payloads.')
             self.fingerprint=digest(self.path)
             for key in features:
-                field=unquote(key[3:]) if key.startswith('sf:') else ('qAL_HAG' if key=='hag@0' else key)
+                field=original_aliases.get(unquote(key[3:]),unquote(key[3:])) if key.startswith('sf:') else ('qAL_HAG' if key=='hag@0' else aliases.get(key,key))
                 if field in self.attrs and (reuse or key=='hag@0' or key.startswith('sf:')):self.columns[key]=field
-                if key.startswith('rgb:'):raise ValueError('LAS RGB scaling is not implied: use a CloudCompare snapshot with its explicit 0-255 channels.')
+                if key.startswith('rgb:'):
+                    channel=key[4:]
+                    if rgb_encoding=='CC byte multiplied by 257' and channel in ('red','green','blue') and channel in self.attrs:self.columns[key]=channel
+                    else:raise ValueError('LAS RGB scaling is not implied: use a CloudCompare snapshot with its explicit 0-255 channels.')
         if not self.n:raise ValueError('Empty source')
         for k in features:
             if k.startswith('sf:') and k not in self.columns:raise ValueError('Required scalar field missing: '+unquote(k[3:]))
@@ -94,7 +108,7 @@ class Source:
             start=0
             with laspy.open(self.path) as f:
                 for rows in f.chunk_iterator(CHUNK):
-                    yield start,np.column_stack((rows.x,rows.y,rows.z)),{k:np.asarray(rows[v],dtype='f4') for k,v in self.columns.items()};start+=len(rows)
+                    yield start,np.column_stack((rows.x,rows.y,rows.z)),{k:np.asarray(rows[v],dtype='f4')/(257 if k.startswith('rgb:') else 1) for k,v in self.columns.items()};start+=len(rows)
 
 def plan(config):
     if not config.get('metric_units'):raise ValueError('Confirm metric coordinate units before preparing radius-based features.')

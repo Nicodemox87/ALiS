@@ -112,6 +112,7 @@ namespace alis
 		                        const QString& details);
 		void clearHistory();
 		void setDisplayFields(const QStringList& names, const QString& activeField, bool hasVisibilityMask);
+		void setPointSelectionStatus(const QString& text);
 		void setDisplayPalettes(const QStringList& ids, const QStringList& names, const QString& activeId);
 		void setDisplayRange(bool enabled, double minimum, double maximum, double start, double stop);
 		void setDisplayLegendState(bool enabled, bool visible);
@@ -125,6 +126,11 @@ namespace alis
 		void displayRangeResetRequested();
 		void displayPaletteEditorRequested();
 		void displayRefreshRequested();
+		void pointSelectionRequested();
+		void semanticParametersRequested();
+		void buildingCleaningRequested();
+		void computeDfmRequested(double step,bool fill,double maxEdge);
+		void manageScalarFieldsRequested();
 		void displayLegendVisibilityRequested(bool visible);
 		void metricUnitsConfirmationChanged(bool confirmed);
 
@@ -270,6 +276,7 @@ namespace alis
 		QLabel* m_dirtyValue = nullptr;
 		QComboBox* m_visualizationCombo = nullptr;
 		QGroupBox* m_displayPanel = nullptr;
+		QLabel* m_pointSelectionInfo = nullptr;
 		QComboBox* m_displayPaletteCombo = nullptr;
 		QDoubleSpinBox* m_displayMinSpin = nullptr;
 		QDoubleSpinBox* m_displayMaxSpin = nullptr;
@@ -326,6 +333,7 @@ namespace alis
 		QListWidget* m_modelFeatureList = nullptr;
 		QListWidget* m_bootstrapFeatureList = nullptr;
 		QComboBox* m_bootstrapEngineCombo = nullptr;
+		QList<QCheckBox*> m_semanticClassChecks;
 		QComboBox* m_bootstrapQualityCombo = nullptr;
 		QSpinBox* m_bootstrapClusterSpin = nullptr;
 		QSpinBox* m_bootstrapFitSampleSpin = nullptr;

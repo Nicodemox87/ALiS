@@ -1,24 +1,21 @@
 {
-  "version": "0.1.0-alpha.5.7",
-  "tag": "v0.1.0-alpha.5.7",
+  "version": "0.1.0-alpha.5.21",
+  "tag": "v0.1.0-alpha.5.21",
   "prerelease": true,
-  "native_dll_sha256": "ecb1f0cdbcbb2a95aa292afbb019a21978209ca214c14910e4db03a6fecf2423",
-  "block_worker_sha256": "ac2b6d2436ced6d4c99114bf0b97c3d903b02a68c280c303436cdfcd340cc8a5",
+  "platform": "Windows x64 / CloudCompare 2.13.2 Qt5",
+  "macos_update": "next roadmap step; not included",
+  "native_dll_sha256": "d58b60bc15887e30f8d905f16d15234b22c68093341e7190944e50d5e8e218f9",
+  "block_worker_sha256": "405b256440581faf6e843934705d4ab888186fb9373d93ee552ff3498ec8767a",
   "assets": [
     {
-      "name": "ALiS-0.1.0-alpha.5.7-CloudCompare-2.13.2-Windows-x64.zip",
-      "bytes": 2569972,
-      "sha256": "09a43b549aa65ec78425a245bc7bd1d6067dc6df63eeed1a8e9e61e677c1a537"
+      "name": "ALiS-0.1.0-alpha.5.21-CloudCompare-2.13.2-Windows-x64.zip",
+      "bytes": 2842151,
+      "sha256": "7da8c6af2fc4b365226e421b46f27020e926f3886ec491475b7f8498a24cbe4d"
     },
     {
-      "name": "ALiS-0.1.0-alpha.5.7-Source.zip",
-      "bytes": 5144505,
-      "sha256": "76440a7d478d7ebbde87ad7b815feb700264f991d1cedd5c91922d4f56a289dd"
-    },
-    {
-      "name": "ALiS-0.1.0-alpha.5.7-CloudCompare-2.13.2-Windows-x64-Setup.exe",
-      "bytes": 4209837,
-      "sha256": "8508da96e36081b34ee6edfeefb7247976c81724416f2733d97a698547ef797e"
+      "name": "ALiS-0.1.0-alpha.5.21-Source.zip",
+      "bytes": 5420272,
+      "sha256": "15d20e14b76eafc9bac5b621159e3117980b71b43bf26174c384c4a87c9f3408"
     }
   ],
   "external_source_assets": [

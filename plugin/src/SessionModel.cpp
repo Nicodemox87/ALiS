@@ -87,6 +87,7 @@ namespace alis
 	quint64 ALiSSession::sourceRevision() const { return m_sourceRevision; }
 	quint64 ALiSSession::groundRevision() const { return m_groundRevision; }
 	quint64 ALiSSession::hagRevision() const { return m_hagRevision; }
+	void ALiSSession::noteScalarFieldsRemoved(const QJsonObject& parameters){markChanged(false,false);ProcessingRecord record;record.operation=QStringLiteral("ScalarFields.Remove");record.timestampUtc=QDateTime::currentDateTimeUtc();record.parameters=parameters;record.sourceEntityUid=m_entityUid;record.affectedPoints=m_pointCount;addProcessingRecord(record);}
 	bool ALiSSession::hasGroundPreview() const { return m_hasGroundPreview; }
 
 	bool ALiSSession::isCompatibleWith(const ccPointCloud& candidate) const
@@ -464,6 +465,16 @@ namespace alis
 
 	bool ALiSSession::applyTransaction(Transaction transaction, QString& errorMessage)
 	{
+		// Restrict NEW edits only. Undo/Redo must restore the original transaction.
+		if (hasWorkingSelection()) for (auto& command : transaction.commands) {
+			std::size_t keep=0;
+			for(std::size_t j=0;j<command.indices.size();++j) {
+				if(command.indices[j]>=m_cloud->size()){errorMessage="Working selection index is out of range";return false;}
+				if(!inWorkingSelection(command.indices[j]))continue;
+				command.indices[keep]=command.indices[j];command.before[keep]=command.before[j];command.after[keep]=command.after[j];++keep;
+			}
+			command.indices.resize(keep);command.before.resize(keep);command.after.resize(keep);
+		}
 		for (const ScalarCommand& command : transaction.commands)
 		{
 			if (!validateIndices(command.indices, errorMessage))
@@ -733,8 +744,14 @@ namespace alis
 		}
 		std::vector<float> classValues(predictions.size(), std::numeric_limits<float>::quiet_NaN());
 		std::vector<float> confidenceValues(confidence.size(), std::numeric_limits<float>::quiet_NaN());
+		const int oldClass=m_cloud->getScalarFieldIndexByName(field::AsprsPrediction),oldScore=m_cloud->getScalarFieldIndexByName(field::AsprsConfidence);
 		for (std::size_t i = 0; i < predictions.size(); ++i)
 		{
+			if(!inWorkingSelection(unsigned(i))){
+				if(oldClass>=0)classValues[i]=m_cloud->getScalarField(oldClass)->getValue(unsigned(i));
+				if(oldScore>=0)confidenceValues[i]=m_cloud->getScalarField(oldScore)->getValue(unsigned(i));
+				continue;
+			}
 			const std::int16_t code = predictions[i];
 			const float probability = confidence[i];
 			if (code == -1)
@@ -755,6 +772,9 @@ namespace alis
 			return false;
 		}
 		markChanged(false, false);
+		const bool automatic=provenance.value("ground_locked").toBool(false);
+		m_cloud->setMetaData("ALiS.predictionGroundLocked",automatic);
+		if(automatic)m_cloud->setMetaData("ALiS.predictionGroundRevision",QVariant::fromValue<qulonglong>(m_groundRevision));
 		ProcessingRecord record;
 		// The worker provenance identifies the actual model family (ML or DL).
 		record.operation = QStringLiteral("Models.Predict");
@@ -771,6 +791,7 @@ namespace alis
 
 	bool ALiSSession::importBlockedPredictions(const QString& directory, const QJsonObject& provenance, QString& errorMessage)
 	{
+		if(hasWorkingSelection()){errorMessage="Blocked full-cloud predictions cannot replace fields while a working selection is active. Output retained on disk.";return false;}
 		QFile labels(QDir(directory).filePath("predictions.i16")), confidence(QDir(directory).filePath("confidence.f32"));
 		const auto n = m_cloud->size();
 		if (!labels.open(QIODevice::ReadOnly) || !confidence.open(QIODevice::ReadOnly) || labels.size() != qint64(n)*2 || confidence.size() != qint64(n)*4) { errorMessage = "Incomplete or unaligned prediction files"; return false; }
@@ -803,6 +824,7 @@ namespace alis
 		}
 		for (const char* name : {field::AsprsPrediction, field::AsprsConfidence}) { const int index=m_cloud->getScalarFieldIndexByName(name); if(index>=0)m_cloud->deleteScalarField(index); }
 		classes->setName(field::AsprsPrediction); scores->setName(field::AsprsConfidence); classes->release(); scores->release();
+		m_cloud->setMetaData("ALiS.predictionGroundLocked",false);
 		markChanged(false,false);
 		ProcessingRecord record; record.operation="Models.PredictBlocked";record.timestampUtc=QDateTime::currentDateTimeUtc();record.parameters=provenance;record.sourceEntityUid=m_entityUid;record.affectedPoints=n;
 		record.outputFields=QStringList()<<field::AsprsPrediction<<field::AsprsConfidence;addProcessingRecord(record);
@@ -824,6 +846,7 @@ namespace alis
 		std::vector<float> confidenceValues(confidence.size());
 		for (std::size_t i = 0; i < clusters.size(); ++i)
 		{
+			if(clusters[i]==-1){clusterValues[i]=confidenceValues[i]=std::numeric_limits<float>::quiet_NaN();continue;}
 			if (clusters[i] < 0 || clusters[i] > 16777215 || !std::isfinite(confidence[i])
 			    || confidence[i] < 0.0f || confidence[i] > 1.0f)
 			{
@@ -854,6 +877,10 @@ namespace alis
 
 	bool ALiSSession::applyAsprsPredictions(double minimumConfidence, QString& errorMessage)
 	{
+		const bool locked=m_cloud->getMetaData("ALiS.predictionGroundLocked").toBool();
+		if(locked&&m_cloud->getMetaData("ALiS.predictionGroundRevision").toULongLong()!=m_groundRevision){errorMessage="Ground changed after automatic classification. Run proposals again before Apply; existing Ground is retained.";return false;}
+		const auto lockedGround=locked?appliedGroundMask():std::vector<bool>();
+		if(locked&&lockedGround.size()!=m_cloud->size()){errorMessage="Applied Ground is missing; automatic output was not applied.";return false;}
 		if (!std::isfinite(minimumConfidence) || minimumConfidence < 0.0 || minimumConfidence > 1.0)
 		{
 			errorMessage = QStringLiteral("Prediction confidence threshold must be in [0, 1].");
@@ -876,6 +903,7 @@ namespace alis
 		for (unsigned i = 0; i < m_cloud->size(); ++i)
 		{
 			const double predicted = static_cast<double>(predictions->getValue(i));
+			if(!inWorkingSelection(i)||(locked&&(lockedGround[i]||predicted==2)))continue;
 			const double probability = static_cast<double>(confidence->getValue(i));
 			if (!std::isfinite(predicted) || predicted < 0.0 || predicted > 255.0
 			    || !std::isfinite(probability) || probability < minimumConfidence)
@@ -1005,6 +1033,21 @@ namespace alis
 		return applyTransaction(std::move(transaction), errorMessage);
 	}
 
+	bool ALiSSession::applyAutomaticClassEdits(const std::vector<unsigned>& indices,const std::vector<std::int16_t>& codes,QString& error)
+	{
+		if(indices.size()!=codes.size()||!validateIndices(indices,error)){error="Automatic edits are not index-aligned";return false;}
+		const int index=m_cloud->getScalarFieldIndexByName(field::WorkingAsprs);if(index<0){error="Working classification missing";return false;}const auto* working=m_cloud->getScalarField(index);const auto ground=appliedGroundMask();if(ground.size()!=m_cloud->size()){error="Apply Ground first";return false;}
+		ScalarCommand command;command.description="Apply reviewed Building cleaning (automatic, not Trusted)";command.fieldName=QString::fromUtf8(field::WorkingAsprs);
+		for(std::size_t j=0;j<indices.size();++j){const unsigned i=indices[j];const int code=codes[j];if(code<0||code>255||code==2){error="Building cleaning cannot assign or replace Ground";return false;}if(ground[i]||!inWorkingSelection(i))continue;const float before=working->getValue(i);if(before!=code){command.indices.push_back(i);command.before.push_back(before);command.after.push_back(float(code));}}
+		if(command.indices.empty()){error="No in-scope automatic edits to apply";return false;}return applyScalarCommand(std::move(command),error);
+	}
+
+	bool ALiSSession::setWorkingSelection(const std::vector<unsigned char>& mask,QString& error)
+	{
+		if(mask.size()!=m_cloud->size()||std::none_of(mask.begin(),mask.end(),[](unsigned char v){return v!=0;})){error="Working selection must be aligned and non-empty. Previous selection retained.";return false;}
+		m_workingSelection.assign(mask.begin(),mask.end());return true;
+	}
+
 	std::vector<unsigned> ALiSSession::visibleSubset(QString& errorMessage) const
 	{
 		std::vector<unsigned> indices;
@@ -1043,6 +1086,7 @@ namespace alis
 			output[i] = std::isfinite(values[i]) ? static_cast<float>(values[i]) : std::numeric_limits<float>::quiet_NaN();
 		}
 		if (!writeDenseField(field::HeightAboveGround, output, errorMessage)) return false;
+		m_cloud->setMetaData(QStringLiteral("ALiS.hagGroundRevision"),QVariant::fromValue<qulonglong>(m_groundRevision));
 		markChanged(false, true);
 		ProcessingRecord record;
 		record.operation = QStringLiteral("Terrain.ComputeHAG"); record.timestampUtc = QDateTime::currentDateTimeUtc();

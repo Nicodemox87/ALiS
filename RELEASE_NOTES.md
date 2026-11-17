@@ -1,4 +1,24 @@
-# ALiS 0.1.0-alpha.5.9 — 21 October 2026
+# ALiS 0.1.0-alpha.5.21 — 17 November 2026
+
+**Windows x64 / CloudCompare 2.13.2 Qt5 research preview. The macOS update is the next roadmap step; this release includes no matching Mac binary.**
+
+Download the new plugin ZIP, save your BIN, close CloudCompare, extract and use `Install_ALiS.cmd`. An existing compatible host is required. This is not the older complete online setup and does not install Python or GPU drivers. Backups, payload checksums and rollback are included.
+
+**[Complete step-by-step guide (Italian)](https://github.com/Nicodemox87/ALiS/blob/main/docs/USER_GUIDE_IT.md)** · **[Detailed changes, tests and limits](https://github.com/Nicodemox87/ALiS/blob/main/docs/RELEASE_ALPHA521.md)**
+
+- Annotation Studio: 10–100% of eligible points in **each** view, not divided across views; full-resolution annotation, per-panel counts and explicit memory warnings.
+- Block features: current-cloud scalar fields or bounded Disk-only output, adaptive core/halo work, recovery/resume and unified LAS export; preserve old fields when adding scales.
+- Scalar management: field/statistic search, comparisons, select/deselect filtered fields and guarded removal.
+- Class/value display filters plus separate frozen processing subset, with explicit refusal on unsupported paths.
+- Requested geometry classes: preserve applied Ground, HAG provenance checks, real feature prerequisites, tunable/explained roof, wall, vegetation, pole and wire proposals; Derived review before Apply.
+- Building cleaning and DFM: MIN/MIN or MIN/MAX recipes, overlap-conflict map with rectangle choices, guarded local mean, IDW, TIN and ordinary Kriging void fill.
+- Existing terrain presets, manual annotation, supervised classifiers, validation, models and history remain available. Clustering regularisation/thread controls improved.
+
+110 Annotation Studio checks; recovery/processing regressions and native Qt5/x64 compatibility. Locally reopened with a 29.7-million-point project and verified recovered fields. These checks do not establish scientific classification accuracy, external-site generalisation or a 100% full-size display performance benchmark. Automatic class rules and Building cleaning remain experimental. No private surveys or trained models included.
+
+---
+
+# Historical: ALiS 0.1.0-alpha.5.9 — 21 October 2026
 
 Progressive spatial features on the current cloud or one full-cloud copy, without per-block geometry duplication; compact checkpoints, BIN save/reopen/resume, exact geometry/schema validation and selected-block training subsets. Optional daily startup update checks on Windows and macOS. AI-assisted development disclosure in Credits and GitHub documentation. [Changes, validation scope and limitations](docs/RELEASE_ALPHA59.md) · [Updates and privacy](docs/UPDATES.md) · [AI disclosure](docs/AI_DISCLOSURE.md).
 

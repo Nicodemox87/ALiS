@@ -47,6 +47,11 @@
 #include <GenericProgressCallback.h>
 #include <atomic>
 #include <future>
+#include <QApplication>
+#include <QProcessEnvironment>
+#include "SemanticGeometry.h"
+#include "SemanticParametersDialog.h"
+#include "ScalarFieldsDialog.h"
 #include <mutex>
 
 #include <algorithm>
@@ -294,6 +299,10 @@ namespace alis
 
 	void WorkspaceController::connectDock()
 	{
+		connect(m_dock,&WorkspaceDock::pointSelectionRequested,this,&WorkspaceController::openPointSelection);
+		connect(m_dock,&WorkspaceDock::semanticParametersRequested,this,&WorkspaceController::tuneSemanticClasses);
+		connect(m_dock,&WorkspaceDock::buildingCleaningRequested,this,&WorkspaceController::openBuildingCleaning);
+		connect(m_dock,&WorkspaceDock::computeDfmRequested,this,&WorkspaceController::computeDfm);
 		connect(m_dock,&WorkspaceDock::cloudProfileRequested,this,[this](){refreshCloudProfile(true,true);});
 		connect(m_dock,&WorkspaceDock::saveProcessingPresetRequested,this,&WorkspaceController::saveProcessingPreset);
 		connect(m_dock,&WorkspaceDock::importProcessingPresetRequested,this,&WorkspaceController::importProcessingPreset);
@@ -399,6 +408,7 @@ namespace alis
 		connect(m_dock, &WorkspaceDock::assignGroundToAsprsRequested, this, &WorkspaceController::assignGroundToAsprs);
 		connect(m_dock, &WorkspaceDock::preprocessingActionRequested, this, [this](const QString& actionId)
 		{
+			if(!allowFullCloudOperation("Native preprocessing"))return;
 			if (!m_app || !m_app->getMainWindow())
 			{
 				showError(QStringLiteral("CloudCompare host is unavailable."));
@@ -501,6 +511,7 @@ namespace alis
 		});
 		connect(m_dock, &WorkspaceDock::visualizationRequested, this, &WorkspaceController::visualize);
 		connect(m_dock, &WorkspaceDock::displayRefreshRequested, this, [this]() { syncDisplayControls(); updateModelFeatureChoices(); });
+		connect(m_dock,&WorkspaceDock::manageScalarFieldsRequested,this,[this](){manageScalarFields();});
 		connect(m_dock, &WorkspaceDock::displayLegendVisibilityRequested, this, [this](bool visible)
 		{
 			if (!m_selectedCloud || !m_selectedCloud->sfShown()) return;
@@ -698,6 +709,8 @@ namespace alis
 		}
 		const bool nonTrivialSubset = visibility.size() == m_selectedCloud->size()
 			&& visibleCount > 0 && visibleCount < m_selectedCloud->size();
+		const auto pointFilter=m_pointSelections.find(m_selectedCloud->getUniqueID());
+		m_dock->setPointSelectionStatus(pointFilter==m_pointSelections.end()?QStringLiteral("No ALiS point filter. Processing: full cloud."):QString("ALiS point filter: %1 / %2 currently visible. %3 Frozen until you Apply another filter or Restore; native CloudCompare menu tools are outside ALiS scope enforcement.").arg(visibleCount).arg(m_selectedCloud->size()).arg(s->hasWorkingSelection()?"WORK ONLY ON SELECTION.":"Display only — processing FULL CLOUD."));
 		m_dock->setVisibleSubset(nonTrivialSubset
 			? QStringLiteral("CloudCompare visible subset")
 			: QStringLiteral("No non-trivial visible subset"),
@@ -713,12 +726,23 @@ namespace alis
 
 	void WorkspaceController::refreshHost()
 	{
+		enforcePointSelection();
 		if (m_selectedCloud) m_selectedCloud->prepareDisplayForRefresh();
 		if (m_annotationStudio) m_annotationStudio->refreshColours();
 		if (m_app) { m_app->updateUI(); m_app->refreshAll(); }
 	}
 
 	WorkspaceController::~WorkspaceController() { delete m_annotationStudio.data(); }
+
+	void WorkspaceController::manageScalarFields(QWidget* parent)
+	{
+		if(!m_selectedCloud||!session()){showError(QStringLiteral("Select one cloud before managing scalar fields."));return;}
+		if(m_featureComputationActive||(m_mlProcess&&m_mlProcess->state()!=QProcess::NotRunning)){showError(QStringLiteral("Wait until active processing finishes before changing scalar fields."));return;}
+		QScopedValueRollback<bool> guard(m_featureComputationActive,true);
+		const auto changes=manageScalarFieldsDialog(*m_selectedCloud,parent?parent:m_dock);
+		for(const auto& change:changes)session()->noteScalarFieldsRemoved(change.toObject());
+		if(!changes.isEmpty()){syncDisplayControls();updateModelFeatureChoices();refreshHost();updateDockState();showReady(QStringLiteral("Selected scalar fields removed from the loaded cloud. Source/checkpoint files retained. Save a NEW BIN; reopen the previous BIN to restore removed fields."));}
+	}
 
 	void WorkspaceController::openAnnotationStudio()
 	{
@@ -881,6 +905,7 @@ namespace alis
 
 	void WorkspaceController::runGroundPreview()
 	{
+		if(!allowFullCloudOperation("Ground Preview"))return;
 		if (!requireMetricUnits(QStringLiteral("Ground Preview"))) return;
 		QString error; ALiSSession* s = ensureSession(error); if (!s) { showError(error); return; }
 		m_dock->setBusy(true);
@@ -936,7 +961,8 @@ namespace alis
 	{
 		if (!requireMetricUnits(QStringLiteral("DTM computation"))) return;
 		ALiSSession* s = session(); if (!s) { showError(QStringLiteral("No active session.")); return; }
-		const std::vector<bool> mask = s->appliedGroundMask(); if (mask.empty()) { showError(QStringLiteral("Apply Ground before computing DTM.")); return; }
+		auto mask = s->appliedGroundMask(); if (mask.empty()) { showError(QStringLiteral("Apply Ground before computing DTM.")); return; }
+		if(s->hasWorkingSelection())for(unsigned i=0;i<m_selectedCloud->size();++i)mask[i]=mask[i]&&s->inWorkingSelection(i);
 		TerrainParameters p;
 		p.gridStep = metresToLocal(gridStepMetres, *m_selectedCloud);
 		p.interpolateEmptyCells = fillEmptyCells;
@@ -951,6 +977,12 @@ namespace alis
 		m_dock->setBusy(true);
 		TerrainResult result = m_terrainEngine.run(*m_selectedCloud, mask, p, context);
 		if (!result.succeeded()) { showError(result.message); return; }
+		if(s->hasWorkingSelection()){
+			if(!m_app||!result.dtmCloud){showError("DTM host commit unavailable");return;}
+			result.dtmCloud->setName("qAL DTM — working selection (HAG not replaced)");m_app->addToDB(result.dtmCloud.release());
+			ProcessingRecord record;record.operation="Terrain.ComputeDTM.Selection";record.timestampUtc=QDateTime::currentDateTimeUtc();record.sourceEntityUid=s->entityUid();record.affectedPoints=result.statistics.groundPointCount;record.parameters=result.provenance.effectiveParameters;record.parameters["HAG_replaced"]=false;s->addProcessingRecord(record);
+			m_dock->setBusy(false);refreshHost();updateDockState();showReady("DTM created from selected applied Ground only. Full-cloud DTM/HAG retained; a partial surface is NOT stamped as full-cloud HAG.");return;
+		}
 		m_terrainResult.reset(new TerrainResult(std::move(result)));
 		QJsonObject hagParams = m_terrainResult->provenance.effectiveParameters;
 		QString error;
@@ -976,6 +1008,7 @@ namespace alis
 
 	void WorkspaceController::computeHag()
 	{
+		if(!allowFullCloudOperation("Full-cloud HAG"))return;
 		if (!requireMetricUnits(QStringLiteral("HAG computation"))) return;
 		if (!m_terrainResult) { showError(QStringLiteral("Compute DTM first; HAG is derived from its persistent session grid.")); return; }
 		QString error; ALiSSession* s = session();
@@ -988,6 +1021,7 @@ namespace alis
 	                                          double lowHeight, double mediumHeight, const QString& outputDirectory,
 	                                          int targetNeighbors, double fineRadiusLimit)
 	{
+		if(!allowFullCloudOperation("Adaptive vegetation preview"))return;
 		if(m_featureComputationActive || !m_selectedCloud || !session()) return;
 		if(!requireMetricUnits(QStringLiteral("Vegetation separation"))) return;
 		if(preset<0 || preset>2 || minimumNeighbors<8 || minimumNeighbors>64 || targetNeighbors<8 || targetNeighbors>128
@@ -1185,7 +1219,9 @@ namespace alis
 		const double estimatedBytes = double(m_selectedCloud->size()) * (128.0 + 12.0 * requests.size())
 			+ 4.0*std::min<unsigned>(m_selectedCloud->size(),200000)*96.0;
 		if (estimatedBytes > double(initialFreeRam) * .40) {
-			showError(QStringLiteral("Full-cloud features would require approximately %1 GiB of additional RAM, including cache, octree and Scalar Fields. Processing was not started. Use Classification > Supervised > 7 > Prepare data for this model for bounded blocks from this loaded cloud or directly from LAS/LAZ. Model radii are preserved.").arg(estimatedBytes / (1024.*1024.*1024.), 0, 'f', 1));
+			if(session()&&session()->hasWorkingSelection()){showError("Selected feature queries exceed available memory. Spatial blocks do not yet support the frozen selection; no full-cloud fallback was started.");return;}
+			showReady(QStringLiteral("Full-cloud features need approximately %1 GiB. Opening Spatial blocks instead: Disk only stores results without full-cloud SF allocation. No model is required.").arg(estimatedBytes / (1024.*1024.*1024.), 0, 'f', 1));
+			if(m_app)openSpatialBlocks();
 			return;
 		}
 		QScopedValueRollback<bool> computing(m_featureComputationActive, true);
@@ -1198,6 +1234,8 @@ namespace alis
 		progress.setMethodTitle(QStringLiteral("ALiS — multiscale feature computation"));
 		progress.setInfo(QStringLiteral("Building/reusing the octree and computing neighbourhood features…"));
 		ComputeReport report; std::string error; ComputeOptions options;
+		std::vector<unsigned char> queryMask;
+		if(session()&&session()->hasWorkingSelection()){queryMask.resize(m_selectedCloud->size());for(unsigned i=0;i<m_selectedCloud->size();++i)queryMask[i]=session()->inWorkingSelection(i)?1:0;options.queryMask=&queryMask;}
 		options.additionalMemoryBudget=static_cast<std::size_t>(initialFreeRam*2/5);
 		options.maxThreadCount=4;
 		FeatureProgress workerProgress;
@@ -1345,6 +1383,7 @@ namespace alis
 	                                        QString& error,
 	                                        bool requireMetricCoordinates)
 	{
+		if(!allowFullCloudOperation("ML / clustering dataset")){error="Working selection active; full-cloud ML export was not run.";return false;}
 		if (!m_selectedCloud || (requireMetricCoordinates && !requireMetricUnits(QStringLiteral("ML dataset export"))))
 		{
 			error = QStringLiteral("A metric point-cloud Session is required.");
@@ -1607,6 +1646,8 @@ namespace alis
 			{QStringLiteral("xyz_exported_as_features"), false}, {QStringLiteral("alignment"), QStringLiteral("source point-index order")}};
 		manifest.insert(QStringLiteral("provenance"), provenance);
 		manifest.insert(QStringLiteral("metadata"), QJsonObject{{QStringLiteral("source_cloud_uid"), static_cast<double>(m_selectedCloud->getUniqueID())},
+			{QStringLiteral("reuse_applied_ground"),session()&&session()->hasAppliedGround()},
+			{QStringLiteral("ground_revision"),double(session()?session()->groundRevision():0)},
 			{QStringLiteral("source_revision"), static_cast<double>(session() ? session()->sourceRevision() : 0)},
 			{QStringLiteral("source_cloud"), source},
 			{QStringLiteral("input_fields"), featureArray},
@@ -1994,6 +2035,7 @@ namespace alis
 	                                        const QString& workerScript,
 	                                        const QStringList& arguments)
 	{
+		if((operation=="train"||operation=="predict"||operation=="bootstrap")&&!allowFullCloudOperation("ML worker"))return;
 		if (m_mlProcess->state() != QProcess::NotRunning)
 		{
 			showError(QStringLiteral("An ML worker job is already running."));
@@ -2013,6 +2055,7 @@ namespace alis
 		m_mlProcess->setProgram(python);
 		m_mlProcess->setArguments(pythonIsolationArguments(python) << QStringLiteral("-u") << worker << arguments);
 		m_mlProcess->setWorkingDirectory(QFileInfo(worker).absolutePath());
+		auto environment=QProcessEnvironment::systemEnvironment();for(const auto& key:QStringList{"OPENBLAS_NUM_THREADS","OMP_NUM_THREADS","MKL_NUM_THREADS","NUMEXPR_NUM_THREADS","NUMEXPR_MAX_THREADS"}){bool ok=false;int configured=environment.value(key).toInt(&ok);environment.insert(key,QString::number(ok&&configured>0?std::min(configured,24):24));}m_mlProcess->setProcessEnvironment(environment);
 		m_dock->setBusy(true);
 		QString progressTitle = QStringLiteral("Predict ASPRS");
 		if (operation == QStringLiteral("train")) progressTitle = QStringLiteral("Train classifier");
@@ -2130,7 +2173,34 @@ namespace alis
 	                                         int seed)
 	{
 		if (!session() || !m_selectedCloud) return;
+		if(!session()->hasAppliedGround()){showError("Apply existing Ground before automatic classification or cluster exploration. Ground will be reused, never recalculated by these methods.");return;}
 		QString error;
+		if(algorithm.startsWith(QStringLiteral("geometry_semantic:"))) {
+			if(!requireMetricUnits(QStringLiteral("Semantic geometry")))return;
+			if(!session()->hasAppliedGround()){showError(QStringLiteral("Calculate and Apply Ground first. Automatic classes reuse that mask."));return;}
+			QSet<int> requested;for(const auto& value:algorithm.section(':',1).split(',',Qt::SkipEmptyParts))requested.insert(value.toInt());
+			if(requested.isEmpty()){showError(QStringLiteral("Choose at least one class. Other is always retained."));return;}
+			if((requested.contains(3)||requested.contains(4)||requested.contains(5)||requested.contains(130)||requested.contains(131))&&(session()->hagRevision()==0||m_selectedCloud->getScalarFieldIndexByName(field::HeightAboveGround)<0||!m_selectedCloud->getMetaData("ALiS.hagGroundRevision").isValid()||m_selectedCloud->getMetaData("ALiS.hagGroundRevision").toULongLong()!=session()->groundRevision())){
+				showError(QStringLiteral("Vegetation, poles and wires need HAG verified against the current applied Ground. Calculate DTM/HAG in Terrain first (also for legacy HAG without provenance); missing or stale heights must not silently turn everything into Other."));return;
+			}
+			if(m_featureComputationActive)return;QScopedValueRollback<bool> guard(m_featureComputationActive,true);
+			ccProgressDialog progress(true,m_dock);progress.setWindowModality(Qt::ApplicationModal);progress.setMinimumDuration(0);progress.setWindowTitle(QStringLiteral("ALiS — geometry class proposals"));progress.show();
+			m_dock->setBusy(true);
+			try {
+				const auto started=QDateTime::currentMSecsSinceEpoch();
+				const auto parameters=semanticParametersFromJson(QJsonDocument::fromJson(m_selectedCloud->getMetaData("ALiS.semanticParameters").toByteArray()).object());
+				const auto selection=m_pointSelections.find(m_selectedCloud->getUniqueID());const auto* mask=session()->hasWorkingSelection()&&selection!=m_pointSelections.end()?&selection->second.mask:nullptr;
+				auto result=classifySemanticGeometry(*m_selectedCloud,session()->appliedGroundMask(),requested,[&](){QApplication::processEvents();if(progress.wasCanceled())throw std::runtime_error("Classification canceled; existing labels retained");},parameters,mask);
+				if(!session()->setAsprsPredictions(result.labels,result.scores,result.provenance,QDateTime::currentMSecsSinceEpoch()-started,error))throw std::runtime_error(error.toStdString());
+				int reasonIndex=m_selectedCloud->getScalarFieldIndexByName("qAL_AutomaticReason");if(reasonIndex<0)reasonIndex=m_selectedCloud->addScalarField("qAL_AutomaticReason");checkpointCheck(reasonIndex>=0,"Class proposals saved, but reason field allocation failed");auto* reason=m_selectedCloud->getScalarField(reasonIndex);for(unsigned i=0;i<m_selectedCloud->size();++i)if(session()->inWorkingSelection(i))reason->setValue(i,result.reasons[i]);reason->computeMinAndMax();m_selectedCloud->setMetaData("ALiS.automaticReasons",QJsonDocument(result.provenance).toJson(QJsonDocument::Compact));
+				ccColorScale::Shared palette;auto* manager=ccColorScalesManager::GetUniqueInstance();for(auto scale:manager->map())if(scale->getName()=="ALiS automatic classes v2")palette=scale;
+				if(!palette){palette=ccColorScale::Create("ALiS automatic classes v2");auto color=[](int code){switch(code){case 2:return QColor(164,116,63);case 3:return QColor(155,220,90);case 4:return QColor(60,165,65);case 5:return QColor(20,95,40);case 6:case 128:return QColor(220,55,55);case 129:return QColor(245,160,45);case 130:return QColor(40,140,240);case 131:return QColor(210,60,220);default:return QColor(150,150,150);}};for(int code=0;code<=131;++code){palette->insert(ccColorScaleElement(code/132.,color(code)),false);palette->insert(ccColorScaleElement(code==131?1.:(code+1)/132.-1e-7,color(code)),false);}palette->update();palette->setAbsolute(-.5,131.5);palette->customLabels().insert(ccColorScale::Label(1,"Other"));for(int code:requested){const auto* definition=findAsprsClass(unsigned(code));palette->customLabels().insert(ccColorScale::Label(code,definition?QString::fromUtf8(definition->name):QString::number(code)));}manager->addScale(palette);}
+				m_selectedCloud->getCurrentDisplayedScalarField()->setColorScale(palette);m_selectedCloud->showSFColorsScale(true);
+				refreshHost();updateDockState();showReady(QStringLiteral("Experimental geometry proposals ready in Derived. Ground reused; Working unchanged. Scores are NOT calibrated probabilities. Review walls/roofs and abstentions before Apply."));
+				QStringList report;report<<"Ground is locked to the existing applied mask. Derived proposals only; Working unchanged.";const auto counts=result.provenance.value("counts").toObject();for(auto it=counts.begin();it!=counts.end();++it){const auto* definition=findAsprsClass(it.key().toUInt());report<<QString("%1: %2 points").arg(definition?QString::fromUtf8(definition->name):it.key()).arg(it.value().toDouble());}report<<"Inspect qAL_AutomaticReason: 1 Ground, 2 roof, 3 wall, 4 dispersed vegetation, 5 invalid HAG, 6 wire, 7 pole, 8 ambiguous, 9 not requested, 10 return issue, 11 unsupported plane, 12 missing measurements."<<"Tune geometry thresholds, inspect a spatial subset, rerun and review before Apply. Scores are not calibrated probabilities; no accuracy is claimed.";m_dock->setBootstrapStatus(report.join('\n'),false);updateModelFeatureChoices();syncDisplayControls();
+			}catch(const std::exception& e){showError(QString::fromUtf8(e.what()));}
+			m_dock->setBusy(false);return;
+		}
 		const QString repository = QDir::fromNativeSeparators(repositoryPath.trimmed());
 		// Native CC tools can edit SF/RGB without incrementing our Session revision.
 		// Export current values for each cluster run; this is an aligned copy, never
@@ -2207,6 +2277,7 @@ namespace alis
 		QJsonObject provenance;
 		QFile resultFile(QDir(directory).filePath(QStringLiteral("result.json")));
 		if (resultFile.open(QIODevice::ReadOnly)) provenance = QJsonDocument::fromJson(resultFile.readAll()).object();
+		if(provenance.value("ground_reused").toBool()&&quint64(provenance.value("ground_revision").toDouble())!=s->groundRevision()){error="Ground changed while clustering was running; output retained on disk but not imported. Run again against current Ground.";return false;}
 		provenance.insert(QStringLiteral("dataset"), m_mlDatasetPath);
 		provenance.insert(QStringLiteral("output_bundle"), directory);
 		return s->setBootstrapClusters(clusters, confidence, provenance,

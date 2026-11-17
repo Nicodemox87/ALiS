@@ -17,8 +17,9 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.9/ALiS-0.1.0-alpha.5.9-Windows-x64-Complete-Setup-r1.exe"><strong>Download Windows installer</strong></a> ·
+  <a href="https://github.com/Nicodemox87/ALiS/releases/tag/v0.1.0-alpha.5.21"><strong>Download Windows alpha.5.21</strong></a> ·
   <a href="https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.9/ALiS-0.1.0-alpha.5.9-macOS-arm64-Setup.pkg"><strong>Download macOS installer</strong></a> ·
+  <a href="docs/USER_GUIDE_IT.md"><strong>Complete user guide / Guida completa</strong></a> ·
   <a href="#getting-started">Getting started</a> ·
   <a href="#capabilities">Capabilities</a> ·
   <a href="#workflow">Workflow</a> ·
@@ -40,13 +41,19 @@
 
 ## Why ALiS?
 
+> **Current Windows release: 0.1.0-alpha.5.21 — CloudCompare 2.13.2 x64 / Qt5.** [Download and release notes](https://github.com/Nicodemox87/ALiS/releases/tag/v0.1.0-alpha.5.21) · **[Detailed user guide (Italian)](docs/USER_GUIDE_IT.md)** · [All changes and limits](docs/RELEASE_ALPHA521.md).
+>
+> New: per-view 10–100% point display in Annotation Studio; persistent/recoverable block features; scalar-field management; class/value display filters and guarded processing scope; Ground-preserving requested classes with roof/wall/pole/wire proposals; Building cleaning; DFM with overlap-conflict map and local mean, IDW, TIN or Kriging void filling. Automatic semantic proposals remain experimental and require review.
+>
+> **macOS update is the next step.** The available Mac installer is still alpha.5.9 and does not include the new Windows capabilities. The Windows 5.21 ZIP updates an existing compatible CloudCompare host; it is not the older complete online installer and does not install Python or GPU drivers. This repository documents the CloudCompare plugin, not the standalone prototype.
+
 **New to ALiS? Choose your platform:** [Windows complete installation guide](docs/WINDOWS_COMPLETE_INSTALLER.md) · [macOS installation guide](docs/MAC_INSTALLER.md). Each platform has its own installer and requirements.
 
 Archaeological LiDAR interpretation is not just a classification problem. It requires checking the data, separating terrain from vegetation and structures, choosing meaningful spatial scales, and reviewing uncertain results.
 
 **ALiS brings these steps into a connected CloudCompare workflow**, combining geometric analysis, expert annotation and reusable classification models. Its purpose is to support interpretation and reproducible analysis—not to replace archaeological judgement.
 
-> **Testing version: 0.1.0-alpha.5.9.** Progressive block features, BIN resume, optional startup update checks and AI-assisted development disclosure. Separate native Windows and Apple Silicon packages. [Changes and limits](docs/RELEASE_ALPHA59.md) · [Verified release tests](docs/VALIDATION_ALPHA59.md) · [Updates and privacy](docs/UPDATES.md). This is a research alpha.
+> **Previous cross-platform release: 0.1.0-alpha.5.9.** The installer links below are retained as historical/bootstrap options, not as the latest Windows plugin. [Historical changes](docs/RELEASE_ALPHA59.md) · [Verified release tests](docs/VALIDATION_ALPHA59.md) · [Updates and privacy](docs/UPDATES.md).
 >
 > **Windows and macOS downloads are available separately.** The Windows complete online wizard detects or installs CloudCompare 2.13.2, installs ALiS and prepares Python with ML/deep learning. The Mac package includes CloudCompare, Python and all six classifiers; it requires **Apple Silicon and macOS 27 or later**. This Mac preview is unsigned by Apple and is not notarized.
 >
@@ -115,7 +122,17 @@ The PointNet-style classifier operates on local XYZ neighbourhoods. It is **not 
 
 ## Getting started
 
+### Windows alpha.5.21 — current plugin and full guide
+
+1. Open the **[5.21 release](https://github.com/Nicodemox87/ALiS/releases/tag/v0.1.0-alpha.5.21)** and download the Windows plugin ZIP plus checksums.
+2. Use an existing CloudCompare **2.13.2 x64 / Qt5** installation. Save your BIN, quit CloudCompare, extract the ZIP, run its `Install_ALiS.cmd` and authorize Windows if required. The verified installer preserves backups; it does not install the host/runtime or touch survey files.
+3. Reopen CloudCompare, select the cloud and follow the **[complete operational guide](docs/USER_GUIDE_IT.md)**: Ground → DTM/HAG → features/recovery → annotation/classification → Building cleaning → DFM → save/export.
+
+The guide explains all workspace sections, exact display percentage semantics, why Disk-only fields are not automatically visible in the cloud, resume/recovery, class codes, algorithm controls and common error messages. **[Release details and limitations](docs/RELEASE_ALPHA521.md)**.
+
 ### Choose your download
+
+The following table describes the **older alpha.5.9 complete installers**. For the latest Windows plugin use 5.21 above; the Mac update is pending.
 
 | | Windows | macOS |
 | :--- | :--- | :--- |
@@ -191,7 +208,9 @@ Source code lives in [plugin](plugin); presets in [profiles](profiles). See [thi
 
 ## Roadmap
 
-**macOS:** the first complete Apple Silicon package is available above. Further work covers older macOS releases, Intel builds if feasible, wider hardware validation, and future Developer ID signing/notarization.
+**Next step — update macOS to the new ALiS feature set.** Port/rebuild the alpha.5.21 changes, run native Apple Silicon regression and GUI checks, then publish a matching Mac installer and update manifest. The existing alpha.5.9 Mac package remains an older preview; Windows validation does not establish Mac compatibility.
+
+Further Mac work covers older macOS releases, Intel builds if feasible, wider hardware validation, and future Developer ID signing/notarization.
 
 Work in progress—not a list of shipped capabilities:
 

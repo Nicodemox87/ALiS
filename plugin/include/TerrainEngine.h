@@ -3,6 +3,8 @@
 
 #include <QJsonObject>
 #include <QString>
+#include "DfmInterpolation.h"
+#include "DfmConflictGrid.h"
 
 #include <cstddef>
 #include <cstdint>
@@ -27,6 +29,15 @@ namespace alis
 		double maximumInterpolationEdgeLength = 0.0;
 		//! Safety ceiling matching CloudCompare's own "huge grid" threshold by default.
 		std::uint64_t maximumCellCount = (std::uint64_t{1} << 26);
+		//! DFM only: maximum surface of caller-selected Ground + Buildings; never a HAG base.
+		bool surfaceMaximum = false;
+		//! Alternative requested pipeline: MIN Ground, MIN selected Building, merged MIN.
+		bool dfmMinimumMerge = false;
+		DfmFillOptions dfmFill;
+		bool requireConflictReview=false;
+		int krigingNeighbours=8,krigingModel=0;
+		bool krigingAutoParameters=true;
+		double krigingRange=10.,krigingSill=1.,krigingNugget=0.;
 	};
 
 	struct TerrainContext
@@ -34,6 +45,10 @@ namespace alis
 		ccMainAppInterface* app = nullptr;
 		//! Optional non-owning progress dialog; cancellation is propagated as failure.
 		ccProgressDialog* progressDialog = nullptr;
+		//! DFM: aligned, non-owning Building mask. Input run mask is Ground UNION Buildings.
+		const std::vector<bool>* surfaceBuildingMask = nullptr;
+		//! Called after both no-fill stages, before the definitive surface. False cancels commit.
+		std::function<bool(DfmConflictGrid&)> conflictReview;
 	};
 
 	struct TerrainValidation

@@ -40,9 +40,14 @@ namespace alis
 		ccPointCloud* selectedCloud() const;
 		ALiSSession* session() const;
 		void openAnnotationStudio();
+		void manageScalarFields(QWidget* parent = nullptr);
 		// Shared entry point for the interval panel and reproducible headless tests.
 		bool applyFeatureRanges(const QJsonArray& rules, const QString& directory, QString& error);
 		bool refineVegetationWithRanges(const QString& directory, QString& error);
+		bool applyPointSelection(const QJsonArray& rules,bool workOnly,QString& error);
+		void clearPointSelection();
+		bool previewBuildingCleaning(bool aggressive,bool strict,QString& error);
+		bool applyBuildingCleaning(QString& error);
 
 	private:
 		void openSpatialBlocks();
@@ -52,6 +57,14 @@ namespace alis
 		void updateDockState(const QString& status = QString());
 		void refreshHost();
 		void syncDisplayControls();
+		void openPointSelection();
+		void tuneSemanticClasses();
+		void openBuildingCleaning();
+		bool allowFullCloudOperation(const QString& operation);
+		void enforcePointSelection();
+		void computeDfm(double gridStepMetres,bool fillEmptyCells,double maximumInterpolationEdgeMetres);
+		struct PointSelectionState { QJsonArray rules; std::vector<unsigned char> mask,previousVisibility; bool workOnly=false; };
+		std::unordered_map<quint64,PointSelectionState> m_pointSelections;
 		void refreshCloudProfile(bool measureSpacing, bool forceScan);
 		void markCloudProfileStale(const QString& reason);
 		ProcessingPreset captureProcessingPreset() const;

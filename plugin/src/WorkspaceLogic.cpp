@@ -87,6 +87,9 @@ namespace alis
 		return classes;
 	}
 
+	const std::vector<AspClass>& geometryAsprsClasses(){
+		static const std::vector<AspClass> classes={{128,"Roof (ALiS custom)",false},{129,"Vertical wall (ALiS custom)",false},{130,"Utility pole (ALiS custom)",false},{131,"Wire / cable (ALiS custom)",false}};return classes;
+	}
 	const AspClass* findAsprsClass(unsigned code)
 	{
 		const auto& classes = asprsClasses();
@@ -94,7 +97,8 @@ namespace alis
 		{
 			return &classes[code];
 		}
-		return nullptr; // 64..255 are user definable, not ASPRS semantic classes.
+		for(const auto& value:geometryAsprsClasses())if(value.code==code)return &value;
+		return nullptr; // Other 64..255 codes remain user definable.
 	}
 
 	const std::vector<AspClass>& archaeologyAsprsClasses()

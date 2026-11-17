@@ -65,7 +65,21 @@ def cluster(
         raise ValueError("device must be auto, cpu or cuda")
     output.mkdir(parents=True, exist_ok=True)
     events.emit("progress", "sample", 0.05, "Sampling and imputing feature space")
-    sample = _fit_sample(dataset.features, fit_sample, seed)
+    reuse_ground = bool(getattr(dataset, 'metadata', {}).get('reuse_applied_ground', False))
+    ground = None
+    if reuse_ground:
+        if dataset.labels is None or dataset.labels.shape != (dataset.point_count,):
+            raise ValueError('Applied Ground reuse requested but aligned Working labels are missing')
+        ground = dataset.labels == 2
+        eligible = np.flatnonzero(~ground)
+        if len(eligible) < clusters:
+            raise ValueError('Not enough non-Ground points for clustering; applied Ground is retained')
+        if len(eligible) > fit_sample:
+            eligible = np.random.default_rng(seed).choice(eligible, fit_sample, replace=False)
+        sample = np.asarray(dataset.features[eligible], dtype=np.float64)
+        del eligible
+    else:
+        sample = np.asarray(_fit_sample(dataset.features, fit_sample, seed), dtype=np.float64)
     sample = np.where(np.isfinite(sample), sample, np.nan)
     active = np.any(np.isfinite(sample), axis=0)
     if not np.any(active):
@@ -93,20 +107,35 @@ def cluster(
             covariance_type="diag",
             random_state=seed,
             max_iter=200,
+            n_init=2,
+            reg_covar=1e-4,
         )
     events.emit("progress", "fit", 0.20, f"Fitting {algorithm} on CPU")
-    estimator.fit(sample_scaled)
+    if algorithm == "gaussian_mixture":
+        for regularization in (1e-4, 1e-3, 1e-2):
+            estimator.set_params(reg_covar=regularization)
+            try:
+                estimator.fit(sample_scaled)
+                break
+            except ValueError as error:
+                if "covariance" not in str(error).lower():
+                    raise
+                if regularization == 1e-2:
+                    raise ValueError("Gaussian Mixture covariance remains degenerate after FP64 fitting and regularization. Reduce requested groups or choose MiniBatch K-Means. No labels were imported.") from error
+                events.emit("progress", "fit", .20, "Retrying Gaussian Mixture with stronger covariance regularization")
+    else:
+        estimator.fit(sample_scaled)
     assignment = ClusterAssignment(estimator, algorithm, device, dataset.point_count)
     device_report = {"requested": device, "fit_device": "cpu", "assignment_device": "cpu",
                      "reason": "This algorithm has no validated CUDA backend"}
 
     ids = np.memmap(output / "clusters.i32", mode="w+", dtype="<i4", shape=(dataset.point_count,))
     confidence = np.memmap(output / "confidence.f32", mode="w+", dtype="<f4", shape=(dataset.point_count,))
-    histogram = np.zeros(clusters, dtype=np.int64)
+    histogram = np.zeros(clusters + int(reuse_ground), dtype=np.int64)
     invalid_count = 0
     for start in range(0, dataset.point_count, chunk_size):
         stop = min(dataset.point_count, start + chunk_size)
-        raw = np.asarray(dataset.features[start:stop])[:, active]
+        raw = np.asarray(dataset.features[start:stop], dtype=np.float64)[:, active]
         raw = np.where(np.isfinite(raw), raw, np.nan)
         valid_rows = np.any(np.isfinite(raw), axis=1)
         transformed = scaler.transform(imputer.transform(raw))
@@ -139,9 +168,15 @@ def cluster(
         labels[~valid_rows] = -1
         scores[~valid_rows] = 0
         invalid_count += int(np.count_nonzero(~valid_rows))
+        if reuse_ground:
+            local_ground = ground[start:stop]
+            labels[labels >= 0] += 1
+            labels[local_ground] = 0  # Reserved existing Ground, NOT ASPRS numeric codes.
+            scores[local_ground] = 1.0
+            invalid_count -= int(np.count_nonzero(~valid_rows & local_ground))
         ids[start:stop] = labels
         confidence[start:stop] = scores
-        histogram += np.bincount(labels[labels >= 0], minlength=clusters)
+        histogram += np.bincount(labels[labels >= 0], minlength=len(histogram))
         progress = 0.30 + 0.65 * stop / dataset.point_count
         events.emit("progress", "predict", progress, f"Assigning clusters [{device_report['assignment_device'].upper()}]: {stop}/{dataset.point_count}")
     ids.flush()
@@ -157,6 +192,9 @@ def cluster(
         "algorithm": algorithm,
         "execution": device_report,
         "cluster_count": clusters,
+        "ground_reused": reuse_ground,
+        "ground_revision": getattr(dataset, 'metadata', {}).get('ground_revision'),
+        "cluster_mapping": "0 = existing applied Ground; 1..K = non-Ground exploratory groups, NOT ASPRS" if reuse_ground else "0..K-1 exploratory groups, NOT ASPRS",
         "cluster_histogram": [int(value) for value in histogram],
         "feature_names": list(dataset.feature_names),
         "dataset_sha256": dataset.source_sha256,
@@ -166,7 +204,10 @@ def cluster(
         "confidence_definition": "GMM posterior" if algorithm == "gaussian_mixture" else "relative separation of nearest two final clusters; not calibrated probability",
         "missing_value_policy": "Median imputation fitted on sample; all-missing points remain cluster -1",
         "seed": seed,
-        "fit_sample": min(fit_sample, dataset.point_count),
+        "fit_precision": "float64",
+        "reg_covar": float(estimator.reg_covar) if algorithm == "gaussian_mixture" else None,
+        "converged": bool(estimator.converged_) if algorithm == "gaussian_mixture" else None,
+        "fit_sample": len(sample_scaled),
         "semantics": "Unsupervised cluster IDs; not ASPRS classes and not trusted training labels.",
     }
     (output / "result.json").write_text(json.dumps(result, indent=2), encoding="utf-8")

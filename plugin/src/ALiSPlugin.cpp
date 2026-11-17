@@ -151,6 +151,7 @@ void ALiSPlugin::showSettings()
 	QString repository = settings.value(QStringLiteral("ALiS/modelRepository")).toString();
 	if (repository.isEmpty()) repository = settings.value(QStringLiteral("qArchaeoLiDAR/modelRepository"), fallback).toString();
 	alis::SettingsDialog dialog(repository, m_app->getMainWindow());
+	connect(&dialog,&alis::SettingsDialog::manageScalarFieldsRequested,&dialog,[&](){m_workspaceController->manageScalarFields(&dialog);});
 	if (dialog.exec() != QDialog::Accepted) return;
 	settings.setValue(QStringLiteral("ALiS/modelRepository"), dialog.repositoryPath());
 	settings.setValue(QStringLiteral("ALiS/catalog/automaticRecommendations"), dialog.automaticRecommendations());

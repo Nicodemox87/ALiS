@@ -8,6 +8,7 @@
 #include <QComboBox>
 #include <QDoubleSpinBox>
 #include <QKeyEvent>
+#include <QLabel>
 #include <QMouseEvent>
 #include <QPushButton>
 #include <QSignalBlocker>
@@ -34,7 +35,11 @@ namespace alis
 			check(studio.m_activeCanvas->panelNumber() == 1, "initial active panel is numbered correctly");
 			check(std::abs(studio.localCenter() - 24.95) < .003, "global shift/scale round-trip preserves section center");
 			studio.m_section->setChecked(false); studio.rebuildPreview();
-			check(studio.m_sliceCount == 250000 && studio.m_renderPoints.size() <= 120000, "only rendering is sampled, source scope stays full resolution");
+			check(studio.m_sliceCount == 250000 && studio.m_renderPoints.size() == 25000, "10 percent display keeps full source scope");
+			for (int step=0; step<10; ++step) { studio.m_displayPercent->setCurrentIndex(step); studio.m_appliedDisplayPercent=(step+1)*10; studio.rebuildPreview(); check(studio.m_renderPoints.size()==25000*(step+1), "exact percentage, not divided across panels"); }
+			check(studio.m_densityLabels.size()==4, "every panel reports its density");
+			for (auto* label:studio.m_densityLabels) check(label->text().contains("100%") && label->text().contains("250000"), "all views independently show 100 percent");
+			studio.m_displayPercent->setCurrentIndex(0); studio.m_appliedDisplayPercent=10; studio.rebuildPreview();
 			QPolygonF rectangle; rectangle << QPointF(-1,-1) << QPointF(60,-1) << QPointF(60,60) << QPointF(-1,60);
 			studio.selectPolygon(0,1,rectangle);
 			check(studio.m_selectedCount == 250000, "rectangle selects ALL original points, not the render sample");

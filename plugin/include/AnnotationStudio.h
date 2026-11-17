@@ -97,6 +97,9 @@ namespace alis
 		QPushButton* m_undo = nullptr;
 		QPushButton* m_redo = nullptr;
 		QLabel* m_counts = nullptr;
+		QComboBox* m_displayPercent = nullptr;
+		unsigned m_appliedDisplayPercent = 10;
+		std::vector<QLabel*> m_densityLabels;
 		QTimer* m_previewTimer = nullptr;
 		std::vector<AnnotationCanvas*> m_canvases;
 		AnnotationCanvas* m_activeCanvas = nullptr;

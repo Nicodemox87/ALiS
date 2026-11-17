@@ -323,6 +323,8 @@ namespace alis
 		grid->addWidget(sor, 0, 0);
 		grid->addWidget(noise, 0, 1);
 		grid->addWidget(subsample, 1, 0, 1, 2);
+		auto* buildings=commandButton(QStringLiteral("Cleaning building class — before DFM…"),"ALiS.Preprocessing.CleanBuildings");grid->addWidget(buildings,2,0,1,2);registerCommandButton(buildings);connect(buildings,&QPushButton::clicked,this,&WorkspaceDock::buildingCleaningRequested);
+		buildings->setToolTip("Review canopy/return/geometry suspects ONLY inside applied Building6, Roof128 and Wall129. Preview first, then explicit undoable Apply. Ground and other classes are preserved. No points deleted. Recommended before DFM.");
 		layout->addWidget(cleaning);
 
 		QLabel* workflow = new QLabel(QStringLiteral(
@@ -430,6 +432,9 @@ namespace alis
 		m_displayLegendCheck = named(new QCheckBox(QStringLiteral("Show colour scale legend")), "ALiS.Display.ShowLegend");
 		m_displayLegendCheck->setToolTip(QStringLiteral("Shows or hides CloudCompare's scalar-field colour scale at the side of the 3D view. This changes only the display, never the data."));
 		viewForm->addRow(helpLabel(QStringLiteral("Legend"), QStringLiteral("Toggle the scalar-field colour scale shown at the side of the CloudCompare 3D view. The setting follows the selected cloud and remains unchanged when switching between scalar fields.")), m_displayLegendCheck);
+		auto* selectionButton=commandButton(QStringLiteral("Point filters / work only on selection…"),"ALiS.Display.PointSelection");viewForm->addRow(selectionButton);connect(selectionButton,&QPushButton::clicked,this,&WorkspaceDock::pointSelectionRequested);
+		auto* selectionNote=new QLabel("Point filters hide by class codes or scalar intervals (for example HAG). Working selection is a separate opt-in, frozen at Apply; no file split is needed.");selectionNote->setWordWrap(true);viewForm->addRow(selectionNote);
+		m_pointSelectionInfo=named(new QLabel("No ALiS point filter. Processing: full cloud."),"ALiS.Selection.Status");m_pointSelectionInfo->setWordWrap(true);viewForm->addRow(m_pointSelectionInfo);
 		connect(m_displayPaletteCombo, qOverload<int>(&QComboBox::currentIndexChanged), this, [this](int) { Q_EMIT displayPaletteRequested(m_displayPaletteCombo->currentData().toString()); });
 		for (QDoubleSpinBox* spin : {m_displayMinSpin, m_displayMaxSpin})
 			connect(spin, &QDoubleSpinBox::editingFinished, this, [this]() { Q_EMIT displayRangeRequested(m_displayMinSpin->value(), m_displayMaxSpin->value()); });
@@ -462,6 +467,7 @@ namespace alis
 			"it does not store the project history. Never overwrite the source LAS. "
 			"After reopening, confirm metre units if needed. Features published as SF retain their feature/radius identities and can be reused by Models without recomputation."));
 		layout->addWidget(saveNote);
+		auto* scalarManager=commandButton(QStringLiteral("Manage scalar fields / memory…"),"ALiS.Workspace.Session.ScalarFields");layout->addWidget(scalarManager);connect(scalarManager,&QPushButton::clicked,this,&WorkspaceDock::manageScalarFieldsRequested);registerCommandButton(scalarManager);
 		layout->addStretch(1);
 	}
 
@@ -728,6 +734,9 @@ namespace alis
 		actions->addWidget(m_computeDtmButton, 6, 0);
 		actions->addWidget(m_computeHagButton, 6, 1);
 		actions->addWidget(m_openDemButton, 7, 0, 1, 2);
+		auto* dfmButton=commandButton(QStringLiteral("DFM — recipes / classes / interpolation…"),"ALiS.Workspace.Terrain.ComputeDfm");actions->addWidget(dfmButton,8,0,1,2);
+		dfmButton->setToolTip("After building cleaning: MINIMUM Ground elevation per cell; MAXIMUM Building6 / Roof128 / Wall129 elevation, taking precedence where both classes exist. Same step/interpolation controls. Vegetation excluded. Produces a separate surface and source-quality field; NEVER replaces DTM or HAG. Working selection limits contributing points. Void filling is opt-in and can create ramps across roof edges; inspect it carefully.");
+		connect(dfmButton,&QPushButton::clicked,this,[this](){Q_EMIT computeDfmRequested(m_dtmGridStepSpin->value(),m_dtmFillEmptyCheck->isChecked(),m_dtmMaxEdgeSpin->value());});
 		layout->addWidget(actionsGroup);
 		explain(m_groundPreviewButton, QStringLiteral("Ground Preview"), QStringLiteral("Computes a reversible Ground/non-ground result. Use this before Apply; it does not overwrite ASPRS labels."));
 		explain(m_groundApplyButton, QStringLiteral("Apply"), QStringLiteral("Accepts the current preview in the working session. Original imported values remain restorable."));
@@ -1058,19 +1067,22 @@ namespace alis
 		m_tabs->addTab(page, QIcon(QStringLiteral(":/CC/plugin/ALiS/images/models.svg")), QStringLiteral("Classification"));
 
 		QVBoxLayout* bootstrapLayout = addScrollableTab(
-			m_modelsTabs, QStringLiteral("Unsupervised clustering"),
+			m_modelsTabs, QStringLiteral("Automatic classes / exploration"),
 			"ALiS.Workspace.Models.Bootstrap", "ALiS.Workspace.Models.Bootstrap.Content");
+		bootstrapLayout->parentWidget()->setMinimumWidth(0);bootstrapLayout->parentWidget()->setSizePolicy(QSizePolicy::Ignored,QSizePolicy::Preferred);
 		auto* bootstrapIntro = new QLabel(QStringLiteral(
-			"<b>Start without certified labels</b><br>Explore groups using existing scalar fields, RGB and optional geometric features, then review them in Annotation Studio. "
-			"Review cluster IDs, assign meaningful classes in Annotation Studio, then reuse validated labels for training."));
+			"<b>Choose the classes, not a number of clusters</b><br>Geometry rules reuse applied Ground and multi-scale fields. Buildings need terminal returns and connected wall/roof evidence. "
+			"Vegetation uses HAG: low up to 2 m, medium 2–5 m, high above 5 m. Ambiguous points stay Other. Experimental predictions are Derived, never trusted labels. Advanced clustering remains available for exploration."));
 		bootstrapIntro->setWordWrap(true);
 		bootstrapIntro->setStyleSheet(QStringLiteral("QLabel { color:#172554; background:#eff6ff; border:1px solid #bfdbfe; padding:9px; border-radius:5px; }"));
 		bootstrapLayout->addWidget(bootstrapIntro);
 		auto* clusteringLayout = bootstrapLayout;
 
-		auto* bootstrapSetup = named(new QGroupBox(QStringLiteral("A. Unsupervised clustering — method and effort")), "ALiS.Workspace.Models.Bootstrap.Setup");
+		auto* bootstrapSetup = named(new QGroupBox(QStringLiteral("A. Automatic classes / advanced exploration")), "ALiS.Workspace.Models.Bootstrap.Setup");
 		auto* bootstrapForm = formLayout(bootstrapSetup);
 		m_bootstrapEngineCombo = named(new QComboBox, "ALiS.Workspace.Models.Bootstrap.Engine");
+		m_bootstrapEngineCombo->setMinimumWidth(0);m_bootstrapEngineCombo->setMinimumContentsLength(18);m_bootstrapEngineCombo->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);m_bootstrapEngineCombo->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Fixed);
+		m_bootstrapEngineCombo->addItem(QStringLiteral("Requested classes — geometry rules (experimental)"), QStringLiteral("geometry_semantic"));
 		m_bootstrapEngineCombo->addItem(QStringLiteral("Explore — MiniBatch K-Means (fast)"), QStringLiteral("minibatch_kmeans"));
 		m_bootstrapEngineCombo->addItem(QStringLiteral("Explore — BIRCH (balanced)"), QStringLiteral("birch"));
 		m_bootstrapEngineCombo->addItem(QStringLiteral("Explore — Gaussian Mixture (thorough)"), QStringLiteral("gaussian_mixture"));
@@ -1090,6 +1102,23 @@ namespace alis
 		bootstrapForm->addRow(QStringLiteral("Requested groups"), m_bootstrapClusterSpin);
 		bootstrapForm->addRow(QStringLiteral("Maximum fitting sample"), m_bootstrapFitSampleSpin);
 		bootstrapForm->addRow(QStringLiteral("Streaming chunk"), m_bootstrapChunkSpin);
+		auto* semanticClasses = new QWidget;
+		bootstrapForm->setRowWrapPolicy(QFormLayout::WrapLongRows);semanticClasses->setMinimumWidth(0);
+		auto* semanticLayout = new QVBoxLayout(semanticClasses);
+		for(const auto& item:QList<QPair<int,QString>>{{2,"Ground (applied mask)"},{3,"Low vegetation (≤2 m)"},{4,"Medium vegetation (2–5 m)"},{5,"High vegetation (>5 m)"},{128,"Roofs"},{129,"Vertical walls"},{130,"Utility poles"},{131,"Wires / cables"}}){
+			auto* check=new QCheckBox(item.first==3?QStringLiteral("Low vegetation (configured HAG band)"):item.first==4?QStringLiteral("Medium vegetation (configured HAG band)"):item.first==5?QStringLiteral("High vegetation (configured HAG band)"):item.second);check->setChecked(true);if(item.first==2){check->setEnabled(false);check->setToolTip("Existing applied Ground is always preserved, including when only wires/poles are requested.");}check->setProperty("asprs",item.first);m_semanticClassChecks<<check;semanticLayout->addWidget(check);
+		}
+		auto* semanticNote=new QLabel(QStringLiteral("Other is always retained. Roof128 / wall129 / pole130 / wire131 are ALiS custom classes. Uses existing valid planarity/sphericity at 2/4 m and normal Z at 2 m. HAG is required for vegetation, poles and wires. Names of empty columns are not computed features. Isolated poles/trunks and ambiguous branches remain Other."));semanticNote->setWordWrap(true);semanticNote->setMinimumWidth(0);semanticNote->setSizePolicy(QSizePolicy::Ignored,QSizePolicy::Preferred);semanticLayout->addWidget(semanticNote);
+		bootstrapForm->addRow(QStringLiteral("Requested classes"),semanticClasses);
+		auto* tune=commandButton(QStringLiteral("Explain / tune structures and vegetation…"),"ALiS.Automatic.Tune");semanticLayout->addWidget(tune);connect(tune,&QPushButton::clicked,this,&WorkspaceDock::semanticParametersRequested);
+		auto updateMethod=[this,bootstrapForm,semanticClasses]() {
+			const bool semantic=m_bootstrapEngineCombo->currentData().toString()==QStringLiteral("geometry_semantic");
+			semanticClasses->setVisible(semantic);if(auto* label=bootstrapForm->labelForField(semanticClasses))label->setVisible(semantic);
+			for(QWidget* control:{static_cast<QWidget*>(m_bootstrapClusterSpin),static_cast<QWidget*>(m_bootstrapQualityCombo),static_cast<QWidget*>(m_bootstrapFitSampleSpin),static_cast<QWidget*>(m_bootstrapChunkSpin)}){
+				control->setVisible(!semantic);if(auto* label=bootstrapForm->labelForField(control))label->setVisible(!semantic);
+			}
+		};
+		connect(m_bootstrapEngineCombo,QOverload<int>::of(&QComboBox::currentIndexChanged),this,[updateMethod](int){updateMethod();});updateMethod();
 		clusteringLayout->addWidget(bootstrapSetup);
 
 		auto* bootstrapFeatures = named(new QGroupBox(QStringLiteral("B. Choose input fields — existing SF, RGB and features")), "ALiS.Workspace.Models.Bootstrap.Features");
@@ -1100,13 +1129,13 @@ namespace alis
 		auto* fieldNote = new QLabel(QStringLiteral("Select existing fields below. RGB and scalar values are read directly; geometric features are optional. For vegetation versus structures, try HAG, roughness/planarity and return information when available."));
 		fieldNote->setWordWrap(true);
 		bootstrapFeaturesLayout->addWidget(fieldNote);
-		auto* fieldButtons = new QHBoxLayout;
+		auto* fieldButtons = new QGridLayout;
 		auto* selectSafe = commandButton(QStringLiteral("Select measurements"), "ALiS.Workspace.Models.Bootstrap.SelectMeasurements");
 		auto* selectRgb = commandButton(QStringLiteral("RGB only"), "ALiS.Workspace.Models.Bootstrap.SelectRGB");
 		auto* clearFields = commandButton(QStringLiteral("Deselect all"), "ALiS.Workspace.Models.Bootstrap.DeselectAll");
 		auto* refreshFields = commandButton(QStringLiteral("Refresh fields"), "ALiS.Workspace.Models.Bootstrap.RefreshFields");
-		fieldButtons->addWidget(selectSafe); fieldButtons->addWidget(selectRgb);
-		fieldButtons->addWidget(clearFields); fieldButtons->addWidget(refreshFields);
+		fieldButtons->addWidget(selectSafe,0,0); fieldButtons->addWidget(selectRgb,0,1);
+		fieldButtons->addWidget(clearFields,1,0); fieldButtons->addWidget(refreshFields,1,1);
 		bootstrapFeaturesLayout->addLayout(fieldButtons);
 		connect(selectSafe, &QPushButton::clicked, this, [this]()
 		{
@@ -1140,17 +1169,18 @@ namespace alis
 		connect(prepareFeatures, &QPushButton::clicked, this, &WorkspaceDock::showPrepareFeatures);
 		bootstrapFeaturesLayout->addWidget(prepareFeatures);
 		clusteringLayout->addWidget(bootstrapFeatures);
+		auto updateInputFields=[this,bootstrapFeatures](){bootstrapFeatures->setVisible(m_bootstrapEngineCombo->currentData().toString()!=QStringLiteral("geometry_semantic"));};connect(m_bootstrapEngineCombo,QOverload<int>::of(&QComboBox::currentIndexChanged),this,[updateInputFields](int){updateInputFields();});updateInputFields();
 
-		auto* bootstrapActions = named(new QGroupBox(QStringLiteral("C. Run and review clusters")), "ALiS.Workspace.Models.Bootstrap.Actions");
+		auto* bootstrapActions = named(new QGroupBox(QStringLiteral("B. Run and review Derived proposals")), "ALiS.Workspace.Models.Bootstrap.Actions");
 		auto* bootstrapActionsLayout = new QGridLayout(bootstrapActions);
 		auto* checkBackend = commandButton(QStringLiteral("Check engines and GPU"), "ALiS.Workspace.Models.Bootstrap.Check");
-		m_bootstrapRunButton = commandButton(QStringLiteral("Create Derived cluster labels"), "ALiS.Workspace.Models.Bootstrap.Run");
+		m_bootstrapRunButton = commandButton(QStringLiteral("Create Derived proposals"), "ALiS.Workspace.Models.Bootstrap.Run");
 		auto* reviewBootstrap = commandButton(QStringLiteral("Review in Annotation Studio"), "ALiS.Workspace.Models.Bootstrap.Review");
 		m_bootstrapStatusValue = valueLabel("ALiS.Workspace.Models.Bootstrap.Status", QStringLiteral("Ready to inspect available engines."));
 		bootstrapActionsLayout->addWidget(checkBackend, 0, 0);
-		bootstrapActionsLayout->addWidget(m_bootstrapRunButton, 0, 1);
-		bootstrapActionsLayout->addWidget(reviewBootstrap, 1, 0, 1, 2);
-		bootstrapActionsLayout->addWidget(m_bootstrapStatusValue, 2, 0, 1, 2);
+		bootstrapActionsLayout->addWidget(m_bootstrapRunButton, 1, 0);
+		auto* showClasses=commandButton(QStringLiteral("Show class result (Derived)"),"ALiS.Workspace.Models.Bootstrap.ShowClasses");auto* showClusters=commandButton(QStringLiteral("Show exploration clusters"),"ALiS.Workspace.Models.Bootstrap.ShowClusters");bootstrapActionsLayout->addWidget(showClasses,2,0);bootstrapActionsLayout->addWidget(showClusters,3,0);bootstrapActionsLayout->addWidget(reviewBootstrap,4,0);bootstrapActionsLayout->addWidget(m_bootstrapStatusValue,5,0);connect(showClasses,&QPushButton::clicked,this,[this](){Q_EMIT visualizationRequested(QStringLiteral("prediction"));});connect(showClusters,&QPushButton::clicked,this,[this](){Q_EMIT visualizationRequested(QStringLiteral("sf:qAL_BootstrapCluster"));});registerCommandButton(showClasses);registerCommandButton(showClusters);
+		auto* resultHelp=new QLabel(QStringLiteral("Requested classes → Show class result (Derived). K-Means / BIRCH / GMM → Show exploration clusters (IDs have no class meaning). Results are not applied to Working automatically: review before Apply. Analysis/refresh reads existing fields; dataset export may write a separate features.f32 copy but does not compute geometry."));resultHelp->setWordWrap(true);resultHelp->setSizePolicy(QSizePolicy::Ignored,QSizePolicy::Preferred);bootstrapActionsLayout->addWidget(resultHelp,6,0);
 		clusteringLayout->addWidget(bootstrapActions);
 		clusteringLayout->addStretch(1);
 
@@ -1161,9 +1191,11 @@ namespace alis
 		});
 		connect(m_bootstrapRunButton, &QPushButton::clicked, this, [this]()
 		{
+			QString method=m_bootstrapEngineCombo->currentData().toString();
+			if(method==QStringLiteral("geometry_semantic")){QStringList classes;for(auto* check:m_semanticClassChecks)if(check->isChecked())classes<<QString::number(check->property("asprs").toInt());method+=":"+classes.join(',');}
 			Q_EMIT bootstrapLabelsRequested(selectedBootstrapFeatureKeys(), m_pythonExecutableEdit->text().trimmed(),
 				m_workerScriptEdit->text().trimmed(), m_modelRepositoryEdit->text().trimmed(),
-				m_bootstrapEngineCombo->currentData().toString(), m_bootstrapClusterSpin->value(),
+				method, m_bootstrapClusterSpin->value(),
 				m_bootstrapFitSampleSpin->value(), m_bootstrapChunkSpin->value(), 42);
 		});
 		connect(reviewBootstrap, &QPushButton::clicked, this, [this]()
@@ -1851,6 +1883,7 @@ namespace alis
 		m_asprsCombo->insertSeparator(m_asprsCombo->count());
 		for (const AspClass& value : archaeologyAsprsClasses())
 			m_asprsCombo->addItem(QStringLiteral("qAL Other %1 - %2").arg(value.code).arg(QString::fromUtf8(value.name)), static_cast<int>(value.code));
+		for(const auto& value:geometryAsprsClasses())m_asprsCombo->addItem(QStringLiteral("ALiS %1 - %2").arg(value.code).arg(QString::fromUtf8(value.name)),int(value.code));
 		m_asprsCombo->setCurrentIndex(m_asprsCombo->findData(2));
 		classificationForm->addRow(QStringLiteral("ASPRS / qAL Other"), m_asprsCombo);
 		QLabel* trusted = new QLabel(QStringLiteral("Training label: Manual / Trusted"));
@@ -2407,6 +2440,8 @@ namespace alis
 		updateCommandAvailability();
 	}
 
+	void WorkspaceDock::setPointSelectionStatus(const QString& text){if(m_pointSelectionInfo)m_pointSelectionInfo->setText(text);}
+
 	void WorkspaceDock::setDisplayFields(const QStringList& names, const QString& activeField, bool hasVisibilityMask)
 	{
 		const QSignalBlocker blocker(m_visualizationCombo);
@@ -2643,8 +2678,8 @@ namespace alis
 		m_viewModelResultsButton->setEnabled(!m_busy && m_modelAvailable);
 		if (m_bootstrapRunButton)
 		{
-			m_bootstrapRunButton->setEnabled(ready && !selectedBootstrapFeatureKeys().isEmpty());
-			m_bootstrapRunButton->setToolTip(QStringLiteral("Groups points by the checked existing fields and/or RGB. Review cluster IDs in Annotation Studio and assign classes."));
+			m_bootstrapRunButton->setEnabled(ready && (m_bootstrapEngineCombo->currentData().toString()==QStringLiteral("geometry_semantic") || !selectedBootstrapFeatureKeys().isEmpty()));
+			m_bootstrapRunButton->setToolTip(QStringLiteral("Geometry mode: choose classes, reuse applied Ground and 2/4 m features; HAG is required for vegetation. Experimental Derived proposals only. Exploration modes: group checked fields/RGB into clusters, then assign meaning manually."));
 		}
 		m_computeFeaturesButton->setEnabled(ready && m_metricUnitsConfirmed && !selectedFeatureIds().isEmpty());
 		m_suggestScalesButton->setEnabled(ready && m_metricUnitsConfirmed);

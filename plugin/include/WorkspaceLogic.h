@@ -20,6 +20,7 @@ namespace alis
 	const AspClass* findAsprsClass(unsigned code);
 	//! ALiS profile inside the LAS user-definable range (64-255).
 	const std::vector<AspClass>& archaeologyAsprsClasses();
+	const std::vector<AspClass>& geometryAsprsClasses();
 
 	enum class ArchaeologyClass : std::uint8_t
 	{

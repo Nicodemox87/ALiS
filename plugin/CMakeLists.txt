@@ -24,7 +24,7 @@ if(PLUGIN_STANDARD_ALIS)
 	# source tree. qCSF exposes no reusable library/API target in v2.13.2, so
 	# these algorithm files are compiled directly without copying or modifying
 	# the third-party source. The qCSF GUI/plugin entry points stay excluded.
-	set(ALIS_QCSF_DIR "${CMAKE_SOURCE_DIR}/plugins/core/Standard/qCSF")
+	set(ALIS_QCSF_DIR "${CMAKE_SOURCE_DIR}/plugins/core/Standard/qCSF" CACHE PATH "Pinned CloudCompare qCSF sources")
 	if(NOT EXISTS "${ALIS_QCSF_DIR}/include/CSF.h")
 		message(FATAL_ERROR "ALiS requires the bundled CloudCompare qCSF source tree")
 	endif()
@@ -132,6 +132,21 @@ if(PLUGIN_STANDARD_ALIS)
 		PATTERN "tests" EXCLUDE)
 
 	if(ALIS_BUILD_TESTS)
+		add_executable(ALiS_recovery_tests tests/test_feature_recovery.cpp)
+		target_include_directories(ALiS_recovery_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+		target_link_libraries(ALiS_recovery_tests PRIVATE CCPluginAPI QCC_IO_LIB QCC_DB_LIB ${ALIS_QT_WIDGETS})
+		target_compile_features(ALiS_recovery_tests PRIVATE cxx_std_14)
+		if(BUILD_TESTING)
+			add_test(NAME ALiS.feature_recovery COMMAND ALiS_recovery_tests)
+			set_tests_properties(ALiS.feature_recovery PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=minimal")
+		endif()
+		add_executable(ALiS_duration_tests tests/test_duration_format.cpp)
+		target_include_directories(ALiS_duration_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+		target_link_libraries(ALiS_duration_tests PRIVATE ${ALIS_QT_CORE})
+		target_compile_features(ALiS_duration_tests PRIVATE cxx_std_14)
+		if(BUILD_TESTING)
+			add_test(NAME ALiS.duration_format COMMAND ALiS_duration_tests)
+		endif()
 		add_executable(ALiS_processing_tests
 			tests/test_processing.cpp tests/benchmark_ground_review.cpp
 			include/WorkspaceController.h include/WorkspaceDock.h include/SessionModel.h

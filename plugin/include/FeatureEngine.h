@@ -112,18 +112,24 @@ namespace alis
 	{
 		//! Uses CCCoreLib cell-level parallelism (QtConcurrent/TBB, as configured by CloudCompare).
 		bool multiThread = true;
-		//! Conservative default; 0 is also interpreted as four, never all CPUs.
+		//! Conservative generic default; explicit requests support up to 32 threads.
+		//! The spatial-block UI selects a hardware-aware value and retains CPU headroom.
 		int maxThreadCount = 4;
 		//! Bound the octree candidate buffer BEFORE neighbourhood allocation.
 		//! A conservative cell-cube upper bound; aborts, never truncates neighbours.
 		std::size_t maxNeighbourhoodCandidates = 200000;
 		//! 0 derives a budget from currently available RAM. Excludes existing cache.
 		std::size_t additionalMemoryBudget = 0;
+		//! Optional core-only query mask. All points remain neighbourhood support.
+		//! Must have cloud.size() entries; skipped rows are NaN in the result.
+		//! Partial caches are never reused as complete-cloud feature caches.
+		const std::vector<unsigned char>* queryMask = nullptr;
 	};
 
 	struct ComputeReport
 	{
 		std::uint64_t pointCount = 0;
+		std::uint64_t queryPointCount = 0;
 		std::size_t requestedFields = 0;
 		std::size_t computedFields = 0;
 		std::size_t reusedFields = 0;
@@ -131,6 +137,7 @@ namespace alis
 		bool octreeBuilt = false;
 		bool octreeReused = false;
 		double elapsedSeconds = 0.0;
+		double querySeconds = 0.0; // Neighbourhood traversal only; excludes setup/output.
 	};
 
 	struct FeatureStatistics

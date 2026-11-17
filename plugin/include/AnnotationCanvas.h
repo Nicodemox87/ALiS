@@ -7,6 +7,8 @@
 #include <QOpenGLShaderProgram>
 #include <QPolygonF>
 #include <QImage>
+#include <memory>
+#include <vector>
 
 namespace alis
 {
@@ -46,9 +48,12 @@ namespace alis
 		int m_panel;
 		AnnotationCamera m_camera;
 		QOpenGLBuffer m_buffer;
+		std::vector<std::unique_ptr<QOpenGLBuffer>> m_chunks;
+		std::vector<int> m_chunkCounts;
 		QOpenGLShaderProgram m_program;
 		quint64 m_uploadedRevision = ~quint64(0);
 		int m_vertexCount = 0;
+		bool m_allocationFailed = false;
 		bool m_glReady = false, m_autoFit = true, m_drawing = false, m_panning = false, m_rotating = false;
 		int m_gestureMode = 0;
 		QPolygonF m_path;

@@ -16,6 +16,8 @@ namespace alis
 		explicit SettingsDialog(const QString& repositoryPath, QWidget* parent = nullptr);
 		QString repositoryPath() const;
 		bool automaticRecommendations() const;
+	Q_SIGNALS:
+		void manageScalarFieldsRequested();
 
 	private:
 		void refreshCatalogSummary();

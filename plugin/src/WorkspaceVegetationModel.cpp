@@ -28,6 +28,7 @@ namespace alis {
 void WorkspaceController::predictVegetationModel(const QString& model,const QString& directory,
                                                 const QString& python,const QString& worker,bool trusted)
 {
+    if(!allowFullCloudOperation("Vegetation model"))return;
     if(m_featureComputationActive || m_mlProcess->state()!=QProcess::NotRunning || !m_selectedCloud || !session())return;
     if(!requireMetricUnits(QStringLiteral("Vegetation model")))return;
     if(!session()->hasAppliedGround()){showError(QStringLiteral("Apply Ground before running the vegetation model."));return;}

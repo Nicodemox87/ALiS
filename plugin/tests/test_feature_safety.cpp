@@ -1,12 +1,14 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 #include "FeatureEngine.h"
 #include "WindowsUpdates.h"
+#include "QuantileSelection.h"
 #include <ccPointCloud.h>
 #include <GenericProgressCallback.h>
 #include <QApplication>
 #include <iostream>
 #include <stdexcept>
 #include <cmath>
+#include <random>
 
 struct Cancel final : CCCoreLib::GenericProgressCallback {
 	void update(float) override {}
@@ -50,6 +52,22 @@ int main(int argc,char** argv) {
 			if(!(std::isnan(a)&&std::isnan(b)) && (!std::isfinite(a)||!std::isfinite(b)||std::abs(a-b)>2e-5*std::max(1.,std::abs(b))))equivalent=false;
 		}
 		check(equivalent,"bounded parallel output agrees with serial within floating-point tolerance");
+		std::vector<unsigned char> mask(cloud.size(),0);for(unsigned i=0;i<cloud.size();++i)mask[i]=(i%3)==0;
+		alis::ComputeOptions coreOnly=serial;coreOnly.queryMask=&mask;
+		check(engine.compute(requests,report,error,nullptr,coreOnly),"core queries use complete support cloud");
+		check(report.queryPointCount==334&&report.reusedFields==0,"partial query scope counted and never reuses complete cache");
+		actual=engine.cachedValues({alis::FeatureId::Planarity,.015,""});
+		for(unsigned i=0;i<cloud.size();++i){const bool ok=mask[i]?((std::isnan((*actual)[i])&&std::isnan(expected[i]))||std::abs((*actual)[i]-expected[i])<2e-5):std::isnan((*actual)[i]);if(!ok)std::cerr<<"query-mask mismatch row "<<i<<" selected "<<int(mask[i])<<" value "<<(*actual)[i]<<" baseline "<<expected[i]<<" neighbours "<<(*engine.cachedValues({alis::FeatureId::NeighborCount,.015,""}))[i]<<'\n';check(ok,"masked rows retain full-support values; halo rows are NaN");}
+		check(engine.compute(requests,report,error,nullptr,serial)&&report.reusedFields==0,"complete request cannot reuse masked NaN cache");
+		actual=engine.cachedValues({alis::FeatureId::Planarity,.015,""});for(unsigned i=0;i<cloud.size();++i)check((std::isnan((*actual)[i])&&std::isnan(expected[i]))||std::abs((*actual)[i]-expected[i])<2e-5,"full values restored after partial query scope");
+		std::vector<unsigned char> invalidMask(2,1);coreOnly.queryMask=&invalidMask;const auto priorBytes=engine.cacheBytes();
+		check(!engine.compute(requests,report,error,nullptr,coreOnly)&&engine.cacheBytes()==priorBytes,"bad query-mask size rejected without cache loss");
+		std::mt19937 random(20261107);
+		for(unsigned count:{0u,1u,2u,3u,127u,128u,513u,16001u}){
+			std::vector<double> values(count);for(auto& value:values)value=double(int(random()%2001)-1000)/13;
+			auto sorted=values;std::sort(sorted.begin(),sorted.end());alis::selectQuantileRanks(values);
+			if(count)for(double p:{.1,.25,.5,.75,.9}){double pos=p*(count-1);auto lo=std::size_t(std::floor(pos)),hi=std::size_t(std::ceil(pos));check(values[lo]==sorted[lo]&&values[hi]==sorted[hi],"selected interpolated quantile ranks exactly match sorted values");}
+		}
 		check(alis::newerWindowsVersion("0.1.0-alpha.5.8","0.1.0-alpha.5.7"),"update compares final alpha component");
 		check(alis::newerWindowsVersion("0.1.0-alpha.5.10","0.1.0-alpha.5.9"),"alpha comparison is numeric");
 		check(!alis::newerWindowsVersion("0.1.0-alpha.5.7","0.1.0-alpha.5.8"),"older package not offered");

@@ -73,6 +73,7 @@ namespace alis
 		quint64 sourceRevision() const;
 		quint64 groundRevision() const;
 		quint64 hagRevision() const;
+		void noteScalarFieldsRemoved(const QJsonObject& parameters);
 
 		bool setGroundPreview(const std::vector<bool>& mask, QString& errorMessage);
 		bool hasGroundPreview() const;
@@ -109,9 +110,16 @@ namespace alis
 		                          QString& errorMessage);
 		//! Explicit, thresholded and undoable promotion from Derived prediction to Working.
 		bool applyAsprsPredictions(double minimumConfidence, QString& errorMessage);
+		//! Reviewed automatic edits, undoable; never certify predictions as training labels.
+		bool applyAutomaticClassEdits(const std::vector<unsigned>& indices,const std::vector<std::int16_t>& codes,QString& error);
 
 		//! Returns a manual subset only when CloudCompare has a non-trivial visibility mask.
 		std::vector<unsigned> visibleSubset(QString& errorMessage) const;
+		//! Frozen original-index selection, independent from colouring and current visibility.
+		bool setWorkingSelection(const std::vector<unsigned char>& mask, QString& error);
+		void clearWorkingSelection() { m_workingSelection.clear(); }
+		bool hasWorkingSelection() const { return !m_workingSelection.empty(); }
+		bool inWorkingSelection(unsigned i) const { return m_workingSelection.empty() || m_workingSelection[i]; }
 
 		bool setHagValues(const std::vector<double>& values, const QJsonObject& parameters,
 			qint64 elapsedMilliseconds, QString& errorMessage);
@@ -170,5 +178,6 @@ namespace alis
 		std::vector<Transaction> m_undoStack;
 		std::vector<Transaction> m_redoStack;
 		std::vector<ProcessingRecord> m_history;
+		std::vector<bool> m_workingSelection;
 	};
 }

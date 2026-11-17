@@ -51,6 +51,7 @@ QJsonObject readJson(const QString& path) {
 }
 
 void WorkspaceController::prepareModelData(const QString& python,const QString& worker,const QString& selectedModel) {
+    if(!allowFullCloudOperation("Model preparation"))return;
     PreparationDialog dialog(m_dock);dialog.setWindowTitle("ALiS - Prepare data for this model");dialog.resize(850,720);dialog.setWindowModality(Qt::ApplicationModal);
     auto* layout=new QVBoxLayout(&dialog);
     auto* intro=new QLabel("1. Inspect a trusted model  >  2. Prepare bounded blocks  >  3. Classify  >  4. Review Derived predictions\nThe source is unchanged. Halo points provide context only; final outputs contain every original point once.");intro->setWordWrap(true);layout->addWidget(intro);

@@ -63,6 +63,7 @@ protected:
 
 namespace alis {
 bool WorkspaceController::refineVegetationWithRanges(const QString& directory,QString& error){
+    if(!allowFullCloudOperation("Vegetation range refinement")){error="Working selection active; full-cloud refinement was not run.";return false;}
     if(!m_selectedCloud||!session()||m_featureComputationActive||m_mlProcess->state()!=QProcess::NotRunning){error="Select a cloud and wait for active processing.";return false;}
     auto* cloud=m_selectedCloud;const auto revision=session()->sourceRevision();
     auto previous=QJsonDocument::fromJson(cloud->getMetaData("ALiS.vegetationPreview").toByteArray()).object();
@@ -132,6 +133,7 @@ void WorkspaceController::openFeatureRangeReview(){
 }
 
 bool WorkspaceController::applyFeatureRanges(const QJsonArray& rules,const QString& directory,QString& error){
+    if(!allowFullCloudOperation("Feature range model")){error="Working selection active; full-cloud range model was not run.";return false;}
     if(!m_selectedCloud||!session()||m_featureComputationActive||m_mlProcess->state()!=QProcess::NotRunning){error="Select a cloud and wait for active processing.";return false;}
     auto* cloud=m_selectedCloud;const auto revision=session()->sourceRevision();
     struct Rule{CCCoreLib::ScalarField* sf;double low,high;};std::vector<Rule> prepared;

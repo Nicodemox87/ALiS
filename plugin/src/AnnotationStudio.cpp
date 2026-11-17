@@ -58,6 +58,18 @@ namespace alis
 		auto* note = new QLabel(QStringLiteral("Same original cloud in all views • Yellow = shared selection • Display LOD only: labels use full-resolution points.\nSelections pass through the active slab. Moving the section preserves selected points, including those outside the current slab."));
 		note->setWordWrap(true); note->setStyleSheet(QStringLiteral("background:#e0f2fe;color:#0c4a6e;padding:7px;")); root->addWidget(note);
 		auto* row = new QHBoxLayout;
+		row->addWidget(new QLabel(QStringLiteral("Points per view (% of loaded cloud)")));
+		m_displayPercent = new QComboBox; m_displayPercent->setObjectName(QStringLiteral("ALiS.Studio.DisplayPercent"));
+		for (int percent = 10; percent <= 100; percent += 10) m_displayPercent->addItem(QStringLiteral("%1 %").arg(percent), percent);
+		m_displayPercent->setToolTip(QStringLiteral("Same percentage in EVERY panel, never divided between views. 100% includes every eligible point. Sections and hidden points still restrict the displayed scope. Display only: no source resampling or label changes. High percentages increase RAM/GPU use in all four panels."));
+		row->addWidget(m_displayPercent);
+		auto* applyDensity = new QPushButton(QStringLiteral("Apply display density")); row->addWidget(applyDensity); row->addStretch(); root->addLayout(row);
+		connect(applyDensity, &QPushButton::clicked, this, [this]() {
+			const quint64 target = (quint64(m_sourceCount) * m_displayPercent->currentData().toUInt() + 99) / 100;
+			if (target > 1000000 && QMessageBox::question(this, QStringLiteral("Display density"), QStringLiteral("Up to %1 points in EACH of four views. GPU vertex buffers alone may use about %2 MiB, plus RAM and CloudCompare. Navigation may become slow. Continue?").arg(target).arg(target * 4 * 24 / (1024 * 1024))) != QMessageBox::Yes) return;
+			m_appliedDisplayPercent = m_displayPercent->currentData().toUInt(); rebuildPreview();
+		});
+		row = new QHBoxLayout;
 		m_section = new QCheckBox(QStringLiteral("Live section")); m_section->setChecked(true); row->addWidget(m_section);
 		m_axis = new QComboBox; m_axis->addItems({QStringLiteral("X normal / YZ"), QStringLiteral("Y normal / XZ"), QStringLiteral("Z normal / XY"), QStringLiteral("Custom vertical plane")}); m_axis->setCurrentIndex(1); row->addWidget(m_axis);
 		m_drawSection = new QPushButton(QStringLiteral("Draw section (Top)")); m_drawSection->setCheckable(true);
@@ -131,7 +143,8 @@ namespace alis
 				menu->setToolTip(QStringLiteral("Independent orientation for this panel. Section front/back follows the live section axis. 3D: right drag rotates, middle drag pans, wheel zooms. All panels share the same original points and selection; the display alone uses LOD."));
 				auto* localFit = new QPushButton(QStringLiteral("Fit")); auto* localSync = new QPushButton(QStringLiteral("Sync"));
 				localFit->setToolTip(QStringLiteral("Fit this panel to the whole cloud's bounds without changing its orientation. If Live sync is enabled, the other panels follow its centre and scale.")); localSync->setToolTip(syncHelp);
-				header->addWidget(menu); header->addStretch(); header->addWidget(new QLabel(QStringLiteral("%1").arg(panel))); header->addWidget(localFit); header->addWidget(localSync); layout->addLayout(header);
+				auto* density = new QLabel; density->setObjectName(QStringLiteral("ALiS.Studio.Panel.%1.Density").arg(panel)); m_densityLabels.push_back(density);
+				header->addWidget(menu); header->addWidget(density); header->addStretch(); header->addWidget(new QLabel(QStringLiteral("%1").arg(panel))); header->addWidget(localFit); header->addWidget(localSync); layout->addLayout(header);
 				auto* canvas = new AnnotationCanvas(this, panel, defaults[panel-1]); m_canvases.push_back(canvas); layout->addWidget(canvas, 1); columns->addWidget(container);
 				connect(menu, qOverload<int>(&QComboBox::currentIndexChanged), this, [canvas, menu](int) { canvas->setView(static_cast<AnnotationView>(menu->currentData().toInt())); });
 				connect(localFit, &QPushButton::clicked, this, [this, canvas]() { setActiveCanvas(canvas); canvas->fit(); });
@@ -146,6 +159,7 @@ namespace alis
 		m_class->insertSeparator(m_class->count());
 		for (const auto& cls : archaeologyAsprsClasses())
 			m_class->addItem(QStringLiteral("qAL Other %1 — %2").arg(cls.code).arg(QString::fromUtf8(cls.name)), int(cls.code));
+		for(const auto& cls:geometryAsprsClasses())m_class->addItem(QStringLiteral("ALiS %1 — %2").arg(cls.code).arg(QString::fromUtf8(cls.name)),int(cls.code));
 		m_class->setCurrentIndex(m_class->findData(2));
 		m_apply = new QPushButton(QStringLiteral("Assign to selected points")); m_apply->setObjectName(QStringLiteral("ALiS.Studio.Apply"));
 		m_undo = new QPushButton(QStringLiteral("Undo")); m_redo = new QPushButton(QStringLiteral("Redo"));
@@ -354,18 +368,26 @@ namespace alis
 		m_previewTimer->stop(); m_renderPoints.clear(); m_sliceCount = 0;
 		m_activeSection = m_section->isChecked() && !m_placingSection; m_activeCenter = localCenter(); m_activeHalf = m_thickness->value() * m_scale * .5;
 		const auto range = candidateRange();
-		const std::size_t stride = std::max<std::size_t>(1, (range.second - range.first + 119999) / 120000);
-		const std::size_t selectedStride = std::max<std::size_t>(1, (m_selectedCount + 9999) / 10000);
-		std::size_t chosen = 0;
+		const unsigned percent = m_appliedDisplayPercent;
+		// Integer accumulator gives exactly ceil(N * percent / 100), independent
+		// of the number/orientation of views. Filters exclude points, not re-budget them.
+		unsigned accumulator = 100 - percent;
+		try {
 		for (std::size_t at = range.first; at < range.second; ++at)
 		{
 			const unsigned id = m_index.ids()[at]; if (!eligible(id)) continue;
 			++m_sliceCount;
-			const bool highlight = m_selected[id] && chosen++ % selectedStride == 0;
-			if (at % stride != 0 && !highlight) continue;
+			accumulator += percent; if (accumulator < 100) continue; accumulator -= 100;
 			const auto* p = m_cloud->getPoint(id); m_renderPoints.push_back({{p->x, p->y, p->z}, pointColour(id), id});
 		}
+		} catch(const std::bad_alloc&) {
+			m_renderPoints.clear(); ++m_renderRevision;
+			for(auto* canvas:m_canvases) canvas->invalidate();
+			for(auto* label:m_densityLabels) label->setText(QStringLiteral("Display failed: RAM"));
+			QMessageBox::warning(this,QStringLiteral("Display density"),QStringLiteral("Not enough RAM for this display percentage. Lower it and Apply again. Source points and labels are unchanged.")); return;
+		}
 		++m_renderRevision;
+		for (auto* label : m_densityLabels) { label->setText(QStringLiteral("%1% · %2 pts").arg(percent).arg(qulonglong(m_renderPoints.size()))); label->setToolTip(QStringLiteral("Requested %1% of loaded cloud (%2 points); %3 eligible after section/visibility, %4 submitted in this view. Occlusion and camera framing can hide points on screen.").arg(percent).arg(m_sourceCount).arg(qulonglong(m_sliceCount)).arg(qulonglong(m_renderPoints.size()))); }
 		for (auto* canvas : m_canvases) canvas->invalidate(); updateCounts();
 	}
 	void AnnotationStudio::refreshColours()

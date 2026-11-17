@@ -13,6 +13,8 @@
 // Qt
 #include <QElapsedTimer>
 #include <QVariant>
+#include <QJsonDocument>
+#include <QStringList>
 
 // Standard library
 #include <algorithm>
@@ -59,10 +61,11 @@ namespace
 		QJsonObject json;
 		json.insert(QStringLiteral("coordinateUnits"), QStringLiteral("CloudCompare local units"));
 		json.insert(QStringLiteral("gridStep"), parameters.gridStep);
-		json.insert(QStringLiteral("projection"), QStringLiteral("minimum Z of Ground points"));
+		json.insert(QStringLiteral("projection"), parameters.surfaceMaximum?(parameters.dfmMinimumMerge?QStringLiteral("MIN Ground without fill + MIN Building without fill; merge aligned cell clouds; final MIN; fill only final voids"):QStringLiteral("minimum Ground Z; maximum Building Z; Building precedence per shared cell")):QStringLiteral("minimum Z of Ground points"));
 		json.insert(QStringLiteral("interpolateEmptyCells"), parameters.interpolateEmptyCells);
 		json.insert(QStringLiteral("interpolation"),
-		            parameters.interpolateEmptyCells ? QStringLiteral("Delaunay") : QStringLiteral("none"));
+		            parameters.surfaceMaximum?QStringList{"none","local-mean guarded","IDW guarded","TIN / Delaunay linear guarded","Kriging guarded"}.value(int(parameters.dfmFill.method),"invalid"):parameters.interpolateEmptyCells ? QStringLiteral("Delaunay") : QStringLiteral("none"));
+		if(parameters.surfaceMaximum){json["dfmMinimumMerge"]=parameters.dfmMinimumMerge;json["localRadius"]=parameters.dfmFill.radius;json["maximumLocalHeightRange"]=parameters.dfmFill.maximumLocalRange;json["maximumMeanDeviation"]=parameters.dfmFill.maximumMeanDeviation;json["minimumLocalSupport"]=int(parameters.dfmFill.minimumSupport);json["maximumLocalSupport"]=int(parameters.dfmFill.maximumSupport);json["surroundingSupportRequired"]=parameters.dfmFill.requireSurroundingSupport;json["sharedGridOrigin"]=true;}
 		json.insert(QStringLiteral("maximumInterpolationEdgeLength"),
 		            parameters.maximumInterpolationEdgeLength);
 		json.insert(QStringLiteral("maximumCellCount"),
@@ -478,6 +481,7 @@ namespace alis
 		result.provenance.effectiveParameters = parametersToJson(parameters);
 
 		const TerrainValidation validation = validate(source, isGround, parameters);
+		if(parameters.surfaceMaximum&&(!context.surfaceBuildingMask||context.surfaceBuildingMask->size()!=source.size())){result.status=TerrainStatus::InvalidInput;result.message="DFM requires an aligned Building mask; refusing a maximum-all-points substitute.";return result;}
 		result.provenance.effectiveParameters.insert(
 			QStringLiteral("groundPointCount"), static_cast<double>(validation.groundPointCount));
 		result.provenance.effectiveParameters.insert(
@@ -542,14 +546,14 @@ namespace alis
 		ccRasterGrid::DelaunayInterpolationParams delaunayParameters;
 		delaunayParameters.maxEdgeLength = parameters.maximumInterpolationEdgeLength;
 		const ccRasterGrid::InterpolationType interpolation =
-			parameters.interpolateEmptyCells
+			parameters.interpolateEmptyCells && !parameters.surfaceMaximum
 				? ccRasterGrid::InterpolationType::DELAUNAY
 				: ccRasterGrid::InterpolationType::NONE;
 		void* interpolationParameters =
 			parameters.interpolateEmptyCells ? static_cast<void*>(&delaunayParameters) : nullptr;
 		if (!rasterGrid.fillWith(temporaryGround.get(),
 		                         2,
-		                         ccRasterGrid::PROJ_MINIMUM_VALUE,
+		                         parameters.surfaceMaximum?ccRasterGrid::PROJ_MAXIMUM_VALUE:ccRasterGrid::PROJ_MINIMUM_VALUE,
 		                         interpolation,
 		                         interpolationParameters,
 		                         ccRasterGrid::INVALID_PROJECTION_TYPE,
@@ -569,6 +573,45 @@ namespace alis
 			result.provenance.elapsedMilliseconds = timer.elapsed();
 			logMessage(context.app, result.message, ccMainAppInterface::ERR_CONSOLE_MESSAGE);
 			return result;
+		}
+		std::vector<unsigned char> surfaceSource;
+		if(parameters.surfaceMaximum){
+			try{
+				const std::size_t cells=std::size_t(rasterGrid.width)*rasterGrid.height;
+				std::vector<double> minimumGround(cells,nanValue()),maximumBuilding(cells,nanValue());surfaceSource.assign(cells,0);
+				for(unsigned i=0;i<source.size();++i)if(isGround[i]){
+					const auto& point=*source.getPoint(i);const auto pos=rasterGrid.computeCellPos(point,0,1);if(pos.x<0||pos.y<0||pos.x>=int(rasterGrid.width)||pos.y>=int(rasterGrid.height))continue;
+					const auto offset=std::size_t(pos.y)*rasterGrid.width+pos.x;auto& value=(*context.surfaceBuildingMask)[i]?maximumBuilding[offset]:minimumGround[offset];const double z=point.z;
+					if(!std::isfinite(value)||((*context.surfaceBuildingMask)[i]&&!parameters.dfmMinimumMerge?z>value:z<value))value=z;
+				}
+				DfmConflictGrid review;review.width=rasterGrid.width;review.height=rasterGrid.height;review.step=parameters.gridStep;review.originX=rasterGrid.minCorner.x;review.originY=rasterGrid.minCorner.y;review.globalScale=source.getGlobalScale();review.shiftX=source.getGlobalShift().x;review.shiftY=source.getGlobalShift().y;review.minimumRecipe=parameters.dfmMinimumMerge;review.ground=&minimumGround;review.building=&maximumBuilding;review.initialize();
+				if(review.conflicts){if(context.conflictReview){if(!context.conflictReview(review)){result.status=TerrainStatus::RasterizationFailedOrCancelled;result.message="DFM overlap review canceled; no definitive surface or interpolation created.";return result;}}else if(parameters.requireConflictReview){result.status=TerrainStatus::InvalidInput;result.message="Ground/Building conflicts require map review before creating the definitive DFM.";return result;}}
+				result.provenance.effectiveParameters["overlapReview"]=review.toJson();
+				std::uint64_t groundCells=0,buildingCells=0,overlapCells=0,groundWinsOverlap=0;
+				for(unsigned row=0;row<rasterGrid.height;++row)for(unsigned col=0;col<rasterGrid.width;++col){const auto offset=std::size_t(row)*rasterGrid.width+col;auto& cell=rasterGrid.rows[row][col];const bool hasBuilding=std::isfinite(maximumBuilding[offset]),hasGround=std::isfinite(minimumGround[offset]);groundCells+=hasGround;buildingCells+=hasBuilding;overlapCells+=hasBuilding&&hasGround;bool building=hasBuilding&&(!parameters.dfmMinimumMerge||!hasGround||maximumBuilding[offset]<minimumGround[offset]);if(hasBuilding&&hasGround){if(review.choice(offset)==1)building=false;else if(review.choice(offset)==2)building=true;}cell.h=building?maximumBuilding[offset]:minimumGround[offset];surfaceSource[offset]=building?2:hasGround?1:0;if(hasBuilding&&hasGround&&!building)++groundWinsOverlap;}
+				result.provenance.effectiveParameters["groundStageCells"]=double(groundCells);result.provenance.effectiveParameters["buildingStageCells"]=double(buildingCells);result.provenance.effectiveParameters["overlapCells"]=double(overlapCells);result.provenance.effectiveParameters["groundWinsOverlap"]=double(groundWinsOverlap);
+				rasterGrid.updateCellStats();if(parameters.interpolateEmptyCells){
+					if(parameters.dfmFill.method==DfmFillMethod::Delaunay&&!rasterGrid.interpolateEmptyCells(parameters.maximumInterpolationEdgeLength*parameters.maximumInterpolationEdgeLength)){result.status=TerrainStatus::RasterizationFailedOrCancelled;result.message="DFM built, but requested Delaunay interpolation failed; no surface committed.";return result;}
+					std::vector<double> heights(cells);for(unsigned row=0;row<rasterGrid.height;++row)for(unsigned col=0;col<rasterGrid.width;++col)heights[std::size_t(row)*rasterGrid.width+col]=rasterGrid.rows[row][col].h;
+					std::vector<DataPoint> krigingData;std::unique_ptr<Kriging> kriging;std::shared_ptr<OrdinaryKrigeContext> krigingContext;std::function<double(unsigned,unsigned)> krigingCandidate;
+					if(parameters.dfmFill.method==DfmFillMethod::Kriging){
+						const int knn=parameters.krigingNeighbours;if(knn<3||knn>64||parameters.dfmFill.minimumSupport<unsigned(knn)||parameters.krigingModel<0||parameters.krigingModel>2)throw std::runtime_error("Kriging requires 3..64 neighbours, a valid model and minimum local support >= KNN");
+						std::uint64_t voids=0;for(auto code:surfaceSource)voids+=code==0;if(double(voids)*std::pow(double(knn+1),3)>500000000.)throw std::runtime_error("Kriging solve budget exceeded; reduce KNN, use a coarser grid or a smaller working selection");
+						double low=std::numeric_limits<double>::infinity(),high=-low;krigingData.reserve(cells-std::size_t(voids));for(unsigned row=0;row<rasterGrid.height;++row)for(unsigned col=0;col<rasterGrid.width;++col){const auto i=std::size_t(row)*rasterGrid.width+col;if(surfaceSource[i]){krigingData.emplace_back(col*parameters.gridStep,row*parameters.gridStep,heights[i]);low=std::min(low,heights[i]);high=std::max(high,heights[i]);}}
+						if(krigingData.size()<=std::size_t(knn))throw std::runtime_error("Not enough observed grid cells for requested Kriging KNN");
+						if(parameters.krigingAutoParameters&&low==high){krigingCandidate=[low](unsigned,unsigned){return low;};result.provenance.effectiveParameters["krigingConstantSurface"]=true;}
+						else{
+							kriging.reset(new Kriging(krigingData,RasterParameters(CCVector2d(0,0),parameters.gridStep,rasterGrid.width,rasterGrid.height)));Kriging::KrigeParams effective=parameters.krigingAutoParameters?kriging->computeDefaultParameters():Kriging::KrigeParams(Kriging::Model(parameters.krigingModel),parameters.krigingNugget,parameters.krigingSill,parameters.krigingRange);effective.model=Kriging::Model(parameters.krigingModel);
+							if(!std::isfinite(effective.sill)||!std::isfinite(effective.range)||!std::isfinite(effective.nugget)||effective.sill<=0||effective.range<=0||effective.nugget<0||effective.nugget>effective.sill)throw std::runtime_error("Degenerate Kriging variogram; use Local mean or explicit valid variogram parameters. No silent fallback was applied");
+							auto* contextPtr=kriging->createOrdinaryKrigeContext(knn);if(!contextPtr)throw std::runtime_error("Kriging context allocation failed");krigingContext=std::shared_ptr<OrdinaryKrigeContext>(contextPtr,[&kriging](OrdinaryKrigeContext* pointer){kriging->releaseOrdinaryKrigeContext(pointer);});krigingCandidate=[&kriging,contextPtr,effective](unsigned col,unsigned row){return kriging->ordinaryKrigeSingleCell(effective,col,row,contextPtr);};
+							result.provenance.effectiveParameters["krigingModel"]=int(effective.model);result.provenance.effectiveParameters["krigingSillLocalSquared"]=effective.sill;result.provenance.effectiveParameters["krigingNuggetLocalSquared"]=effective.nugget;result.provenance.effectiveParameters["krigingRangeLocal"]=effective.range;
+						}result.provenance.effectiveParameters["krigingKNN"]=knn;result.provenance.effectiveParameters["krigingAutoParameters"]=parameters.krigingAutoParameters;result.provenance.effectiveParameters["krigingVoidOnlyObservedSupport"]=true;
+					}
+					const auto filled=fillDfmVoids(rasterGrid.width,rasterGrid.height,parameters.gridStep,heights,surfaceSource,parameters.dfmFill,[&](){if(context.progressDialog){context.progressDialog->update(0);if(context.progressDialog->isCancelRequested())throw std::runtime_error("DFM interpolation canceled; no output committed");}},krigingCandidate);
+					for(unsigned row=0;row<rasterGrid.height;++row)for(unsigned col=0;col<rasterGrid.width;++col)rasterGrid.rows[row][col].h=heights[std::size_t(row)*rasterGrid.width+col];rasterGrid.updateCellStats();result.provenance.effectiveParameters["filledVoids"]=double(filled.filled);result.provenance.effectiveParameters["insufficientLocalSupport"]=double(filled.insufficient);result.provenance.effectiveParameters["localDiscontinuitiesRejected"]=double(filled.discontinuity);result.provenance.effectiveParameters["meanDeviationRejected"]=double(filled.deviation);result.provenance.effectiveParameters["remainingVoids"]=double(filled.remaining);
+				}
+			}catch(const std::bad_alloc&){result.status=TerrainStatus::OutOfMemory;result.message="Insufficient memory for class-aware DFM grid; no source data changed.";return result;}
+			catch(const std::exception& e){result.status=TerrainStatus::RasterizationFailedOrCancelled;result.message=QString::fromUtf8(e.what());return result;}
 		}
 
 		try
@@ -609,6 +652,13 @@ namespace alis
 			return result;
 		}
 
+		if(parameters.surfaceMaximum){
+			result.dtmCloud->setName(parameters.dfmMinimumMerge?"qAL DFM — MIN Ground + MIN Buildings / merged MIN":"qAL DFM — min Ground / max Buildings");result.dtmCloud->setMetaData("ALiS.role","DFM");result.dtmCloud->setMetaData("ALiS.projection",parameters.dfmMinimumMerge?"minimum-ground + minimum-building / merged minimum":"minimum-ground / maximum-building; building precedence");result.dtmCloud->setMetaData("ALiS.DFM.parameters",QJsonDocument(result.provenance.effectiveParameters).toJson(QJsonDocument::Compact));
+			const int elevation=result.dtmCloud->getScalarFieldIndexByName(DTM_ELEVATION_FIELD_NAME);if(elevation>=0)result.dtmCloud->getScalarField(elevation)->setName("qAL DFM elevation");
+			const int sourceIndex=result.dtmCloud->addScalarField("qAL DFM source (1 Ground, 2 Building, 3 interpolated)");if(sourceIndex<0){result.status=TerrainStatus::OutOfMemory;result.message="DFM source-quality field allocation failed; no surface committed.";return result;}
+			for(unsigned i=0;i<result.dtmCloud->size();++i){const auto pos=rasterGrid.computeCellPos(*result.dtmCloud->getPoint(i),0,1);const auto code=surfaceSource[std::size_t(pos.y)*rasterGrid.width+pos.x];result.dtmCloud->getScalarField(sourceIndex)->setValue(i,code?code:3);}result.dtmCloud->getScalarField(sourceIndex)->computeMinAndMax();
+			result.provenance.algorithmId=parameters.dfmMinimumMerge?"surface.staged.minimum.ground-building.minimum.v1":"surface.hybrid.min-ground.max-building.v1";result.provenance.elapsedMilliseconds=timer.elapsed();result.status=TerrainStatus::Success;result.message="DFM created; DTM/HAG retained unchanged.";return result;
+		}
 		try
 		{
 			result.heightAboveGround.assign(static_cast<std::size_t>(source.size()), nanValue());

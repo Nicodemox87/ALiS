@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 #include "FeatureEngine.h"
 #include "MemorySafety.h"
+#include "QuantileSelection.h"
 
 #include <ccBBox.h>
 #include <ccNormalVectors.h>
@@ -221,6 +222,7 @@ namespace
 		double zMinimum = std::numeric_limits<double>::infinity();
 		double zMaximum = -std::numeric_limits<double>::infinity();
 		std::vector<double> zValues;
+		void reset(){count=0;for(int r=0;r<3;++r){mean[r]=0;for(int c=0;c<3;++c)covarianceNumerator[r][c]=0;}zMinimum=std::numeric_limits<double>::infinity();zMaximum=-zMinimum;zValues.clear();}
 
 		void add(double x, double y, double z, bool keepZ)
 		{
@@ -280,11 +282,16 @@ namespace
 
 		CCCoreLib::SquareMatrixd eigenvectors;
 		std::vector<double> eigenvalues;
-		if (!CCCoreLib::Jacobi<double>::ComputeEigenValuesAndVectors(covariance, eigenvectors, eigenvalues, true)
-		    || eigenvalues.size() != 3
-		    || !CCCoreLib::Jacobi<double>::SortEigenValuesAndVectors(eigenvectors, eigenvalues))
-		{
-			return result;
+		auto diagonalize=[&](){return CCCoreLib::Jacobi<double>::ComputeEigenValuesAndVectors(covariance,eigenvectors,eigenvalues,true)
+		    && eigenvalues.size()==3 && CCCoreLib::Jacobi<double>::SortEigenValuesAndVectors(eigenvectors,eigenvalues);};
+		if(!diagonalize()){
+			// CCCoreLib Jacobi can fail on repeated diagonal eigenvalues with
+			// round-off-sized off-diagonal entries. Retry the same covariance,
+			// removing only entries below its scale-relative numerical floor.
+			double maximum=0;for(int a=0;a<3;++a)maximum=std::max(maximum,std::abs(geometry.covarianceNumerator[a][a]/double(geometry.count)));
+			const double floor=std::numeric_limits<double>::epsilon()*maximum*128;
+			for(int r=0;r<3;++r)for(int c=0;c<3;++c){const double value=geometry.covarianceNumerator[r][c]/double(geometry.count);covariance.m_values[r][c]=(r!=c&&std::abs(value)<=floor)?0:value;}
+			if(!diagonalize())return result;
 		}
 
 		const double tolerance = std::numeric_limits<double>::epsilon()
@@ -443,7 +450,7 @@ namespace
 			const double row[6] = { 1.0, x, y, x * x, x * y, y * y };
 			for (int r = 0; r < 6; ++r)
 			{
-				for (int c = 0; c < 6; ++c)
+				for (int c = r; c < 6; ++c)
 				{
 					normalEquations[r][c] += row[r] * row[c];
 				}
@@ -455,6 +462,9 @@ namespace
 		{
 			return result;
 		}
+		// As in CCCoreLib's quadric normal equations, the matrix is symmetric.
+		// Accumulate each product once, then mirror without changing the fit.
+		for(int r=0;r<6;++r)for(int c=0;c<r;++c)normalEquations[r][c]=normalEquations[c][r];
 
 		double coefficient[6] = {};
 		if (!solveSixBySix(normalEquations, coefficient))
@@ -525,6 +535,8 @@ namespace
 		std::size_t candidateLimit = 200000;
 		bool inspectCandidateCells = false;
 		CCCoreLib::GenericProgressCallback* callback = nullptr;
+		const std::vector<unsigned char>* queryMask = nullptr;
+		bool needGeometry = false,needZQuantiles = false;
 	};
 
 	double safeRatio(double numerator, double denominator)
@@ -544,12 +556,22 @@ namespace
 	                    unsigned queryIndex,
 	                    const double query[3],
 	                    const PcaSummary& pca,
+	                    const GeometrySummary& geometry,
 	                    double inverseGlobalScale,
 	                    const CCVector3d& globalShift)
 	{
 		if (!pca.valid)
 		{
 			return quietNaN();
+		}
+		// The same first/second projected moments follow from the already
+		// computed centroid and covariance. Keep the direct path for nearly
+		// degenerate eigenspaces to preserve its zero/NaN behaviour.
+		if(pca.eigenvalue[1]>std::numeric_limits<double>::epsilon()*std::max(1.0,pca.eigenvalue[0])*1024.0){
+			double meanProjection=0;
+			for(int a=0;a<3;++a)meanProjection+=(geometry.mean[a]-query[a])*pca.eigenvector[1][a];
+			const double second=double(geometry.count)*(pca.eigenvalue[1]+meanProjection*meanProjection);
+			return second>std::numeric_limits<double>::epsilon()?double(geometry.count)*double(geometry.count)*meanProjection*meanProjection/second:quietNaN();
 		}
 		double m1 = 0.0;
 		double m2 = 0.0;
@@ -754,6 +776,11 @@ namespace
 			search.level = cell.level;
 			cell.parentOctree->getCellPos(cell.truncatedCode, cell.level, search.cellPos, true);
 			cell.parentOctree->computeCellCenter(search.cellPos, cell.level, search.cellCenter);
+			const unsigned cellPointCount = cell.points->size();
+			if(context->queryMask){
+				bool any=false;for(unsigned i=0;i<cellPointCount&&!any;++i)any=(*context->queryMask)[cell.points->getPointGlobalIndex(i)]!=0;
+				if(!any)return !progress||progress->steps(cellPointCount);
+			}
 
 			// CCCoreLib retains all candidates in the surrounding cube, NOT
 			// just spherical neighbours. Count an upper bound from its existing
@@ -780,7 +807,6 @@ namespace
 					}
 				}
 			}
-			const unsigned cellPointCount = cell.points->size();
 			search.pointsInNeighbourhood.resize(cellPointCount);
 			for (unsigned i = 0; i < cellPointCount; ++i)
 			{
@@ -790,6 +816,8 @@ namespace
 			search.alreadyVisitedNeighbourhoodSize = 1;
 
 			const ScaleWork& largestScale = context->scales->back();
+			GeometrySummary cumulative,geometry;unsigned pendingProgress=0;
+			auto advanceProgress=[&](){if(++pendingProgress<64)return true;const auto steps=pendingProgress;pendingProgress=0;return !progress||progress->steps(steps);};
 			for (unsigned localIndex = 0; localIndex < cellPointCount; ++localIndex)
 			{
 				if (context->failed.load() || (context->callback && context->callback->isCancelRequested()))
@@ -799,6 +827,10 @@ namespace
 
 				cell.points->getPoint(localIndex, search.queryPoint);
 				const unsigned queryIndex = cell.points->getPointGlobalIndex(localIndex);
+				if(context->queryMask && !(*context->queryMask)[queryIndex]){
+					if(!advanceProgress())return false;
+					continue;
+				}
 				const int found = cell.parentOctree->findNeighborsInASphereStartingFromCell(search,
 				                                                                        largestScale.localRadius,
 				                                                                        true);
@@ -808,48 +840,39 @@ namespace
 					return false;
 				}
 
-				std::size_t eligibleCount = static_cast<std::size_t>(found);
+				std::size_t eligibleCount = 0,neighbourCount=0;cumulative.reset();
+				if(context->needZQuantiles){cumulative.zValues.reserve(std::size_t(found));geometry.zValues.reserve(std::size_t(found));}
 				const double query[3] = {
 					static_cast<double>(search.queryPoint.x) * context->inverseGlobalScale - context->globalShift.x,
 					static_cast<double>(search.queryPoint.y) * context->inverseGlobalScale - context->globalShift.y,
 					static_cast<double>(search.queryPoint.z) * context->inverseGlobalScale - context->globalShift.z
 				};
 
-				for (std::size_t reverseIndex = context->scales->size(); reverseIndex > 0; --reverseIndex)
+				for (ScaleWork& scale : *context->scales)
 				{
-					ScaleWork& scale = (*context->scales)[reverseIndex - 1];
-					while (eligibleCount > 0
-					       && search.pointsInNeighbourhood[eligibleCount - 1].squareDistd > scale.localRadiusSquared)
+					// One sorted maximum-radius search, then accumulate the same
+					// distance-ordered Welford prefix once across increasing scales.
+					while(eligibleCount<std::size_t(found)&&search.pointsInNeighbourhood[eligibleCount].squareDistd<=scale.localRadiusSquared)
 					{
-						--eligibleCount;
-					}
-
-					std::size_t neighbourCount = 0;
-					GeometrySummary geometry;
-					if (scale.needZQuantiles)
-					{
-						geometry.zValues.reserve(eligibleCount);
-					}
-					for (std::size_t i = 0; i < eligibleCount; ++i)
-					{
-						const CCCoreLib::DgmOctree::PointDescriptor& descriptor = search.pointsInNeighbourhood[i];
+						const CCCoreLib::DgmOctree::PointDescriptor& descriptor = search.pointsInNeighbourhood[eligibleCount++];
 						if (descriptor.pointIndex == queryIndex || !descriptor.point)
 						{
 							continue;
 						}
 						++neighbourCount;
-						if (scale.needGeometry)
+						if (context->needGeometry)
 						{
-							geometry.add(
+							cumulative.add(
 								static_cast<double>(descriptor.point->x) * context->inverseGlobalScale - context->globalShift.x,
 								static_cast<double>(descriptor.point->y) * context->inverseGlobalScale - context->globalShift.y,
 								static_cast<double>(descriptor.point->z) * context->inverseGlobalScale - context->globalShift.z,
-								scale.needZQuantiles);
+								context->needZQuantiles);
 						}
 					}
+					geometry=cumulative;
 					if (scale.needZQuantiles)
 					{
-						std::sort(geometry.zValues.begin(), geometry.zValues.end());
+						alis::selectQuantileRanks(geometry.zValues);
 					}
 
 					const PcaSummary pca = scale.needPca ? computePca(geometry) : PcaSummary();
@@ -869,6 +892,7 @@ namespace
 						               queryIndex,
 						               query,
 						               pca,
+						               geometry,
 						               context->inverseGlobalScale,
 						               context->globalShift)
 						: quietNaN();
@@ -919,11 +943,12 @@ namespace
 					}
 				}
 
-				if (progress && !progress->oneStep())
+				if (!advanceProgress())
 				{
 					return false;
 				}
 			}
+			if(pendingProgress&&progress&&!progress->steps(pendingProgress))return false;
 		}
 		catch (const std::bad_alloc&)
 		{
@@ -1110,6 +1135,7 @@ namespace alis
 		std::size_t byteLimit = 0;
 		GeometrySignature signature;
 		bool signatureInitialized = false;
+		bool partialCache = false;
 
 		void setCloud(ccPointCloud* newCloud)
 		{
@@ -1232,6 +1258,11 @@ namespace alis
 		}
 		m_impl->synchronizeGeometry();
 		report.pointCount = m_impl->cloud->size();
+		if(options.queryMask && options.queryMask->size()!=m_impl->cloud->size()){
+			error="Core query mask size does not match the support cloud.";return false;
+		}
+		report.queryPointCount=options.queryMask?std::count_if(options.queryMask->begin(),options.queryMask->end(),[](unsigned char v){return v!=0;}):report.pointCount;
+		const bool replaceScope=options.queryMask||m_impl->partialCache;
 		if (m_impl->cloud->size() == 0)
 		{
 			error = "The selected point cloud is empty.";
@@ -1281,7 +1312,7 @@ namespace alis
 		std::vector<FeatureKey> missingKeys;
 		for (const FeatureKey& key : uniqueRequests)
 		{
-			if (m_impl->cache.find(key) == m_impl->cache.end())
+			if (replaceScope || m_impl->cache.find(key) == m_impl->cache.end())
 			{
 				missingKeys.push_back(key);
 			}
@@ -1304,7 +1335,7 @@ namespace alis
 			return false;
 		}
 		const std::size_t requestedBytes = missingKeys.size() * pointCount * sizeof(ScalarType);
-		const int threads=options.multiThread ? std::max(1,std::min(8,options.maxThreadCount>0?options.maxThreadCount:4)) : 1;
+		const int threads=options.multiThread ? std::max(1,std::min(32,options.maxThreadCount>0?options.maxThreadCount:4)) : 1;
 		const std::uint64_t budget=options.additionalMemoryBudget ? options.additionalMemoryBudget : availableRamBytes()*2/5;
 		// Octree / cell traversal bookkeeping plus bounded per-thread search,
 		// quantiles and allocator overhead. Existing arrays already consume RAM.
@@ -1314,7 +1345,7 @@ namespace alis
 			error="Feature safety budget exceeded before allocation. Use smaller spatial blocks with full-radius overlap, fewer output fields, or free RAM. No radii or points were changed.";
 			return false;
 		}
-		const std::size_t existingBytes = m_impl->bytes();
+		const std::size_t existingBytes = replaceScope?0:m_impl->bytes();
 		if (m_impl->byteLimit
 		    && (existingBytes > m_impl->byteLimit || requestedBytes > m_impl->byteLimit - existingBytes))
 		{
@@ -1401,6 +1432,8 @@ namespace alis
 		context.globalShift = m_impl->cloud->getGlobalShift();
 		context.candidateLimit = options.maxNeighbourhoodCandidates;
 		context.callback = progress;
+		context.queryMask = options.queryMask;
+		for(const auto& scale:scales){context.needGeometry|=scale.needGeometry;context.needZQuantiles|=scale.needZQuantiles;}
 		void* parameters[] = { &context };
 		const PointCoordinateType maximumLocalRadius = static_cast<PointCoordinateType>(scales.back().localRadius);
 		const unsigned char octreeLevel = m_impl->octree->findBestLevelForAGivenNeighbourhoodSizeExtraction(maximumLocalRadius);
@@ -1423,6 +1456,7 @@ namespace alis
 			const long double width=std::min(side,2*reach+1);
 			context.inspectCandidateCells=static_cast<long double>(maximumPopulation)*width*width*width>context.candidateLimit;
 		}
+		const auto queryStart=std::chrono::steady_clock::now();
 		const unsigned processedCells = m_impl->octree->executeFunctionForAllCellsAtLevel(
 			octreeLevel,
 			&computeFeaturesInCell,
@@ -1431,6 +1465,7 @@ namespace alis
 			progress,
 			"ALiS multiscale features",
 			threads);
+		report.querySeconds=std::chrono::duration<double>(std::chrono::steady_clock::now()-queryStart).count();
 		if (processedCells == 0 || context.failed.load() || (progress && progress->isCancelRequested()))
 		{
 			error = context.neighbourhoodLimitExceeded.load()
@@ -1442,6 +1477,7 @@ namespace alis
 		}
 
 		std::vector<FeatureKey> committedKeys;
+		std::map<FeatureKey,CacheEntry> replacement;
 		try
 		{
 			committedKeys.reserve(pendingFields.size());
@@ -1450,14 +1486,16 @@ namespace alis
 				CacheEntry entry;
 				entry.values = std::move(pending.values);
 				committedKeys.push_back(pending.key);
-				m_impl->cache.emplace(pending.key, std::move(entry));
+				(replaceScope?replacement:m_impl->cache).emplace(pending.key, std::move(entry));
 			}
+			if(replaceScope)m_impl->cache.swap(replacement);
+			m_impl->partialCache=options.queryMask!=nullptr;
 		}
 		catch (const std::bad_alloc&)
 		{
 			for (const FeatureKey& key : committedKeys)
 			{
-				m_impl->cache.erase(key);
+				if(!replaceScope)m_impl->cache.erase(key);
 			}
 			error = "Not enough memory to commit the computed feature cache.";
 			return false;
@@ -1560,7 +1598,9 @@ namespace alis
 			CCCoreLib::DgmOctree::NearestNeighboursSearchStruct search;
 			search.queryPoint = *m_impl->cloud->getPoint(pointIndex);
 			search.level = neighbourLevel;
-			search.minNumberOfNeighbors = 8;
+			// Asking the octree for more neighbours than exist can expand forever on
+			// tiny/degenerate clouds (also used by selection regression fixtures).
+			search.minNumberOfNeighbors = std::min(8u,m_impl->cloud->size());
 			m_impl->octree->getTheCellPosWhichIncludesThePoint(&search.queryPoint, search.cellPos, search.level);
 			m_impl->octree->computeCellCenter(search.cellPos, search.level, search.cellCenter);
 
