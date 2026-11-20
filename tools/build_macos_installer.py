@@ -9,6 +9,7 @@ from pathlib import Path
 import plistlib
 import re
 import shutil
+import stat
 import subprocess
 import tarfile
 import urllib.request
@@ -100,6 +101,11 @@ def main():
     source=(args.runtime or prepare_runtime(out)).resolve()
     run(source/'bin/python3','-I','-B','-c',"import sys,platform; assert sys.version_info[:3]==(3,12,15) and platform.machine()=='arm64'")
     run('ditto',source,runtime)
+    # Installed runtimes may contain read-only wheels/libraries. Only the
+    # private staging copy is made owner-writable for relocation/signing.
+    for item in [runtime, *runtime.rglob('*')]:
+        if not item.is_symlink():
+            item.chmod(item.stat().st_mode | stat.S_IWUSR)
     # XGBoost's Mac wheel expects an OpenMP runtime supplied by the distributor.
     shutil.copy2('/opt/homebrew/opt/libomp/lib/libomp.dylib', runtime/'lib/libomp.dylib')
     for extra_omp in (runtime/'lib/python3.12/site-packages').rglob('libomp.dylib'):extra_omp.unlink()

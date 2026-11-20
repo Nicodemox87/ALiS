@@ -39,3 +39,20 @@ Install optional PyTorch/XGBoost for their tests; capability skips are not succe
 `tools/package_public.py` requires `--dll` (ALIS_PLUGIN.dll), `--block-worker` (ALiS_prepare_block.exe), `--qt-minimal` (Qt 5.15.2 MSVC2019_64 plugins/platforms/qminimal.dll), `--qt-source` (qtbase-everywhere-src-5.15.2.tar.xz) and `--iscc` (Inno Setup 6 compiler). It assembles a public allowlist payload and source archive. Start with no `packaging/stage` directory; existing staging is never overwritten. The icon and wizard raster are included in `packaging/assets`. See `--help` and `third_party/qt/ORIGIN.md` for the exact Qt source hash.
 
 The release does not bundle the host or Python. It includes the matching Qt minimal platform plugin for the isolated native worker; its corresponding Qt Base source archive is attached to the release. Full fresh-machine build and interactive installation testing remain community-validation work; local native-load, regression, archive and checksum checks are not a substitute for that.
+
+## macOS alpha.5.21 port
+
+Use the native Apple Silicon build on the local macOS branch. Developer tools:
+Xcode Command Line Tools and Homebrew `cmake ninja qt@5 eigen cgal laszip
+python@3.12 libomp`. `bash tools/build_macos.sh` builds the pinned host and runs
+all native regressions. CGAL is required for DFM Delaunay interpolation; do not
+turn it off to bypass a failing test. The packaged application currently requires
+macOS 27+, regardless of the compiler's lower deployment-target setting.
+
+Then run `python3 tools/build_macos_installer.py` and the package verification
+command documented in [MAC_INSTALLER.md](docs/MAC_INSTALLER.md). An already
+prepared portable Python 3.12.15 runtime may be supplied with `--runtime`; the
+builder copies it into private staging and audits the resulting bundle. It does
+not modify the supplied runtime. See [local validation](docs/MAC_PORT_ALPHA521.md)
+for current results and limitations. No build command publishes or installs the
+new app into `/Applications`.

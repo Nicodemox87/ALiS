@@ -10,7 +10,7 @@ echo 'ALiS Apple Silicon developer preview: compile CloudCompare 2.13.2 + ALiS l
 echo 'This downloads build dependencies. Keep at least 15 GB free. No existing host is replaced.'
 read -r -p 'Continue? [y/N] ' answer
 [[ "$answer" == y || "$answer" == Y ]] || exit 0
-brew install cmake ninja qt@5 eigen laszip python@3.12 libomp
+brew install cmake ninja qt@5 eigen cgal laszip python@3.12 libomp
 bash "$repo/tools/build_macos.sh"
 bash "$repo/tools/setup_macos_runtime.sh" "$(brew --prefix python@3.12)/bin/python3.12"
 app="${ALIS_MAC_BUILD_DIR:-$repo/output/macos}/install/CloudCompare/CloudCompare.app"

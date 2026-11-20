@@ -2,7 +2,7 @@
 
 **Versione: 0.1.0-alpha.5.21 · Windows x64 · CloudCompare 2.13.2 / Qt 5.15.x**
 
-ALiS è un plugin di CloudCompare. Questa guida descrive la versione Windows pubblicata, non il prototipo standalone. L'aggiornamento macOS alle nuove funzioni è il prossimo passo della roadmap; il precedente pacchetto Mac non corrisponde alla 5.21.
+ALiS è un plugin di CloudCompare. La versione 5.21 è disponibile per Windows e macOS Apple Silicon. La guida descrive il plugin, non il prototipo standalone. Su Mac usa il pacchetto completo separato per macOS 27 o successivo: [istruzioni Mac](MAC_INSTALLER.md). I classificatori su Mac funzionano su CPU; il pacchetto non è ancora notarizzato.
 
 È una research alpha: una classificazione proposta non è una verità certificata. Verificare terreno, strutture e superfici prima dell'uso scientifico. Non sono inclusi rilievi privati, etichette di training o modelli preaddestrati.
 

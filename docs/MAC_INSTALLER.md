@@ -1,8 +1,10 @@
 # ALiS for macOS — complete Apple Silicon installer
 
-ALiS **0.1.0-alpha.5.9, Mac build 1** is available alongside the existing Windows release. The Mac installer includes CloudCompare 2.13.2, ALiS, Python 3.12 and all six CPU classifiers. It is a research preview, not a production-certified product.
+ALiS **0.1.0-alpha.5.21, Mac build 1** is available for Apple Silicon. See [Mac port validation](MAC_PORT_ALPHA521.md). The Mac installer includes CloudCompare 2.13.2, ALiS, Python 3.12 and all six CPU classifiers. It is a research preview, not a production-certified product.
 
-**[Download macOS (.pkg)](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.9/ALiS-0.1.0-alpha.5.9-macOS-arm64-Setup.pkg)** · [Checksums](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.9/ALiS-macOS-SHA256SUMS.txt) · [Release](https://github.com/Nicodemox87/ALiS/releases/tag/v0.1.0-alpha.5.9) · [Windows guide](INSTALLATION.md)
+**[Download Mac 5.21 (.pkg)](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.21/ALiS-0.1.0-alpha.5.21-macOS-arm64-Setup.pkg)** · [Checksums](https://github.com/Nicodemox87/ALiS/releases/download/v0.1.0-alpha.5.21/ALiS-macOS-SHA256SUMS.txt) · [Release](https://github.com/Nicodemox87/ALiS/releases/tag/v0.1.0-alpha.5.21) · [Windows guide](INSTALLATION.md)
+
+For this 5.21 build, use the generated `ALiS-0.1.0-alpha.5.21-macOS-arm64-Setup.pkg` and its matching `ALiS-macOS-arm64.json` attached to the same GitHub release. Do not use the older 5.9 checksum for it. The app always uses light appearance to keep text and icons readable.
 
 ## Requirements and contents
 
@@ -53,7 +55,7 @@ The **earlier alpha.5.7** was tested on M4 Max, macOS 27.0.1: 7 native tests, 32
 
 Current release evidence: [alpha.5.9 native build, installed worker and PKG audit](VALIDATION_ALPHA59.md).
 
-Developer prerequisites: Xcode Command Line Tools and Homebrew `cmake ninja qt@5 eigen laszip python@3.12 libomp`. End users do not need these tools.
+Developer prerequisites: Xcode Command Line Tools and Homebrew `cmake ninja qt@5 eigen cgal laszip python@3.12 libomp`. End users do not need these tools.
 
 1. Run `bash tools/build_macos.sh` to build the pinned CloudCompare host, apply tracked patches and run native tests.
 2. Set the version, Mac build and OS requirement in `packaging/macos/mac-release.json`; keep the installer distribution/preinstall requirements consistent. Run `python3 tools/build_macos_installer.py`. It downloads SHA256-pinned portable Python, installs pinned wheels, unifies OpenMP, audits every native dependency/deployment target, signs the app ad hoc and creates the installer plus `ALiS-macOS-arm64.json` in `output/mac-installer`.

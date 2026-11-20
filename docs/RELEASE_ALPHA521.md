@@ -1,12 +1,14 @@
-# ALiS 0.1.0-alpha.5.21 — Windows research preview
+# ALiS 0.1.0-alpha.5.21 — Windows and macOS research preview
 
-This release brings the locally developed alpha.5.10–5.21 work into the public CloudCompare plugin. **Windows x64, CloudCompare 2.13.2 / Qt5 only. Updating macOS to these capabilities is the next roadmap milestone; no matching Mac binary is included.** The previous Mac alpha.5.9 assets remain available, clearly labelled as older.
+This release brings the locally developed alpha.5.10–5.21 work into the public CloudCompare plugin. **Windows x64 and macOS Apple Silicon, CloudCompare 2.13.2 / Qt5.** The Mac alpha.5.21 complete installer requires macOS 27+ and includes the CPU Python runtime. Downloads are separate; Windows assets are unchanged.
 
 ## Download and install
 
 Use the Windows plugin ZIP and its included verified installer scripts. An existing compatible CloudCompare installation is required; this package does not install CloudCompare, Python, CUDA or drivers. Save the project and close CloudCompare before updating. Verify the release checksums. This unsigned research preview requires operator review, not disabled security protections.
 
 **[Complete step-by-step user guide (Italian)](https://github.com/Nicodemox87/ALiS/blob/main/docs/USER_GUIDE_IT.md)** · [Windows installation](https://github.com/Nicodemox87/ALiS/blob/main/docs/INSTALLATION.md) · [Source/build instructions](https://github.com/Nicodemox87/ALiS/blob/main/BUILDING.md)
+
+For Mac, use the separate complete `.pkg`: [download and instructions](MAC_INSTALLER.md). It is not notarized; follow the normal macOS authorization instructions.
 
 ## Features and changes
 
@@ -29,7 +31,7 @@ Tests establish bounded software behaviours, not classification accuracy or DFM 
 
 ## Known limits and next step
 
-- **Next: macOS update, rebuild/package and native regression/GUI validation.** The new Windows release is not a Mac update.
+- **Mac port completed:** 11 native suites, 16 updater tests, 46 Python tests passed; one CUDA-only test skipped. [Mac installation](MAC_INSTALLER.md) · [Validation and limits](MAC_PORT_ALPHA521.md). Apple Developer ID signing/notarization remains future work.
 - Large in-cloud SF matrices still require about 4×points×fields bytes; Disk only is deliberately different from visible full-cloud SFs.
 - Display/processing subset support is not universal; native external CloudCompare commands are outside the ALiS scope guard.
 - DFM outputs a grid cloud; no new dedicated ALiS GeoTIFF exporter is claimed.

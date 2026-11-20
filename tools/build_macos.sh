@@ -34,11 +34,15 @@ cmake -S "$host" -B "$work/build" -G Ninja \
   -DEIGEN_ROOT_DIR="$(brew --prefix eigen)/include/eigen3" \
   -DPLUGIN_STANDARD_ALIS=ON -DALIS_BUILD_TESTS=ON -DBUILD_TESTING=ON \
   -DOPTION_MAC_CUSTOM_DEPLOYMENT=ON -DOPTION_BUILD_CCVIEWER=OFF -DPLUGIN_IO_QLAS=ON -DPLUGIN_STANDARD_QCSF=ON \
-  -DCCCORELIB_USE_TBB=OFF -DCCCORELIB_USE_CGAL=OFF
+  -DCCCORELIB_USE_TBB=OFF -DCCCORELIB_USE_CGAL=ON
 cmake --build "$work/build" --parallel "${ALIS_BUILD_JOBS:-3}"
 if ! QT_QPA_PLATFORM=offscreen ctest --test-dir "$work/build" -C Release -R '^ALiS\.' --output-on-failure; then
-  test_binary="$work/build/plugins/private/qArchaeoLiDAR/ALiS_processing_tests"
-  QT_QPA_PLATFORM=offscreen lldb --batch -o run -o bt -- "$test_binary" --spatial-blocks-regression || true
+  # Debugger attachment can require interactive macOS authorization.
+  # Preserve CTest diagnostics and fail promptly in unattended builds.
+  if [[ "${ALIS_DEBUG_NATIVE_TESTS:-0}" == 1 ]]; then
+    test_binary="$work/build/plugins/private/qArchaeoLiDAR/ALiS_processing_tests"
+    QT_QPA_PLATFORM=offscreen lldb --batch -o run -o bt -- "$test_binary" --spatial-blocks-regression || true
+  fi
   exit 1
 fi
 cmake --install "$work/build"

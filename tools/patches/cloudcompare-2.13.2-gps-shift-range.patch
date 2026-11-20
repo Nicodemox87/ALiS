@@ -1,0 +1,32 @@
+diff --git a/plugins/core/IO/qLASIO/src/LasScalarFieldLoader.cpp b/plugins/core/IO/qLASIO/src/LasScalarFieldLoader.cpp
+index 7146a0d..4a72636 100644
+--- a/plugins/core/IO/qLASIO/src/LasScalarFieldLoader.cpp
++++ b/plugins/core/IO/qLASIO/src/LasScalarFieldLoader.cpp
+@@ -21,6 +21,7 @@
+ #include <ccScalarField.h>
+ // System
+ #include <utility>
++#include <cmath>
+ 
+ // TODO take by move
+ LasScalarFieldLoader::LasScalarFieldLoader(std::vector<LasScalarField>&      standardScalarFields,
+@@ -266,7 +267,18 @@ LasScalarFieldLoader::handleGpsTime(LasScalarField& sfInfo, ccPointCloud& pointC
+ 		double timeShift;
+ 		if (std::isnan(m_manualTimeShiftValue))
+ 		{
+-			timeShift = static_cast<int64_t>(currentValue / 10000.0) * 10000.0;
++			// LAS files can contain finite no-data sentinels (e.g. -FLT_MAX).
++			// Converting those values to int64_t is undefined. Keep them unshifted.
++			const double blocks = currentValue / 10000.0;
++			if (std::isfinite(blocks) && blocks >= -0x1p63 && blocks < 0x1p63)
++			{
++				timeShift = static_cast<int64_t>(blocks) * 10000.0;
++			}
++			else
++			{
++				timeShift = 0.0;
++				ccLog::Warning("[LAS] GPS time is outside the automatic shift range; preserving it without a shift.");
++			}
+ 		}
+ 		else
+ 		{

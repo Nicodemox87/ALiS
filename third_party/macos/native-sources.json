@@ -69,5 +69,111 @@
         }
       }
     }
+  },
+  {
+    "name": "cgal",
+    "license": "GPL-3.0-or-later",
+    "versions": {
+      "stable": "6.2.1",
+      "head": null,
+      "bottle": true
+    },
+    "urls": {
+      "stable": {
+        "url": "https://github.com/CGAL/cgal/releases/download/v6.2.1/CGAL-6.2.1.tar.xz",
+        "tag": null,
+        "revision": null,
+        "using": null,
+        "checksum": "b6be77c60765a8456335de991eeaf6ffec55256984e4a9ecc6a97c37bbfe85bf"
+      }
+    },
+    "revision": 0,
+    "bottle": {
+      "stable": {
+        "rebuild": 0,
+        "root_url": "https://ghcr.io/v2/homebrew/core",
+        "files": {
+          "all": {
+            "cellar": ":any_skip_relocation",
+            "url": "https://ghcr.io/v2/homebrew/core/cgal/blobs/sha256:a630bdf209970775ad7b3b96efbff3f67d901d923c8a1c43e964353123ecd604",
+            "sha256": "a630bdf209970775ad7b3b96efbff3f67d901d923c8a1c43e964353123ecd604"
+          }
+        }
+      }
+    }
+  },
+  {
+    "name": "gmp",
+    "license": "LGPL-3.0-or-later OR GPL-2.0-or-later",
+    "versions": {
+      "stable": "6.3.0",
+      "head": "HEAD",
+      "bottle": true
+    },
+    "urls": {
+      "stable": {
+        "url": "https://ftpmirror.gnu.org/gmp/gmp-6.3.0.tar.xz",
+        "tag": null,
+        "revision": null,
+        "using": null,
+        "checksum": "a3c2b80201b89e68616f4ad30bc66aee4927c3ce50e33929ca819d5c43538898"
+      },
+      "head": {
+        "url": "https://gmplib.org/repo/gmp/",
+        "branch": null,
+        "using": "hg"
+      }
+    },
+    "revision": 0,
+    "bottle": {
+      "stable": {
+        "rebuild": 1,
+        "root_url": "https://ghcr.io/v2/homebrew/core",
+        "files": {
+          "arm64_golden_gate": {
+            "cellar": ":any",
+            "url": "https://ghcr.io/v2/homebrew/core/gmp/blobs/sha256:5116a8201d8e044aef7d486da7e57f1e4dd2d8554ea6b540b44e45c0804f8f6f",
+            "sha256": "5116a8201d8e044aef7d486da7e57f1e4dd2d8554ea6b540b44e45c0804f8f6f"
+          }
+        }
+      }
+    }
+  },
+  {
+    "name": "mpfr",
+    "license": "LGPL-3.0-or-later",
+    "versions": {
+      "stable": "4.2.2",
+      "head": "HEAD",
+      "bottle": true
+    },
+    "urls": {
+      "stable": {
+        "url": "https://ftpmirror.gnu.org/mpfr/mpfr-4.2.2.tar.xz",
+        "tag": null,
+        "revision": null,
+        "using": null,
+        "checksum": "b67ba0383ef7e8a8563734e2e889ef5ec3c3b898a01d00fa0a6869ad81c6ce01"
+      },
+      "head": {
+        "url": "https://gitlab.inria.fr/mpfr/mpfr.git",
+        "branch": "master",
+        "using": null
+      }
+    },
+    "revision": 0,
+    "bottle": {
+      "stable": {
+        "rebuild": 0,
+        "root_url": "https://ghcr.io/v2/homebrew/core",
+        "files": {
+          "arm64_golden_gate": {
+            "cellar": ":any",
+            "url": "https://ghcr.io/v2/homebrew/core/mpfr/blobs/sha256:9275968023b1def4b1e0ff2a19e86f053a01bf383570945c9d36218c4c17493a",
+            "sha256": "9275968023b1def4b1e0ff2a19e86f053a01bf383570945c9d36218c4c17493a"
+          }
+        }
+      }
+    }
   }
 ]

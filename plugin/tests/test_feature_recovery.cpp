@@ -21,7 +21,11 @@ int checks=0;
 void check(bool ok,const char* message){++checks;checkpointCheck(ok,message);}
 template<class F> void refuses(F f){bool failed=false;try{f();}catch(const std::exception&){failed=true;}check(failed,"Unsafe operation must be refused");}
 void json(const QString& p,const QJsonObject& value){QFile f(p);check(f.open(QIODevice::WriteOnly),"fixture open");f.write(QJsonDocument(value).toJson());}
-int main(int argc,char** argv){QApplication app(argc,argv);QFontDatabase::addApplicationFont("C:/Windows/Fonts/segoeui.ttf");app.setFont(QFont("Segoe UI",9));try{
+int main(int argc,char** argv){QApplication app(argc,argv);
+#ifdef Q_OS_WIN
+    QFontDatabase::addApplicationFont("C:/Windows/Fonts/segoeui.ttf");app.setFont(QFont("Segoe UI",9));
+#endif
+try{
     QTemporaryDir dir;ccPointCloud cloud("fixture");check(cloud.reserve(6),"point allocation");for(int i=0;i<6;++i)cloud.addPoint(CCVector3(float(i),0,0));
     int original=cloud.addScalarField("Original");cloud.getScalarField(original)->fill(7);
     const auto originalStats=inspectScalarField(*cloud.getScalarField(original));check(originalStats.finite==6&&originalStats.minimum==7&&originalStats.maximum==7&&originalStats.mean==7,"Scalar statistics: counts/minimum/maximum/mean");

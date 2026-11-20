@@ -24,3 +24,5 @@ CNR-ISPC marks identify author affiliation; they do not imply institutional cert
 ## macOS distribution
 
 The complete Apple Silicon installer bundles its host and runtime. See [macOS corresponding sources and provenance](third_party/macos/README.md) and the licence files included in the app. Existing Windows packages and their notices are unchanged.
+
+The local Mac alpha.5.21 build enables CGAL 6.2.1 in CCCoreLib for Delaunay triangulation (component-specific GPL-3.0-or-later / LGPL-3.0-or-later notices), with GMP 6.3.0 and MPFR 4.2.2. Their upstream source URLs and hashes are recorded in `third_party/macos/native-sources.json`; licence texts are copied into the app. ALiS and the host retain their original GPL-2.0-or-later notices; the CGAL-enabled combination must also satisfy the included GPLv3 component terms.
